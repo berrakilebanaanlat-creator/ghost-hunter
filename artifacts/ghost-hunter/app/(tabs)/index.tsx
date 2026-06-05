@@ -148,7 +148,7 @@ export default function DashboardScreen() {
           <View style={styles.footer}>
             <View style={styles.footerDivider} />
             <Text style={styles.footerText}>{t("home.subtitle").toUpperCase()}</Text>
-            <Text style={styles.footerVersion}>v1.0.0</Text>
+            <Text style={styles.footerVersion}>v1.0.26</Text>
           </View>
         </View>
       </ScrollView>

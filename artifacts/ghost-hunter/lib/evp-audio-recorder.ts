@@ -57,7 +57,7 @@ let currentPlayer: ReturnType<typeof createAudioPlayer> | null = null;
 // durumunda tutmak gerekir (boşta kayıt = sessiz, atılan geçici dosya).
 let isIdleRecording = false;
 
-async function startIdleRecording(): Promise<void> {
+export async function startIdleRecording(): Promise<void> {
   if (!globalRecorder || isIdleRecording || recorderState === 'recording') return;
   try {
     await setAudioModeAsync({ playsInSilentMode: true, allowsRecording: true });
@@ -69,7 +69,7 @@ async function startIdleRecording(): Promise<void> {
   }
 }
 
-async function stopIdleRecording(): Promise<void> {
+export async function stopIdleRecording(): Promise<void> {
   if (!globalRecorder || !isIdleRecording) return;
   isIdleRecording = false;
   try {
@@ -79,7 +79,7 @@ async function stopIdleRecording(): Promise<void> {
   } catch { /* sessizce geç */ }
 }
 
-async function startIdleRecordingIfPermitted(): Promise<void> {
+export async function startIdleRecordingIfPermitted(): Promise<void> {
   try {
     const { granted } = await getRecordingPermissionsAsync();
     if (granted) await startIdleRecording();

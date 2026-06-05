@@ -7,6 +7,11 @@ import * as Haptics from "expo-haptics";
 import { t } from "@/lib/i18n";
 import { addRecording } from "@/lib/recording-history";
 import {
+  setGlobalRecorder,
+  stopIdleRecording,
+  startIdleRecordingIfPermitted,
+} from "@/lib/evp-audio-recorder";
+import {
   useAudioRecorder,
   RecordingPresets,
   requestRecordingPermissionsAsync,
@@ -111,6 +116,16 @@ export default function EVPScreen() {
     };
   }, [isRecording]);
 
+  // Arka plan crash koruması: audioRecorder'ı global'e bağla
+  // Bu sayede expo-audio'nun OnActivityEntersBackground pause() çağrısı
+  // her zaman Recording durumundaki bir recorder'a yapılır (IllegalStateException önlenir)
+  useEffect(() => {
+    setGlobalRecorder(audioRecorder);
+    return () => {
+      setGlobalRecorder(null);
+    };
+  }, [audioRecorder]);
+
   // Cleanup on unmount - recorder'ı güvenli şekilde durdur
   useEffect(() => {
     return () => {
@@ -202,6 +217,10 @@ export default function EVPScreen() {
           try { await withTimeout(audioRecorder.stop(), 3000, "pre-stop"); } catch { /* */ }
         }
       } catch { /* isRecording kontrolü başarısız, devam et */ }
+
+      // 6b. Arka plan idle kaydını durdur (gerçek kayıt başlamadan önce)
+      // Eğer idle kayıt çalışıyorsa, recorder'ı serbest bırak
+      await stopIdleRecording();
 
       // 7. Prepare (timeout korumalı)
       try {
@@ -367,11 +386,16 @@ export default function EVPScreen() {
 
       // 8. Phase: idle
       phaseRef.current = "idle";
+
+      // 9. Arka plan crash koruması: idle kaydı yeniden başlat
+      // Recorder her zaman Recording durumunda olmalı
+      startIdleRecordingIfPermitted().catch(() => {});
     } catch (error) {
       console.error("[EVP] Kayıt durdurma genel hatası:", error);
       // Guaranteed cleanup
       setIsRecording(false);
       phaseRef.current = "idle";
+      startIdleRecordingIfPermitted().catch(() => {});
     } finally {
       lockRef.current = false;
     }
