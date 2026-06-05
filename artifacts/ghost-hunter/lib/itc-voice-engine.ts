@@ -569,6 +569,9 @@ class ITCVoiceEngine {
   // Türkçe TTS başarısızlık bayrağı (ses yok sorunu için fallback)
   private turkishTTSFailed: boolean = false;
 
+  // Aktif karakter (speakOnWeb'e geçirmek için)
+  private _currentCharacter: VoiceCharacter = "male";
+
   // Mikrofon
   private microphoneEnabled: boolean = false;
   private micAnalyserNode: AnalyserNode | null = null;
@@ -880,7 +883,8 @@ class ITCVoiceEngine {
 
       if (!this.isActive) { this.isSpeaking = false; return; }
 
-      // 3. TTS ile kelime söyle (Web: sunucu TTS + Web Audio API)
+      // 3. TTS ile kelime söyle (Web: ElevenLabs API + Web Audio API)
+      this._currentCharacter = character;
       if (this.isWebPlatform) {
         await this.speakOnWeb(word, pitch, rate, voiceParams.volume);
       } else {
@@ -935,9 +939,9 @@ class ITCVoiceEngine {
     if (ctx.state === "suspended") await ctx.resume();
 
     try {
-      // Sunucu TTS endpoint'inden Türkçe mp3 çek
+      // Sunucu TTS endpoint'inden Türkçe mp3 çek (ElevenLabs)
       const apiBase = this.getApiBaseUrl();
-      const url = `${apiBase}/api/tts?text=${encodeURIComponent(word)}`;
+      const url = `${apiBase}/api/tts?text=${encodeURIComponent(word)}&character=${encodeURIComponent(this._currentCharacter ?? "male")}`;
       
       const response = await fetch(url);
       if (!response.ok) {
