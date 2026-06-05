@@ -1265,6 +1265,7 @@ function LevelBar({ label, value, color, onDecrease, onIncrease }: {
       <View style={styles.levelControls}>
         <Pressable
           onPress={onDecrease}
+          hitSlop={{ top: 10, bottom: 10, left: 10, right: 6 }}
           style={({ pressed }) => [styles.levelBtn, pressed && { opacity: 0.6 }]}
         >
           <Text style={styles.levelBtnText}>−</Text>
@@ -1274,6 +1275,7 @@ function LevelBar({ label, value, color, onDecrease, onIncrease }: {
         </View>
         <Pressable
           onPress={onIncrease}
+          hitSlop={{ top: 10, bottom: 10, left: 6, right: 10 }}
           style={({ pressed }) => [styles.levelBtn, pressed && { opacity: 0.6 }]}
         >
           <Text style={styles.levelBtnText}>+</Text>
