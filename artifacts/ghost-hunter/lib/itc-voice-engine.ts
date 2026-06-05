@@ -1145,6 +1145,8 @@ class ITCVoiceEngine {
 
   getSettings(): VoxSettings { return { ...this.settings }; }
 
+  getTurkishTTSFailed(): boolean { return this.turkishTTSFailed; }
+
   setWhiteNoiseMode(mode: WhiteNoiseMode): void {
     this.settings.whiteNoiseMode = mode;
     if (this.radioEffects) {

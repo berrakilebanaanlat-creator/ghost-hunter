@@ -12,6 +12,7 @@ import "@/lib/_core/nativewind-pressable";
 import { ThemeProvider } from "@/lib/theme-provider";
 import { AdProvider } from "@/lib/ad-context";
 import { WhatsNewModal } from "@/components/whats-new-modal";
+import { OnboardingOverlay } from "@/components/onboarding-overlay";
 import {
   SafeAreaFrameContext,
   SafeAreaInsetsContext,
@@ -122,6 +123,7 @@ export default function RootLayout() {
           </Stack>
           <StatusBar style="light" translucent />
           <WhatsNewModal />
+          <OnboardingOverlay />
         </QueryClientProvider>
       </trpc.Provider>
     </GestureHandlerRootView>

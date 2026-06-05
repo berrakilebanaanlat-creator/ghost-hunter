@@ -234,6 +234,12 @@
     "billingFixTitle": "Abonelik Onay Düzeltmesi",
     "billingFixDesc": "Premium abonelik onay sorunu giderildi. Abonelikler artık düzgün çalışıyor.",
     "soloaderFixTitle": "Başlatma Hatası Düzeltmesi",
-    "soloaderFixDesc": "Bazı cihazlarda uygulama açılırken oluşan çökme giderildi."
+    "soloaderFixDesc": "Bazı cihazlarda uygulama açılırken oluşan çökme giderildi.",
+    "evpCrashFixTitle": "EVP Çökme Düzeltmesi",
+    "evpCrashFixDesc": "6 farklı kullanıcıda görülen EVP ses kaydı çökmesi tamamen giderildi.",
+    "voxSoundFixTitle": "VOX Ses Sorunu Düzeltmesi",
+    "voxSoundFixDesc": "Türkçe TTS sesi çıkmadığında uyarı gösterilir ve yedek ses devreye girer.",
+    "voxSettingsFixTitle": "VOX Ayarlar Paneli Düzeltmesi",
+    "voxSettingsFixDesc": "Ayarlar butonlarının çalışmaması sorunu giderildi."
   }
 }

@@ -234,6 +234,12 @@
     "billingFixTitle": "Subscription Fix",
     "billingFixDesc": "Premium subscription acknowledgment issue resolved. Subscriptions now work properly.",
     "soloaderFixTitle": "Startup Crash Fix",
-    "soloaderFixDesc": "Fixed a crash that occurred on some devices when opening the app."
+    "soloaderFixDesc": "Fixed a crash that occurred on some devices when opening the app.",
+    "evpCrashFixTitle": "EVP Crash Fix",
+    "evpCrashFixDesc": "Fixed an EVP audio recording crash that affected 6 users.",
+    "voxSoundFixTitle": "VOX No-Sound Fix",
+    "voxSoundFixDesc": "Shows a warning when Turkish TTS fails and automatically falls back to another voice.",
+    "voxSettingsFixTitle": "VOX Settings Panel Fix",
+    "voxSettingsFixDesc": "Fixed settings sliders not responding to button presses."
   }
 }

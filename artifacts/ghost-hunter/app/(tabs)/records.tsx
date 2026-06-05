@@ -8,6 +8,7 @@ import {
   StyleSheet,
   Platform,
   Alert,
+  Share,
 } from "react-native";
 import { ScreenContainer } from "@/components/screen-container";
 import { IconSymbol } from "@/components/ui/icon-symbol";
@@ -98,6 +99,42 @@ export default function RecordsScreen() {
     loadEvidence();
   };
 
+  const handleShare = async () => {
+    if (evidence.length === 0) {
+      Alert.alert("Paylaş", "Paylaşılacak kanıt bulunamadı.");
+      return;
+    }
+
+    const lines: string[] = [
+      "🔮 ANTİK GHOST APP — KANIT RAPORU",
+      `📅 Tarih: ${new Date().toLocaleDateString("tr-TR")}`,
+      `📊 Toplam: ${evidence.length} kanıt`,
+      "",
+    ];
+
+    filteredEvidence.slice(0, 30).forEach((e, i) => {
+      const typeLabel =
+        e.type === "sls_image" ? "SLS" :
+        e.type === "evp_audio" ? "EVP" :
+        e.type === "emf_peak" ? "EMF" :
+        e.type === "radar_detection" ? "RADAR" : "NOT";
+      lines.push(`${i + 1}. [${typeLabel}] ${e.title ?? "—"}`);
+      if ((e as any).notes) lines.push(`   Not: ${(e as any).notes}`);
+    });
+
+    lines.push("");
+    lines.push("— Antik Ghost App ile kaydedildi");
+
+    try {
+      await Share.share({
+        message: lines.join("\n"),
+        title: "Antik Ghost App Kanıt Raporu",
+      });
+    } catch {
+      // Kullanıcı iptal etti
+    }
+  };
+
   const handleDeleteEvidence = (id: string) => {
     Alert.alert(
       "Kanıt Sil",
@@ -166,6 +203,12 @@ export default function RecordsScreen() {
             </View>
           </View>
           <View style={styles.headerRight}>
+            <Pressable
+              onPress={handleShare}
+              style={({ pressed }) => [styles.shareBtn, pressed && { opacity: 0.6 }]}
+            >
+              <IconSymbol size={16} name="square.and.arrow.up" color="#5A6A8A" />
+            </Pressable>
             <View style={styles.headerBadge}>
               <Text style={styles.headerBadgeText}>{evidence.length}</Text>
             </View>
@@ -504,6 +547,17 @@ const styles = StyleSheet.create({
   headerRight: {
     flexDirection: "row",
     alignItems: "center",
+    gap: 8,
+  },
+  shareBtn: {
+    width: 30,
+    height: 30,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: "#1A1A28",
+    backgroundColor: "#0D0D18",
+    alignItems: "center",
+    justifyContent: "center",
   },
   headerBadge: {
     backgroundColor: "#5A6A8A15",

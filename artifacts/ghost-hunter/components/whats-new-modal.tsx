@@ -14,7 +14,7 @@ import { t } from "@/lib/i18n";
 import { useColors } from "@/hooks/use-colors";
 
 const LAST_SEEN_VERSION_KEY = "@whats_new_last_seen_version";
-const CURRENT_VERSION = "1.0.22";
+const CURRENT_VERSION = "1.0.26";
 
 // ── Release notes data structure ──────────────────────────────────
 interface ReleaseFeature {
@@ -30,6 +30,26 @@ interface ReleaseNote {
 
 // Each version's highlights — add new entries at the top for future releases
 const RELEASE_NOTES: ReleaseNote[] = [
+  {
+    version: "1.0.26",
+    features: [
+      {
+        icon: "🛡️",
+        titleKey: "whatsNew.evpCrashFixTitle",
+        descKey: "whatsNew.evpCrashFixDesc",
+      },
+      {
+        icon: "🔊",
+        titleKey: "whatsNew.voxSoundFixTitle",
+        descKey: "whatsNew.voxSoundFixDesc",
+      },
+      {
+        icon: "⚙️",
+        titleKey: "whatsNew.voxSettingsFixTitle",
+        descKey: "whatsNew.voxSettingsFixDesc",
+      },
+    ],
+  },
   {
     version: "1.0.22",
     features: [

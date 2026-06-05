@@ -223,6 +223,12 @@
     "billingFixTitle": "Corrección de Suscripción",
     "billingFixDesc": "Problema de confirmación de suscripción premium resuelto.",
     "soloaderFixTitle": "Corrección de Inicio",
-    "soloaderFixDesc": "Se corrigió un bloqueo al abrir la app en algunos dispositivos."
+    "soloaderFixDesc": "Se corrigió un bloqueo al abrir la app en algunos dispositivos.",
+    "evpCrashFixTitle": "Corrección de Bloqueo EVP",
+    "evpCrashFixDesc": "Se corrigió el bloqueo de grabación EVP que afectaba a 6 usuarios.",
+    "voxSoundFixTitle": "Corrección de Sonido VOX",
+    "voxSoundFixDesc": "Ahora muestra una advertencia cuando el TTS falla y usa una voz alternativa.",
+    "voxSettingsFixTitle": "Corrección del Panel VOX",
+    "voxSettingsFixDesc": "Se corrigió el problema con los botones de configuración que no respondían."
   }
 }

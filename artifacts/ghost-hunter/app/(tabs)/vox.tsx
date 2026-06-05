@@ -73,6 +73,7 @@ export default function VoxScreen() {
   const [waveformData, setWaveformData] = useState<number[]>(new Array(40).fill(0));
   const [pulsePhase, setPulsePhase] = useState(0);
   const [showSettings, setShowSettings] = useState(false);
+  const [ttsWarning, setTtsWarning] = useState(false);
 
   // Mikrofon durumu
   const [micState, setMicState] = useState<MicrophoneState>({
@@ -168,6 +169,9 @@ export default function VoxScreen() {
     setCurrentWord(word);
     setCurrentCharacter(character);
     setWordCount((c) => c + 1);
+    if (Platform.OS !== "web" && getITCEngine().getTurkishTTSFailed()) {
+      setTtsWarning(true);
+    }
 
     if (Platform.OS !== "web") {
       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
@@ -391,6 +395,19 @@ export default function VoxScreen() {
             <Text style={styles.headerTime}>{formatTime(elapsedTime)}</Text>
           </View>
         </View>
+
+        {/* TTS Uyarı Banner */}
+        {ttsWarning && (
+          <View style={styles.ttsWarningBanner}>
+            <Text style={styles.ttsWarningIcon}>⚠️</Text>
+            <Text style={styles.ttsWarningText}>
+              Türkçe ses yüklenemedi — yedek ses kullanılıyor
+            </Text>
+            <Pressable onPress={() => setTtsWarning(false)} style={styles.ttsWarningClose}>
+              <Text style={styles.ttsWarningCloseText}>✕</Text>
+            </Pressable>
+          </View>
+        )}
 
         {/* Ayarlar Paneli (GhostTube VOX tarzı) */}
         {showSettings && (
@@ -761,6 +778,35 @@ const styles = StyleSheet.create({
     color: "#3A3A50",
     letterSpacing: 2,
     marginTop: 2,
+  },
+  ttsWarningBanner: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+    backgroundColor: "#2A1800",
+    borderWidth: 1,
+    borderColor: "#FFAA0040",
+    borderRadius: 8,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+  },
+  ttsWarningIcon: {
+    fontSize: 14,
+  },
+  ttsWarningText: {
+    flex: 1,
+    fontSize: 11,
+    color: "#FFAA00",
+    fontWeight: "500",
+    letterSpacing: 0.5,
+  },
+  ttsWarningClose: {
+    padding: 4,
+  },
+  ttsWarningCloseText: {
+    fontSize: 12,
+    color: "#AA7700",
+    fontWeight: "700",
   },
   headerRight: {
     flexDirection: "row",
