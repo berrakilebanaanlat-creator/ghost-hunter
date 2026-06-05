@@ -51,6 +51,41 @@ let operationLock = false; // Mutex: eşzamanlı işlemleri engeller
 let globalRecorder: ReturnType<typeof useAudioRecorder> | null = null;
 let currentPlayer: ReturnType<typeof createAudioPlayer> | null = null;
 
+// Arka plan crash koruması: expo-audio arka plana geçişte tüm recorder'lara
+// MediaRecorder.pause() çağırır. Recorder Recording durumunda değilse
+// IllegalStateException fırlatır. Bu yüzden recorder'ı HER ZAMAN Recording
+// durumunda tutmak gerekir (boşta kayıt = sessiz, atılan geçici dosya).
+let isIdleRecording = false;
+
+async function startIdleRecording(): Promise<void> {
+  if (!globalRecorder || isIdleRecording || recorderState === 'recording') return;
+  try {
+    await setAudioModeAsync({ playsInSilentMode: true, allowsRecording: true });
+    await globalRecorder.prepareToRecordAsync();
+    globalRecorder.record();
+    isIdleRecording = true;
+  } catch {
+    isIdleRecording = false;
+  }
+}
+
+async function stopIdleRecording(): Promise<void> {
+  if (!globalRecorder || !isIdleRecording) return;
+  isIdleRecording = false;
+  try {
+    if (globalRecorder.isRecording) {
+      await globalRecorder.stop();
+    }
+  } catch { /* sessizce geç */ }
+}
+
+async function startIdleRecordingIfPermitted(): Promise<void> {
+  try {
+    const { granted } = await getRecordingPermissionsAsync();
+    if (granted) await startIdleRecording();
+  } catch { /* izin yoksa geç, ilk taramada izin alınacak */ }
+}
+
 /**
  * Mutex lock al - eşzamanlı işlemleri engeller
  * Hızlı tıklama koruması sağlar
@@ -103,10 +138,15 @@ function showRecordingError(message: string): void {
  */
 export function setGlobalRecorder(rec: ReturnType<typeof useAudioRecorder> | null): void {
   globalRecorder = rec;
-  // Recorder değiştiğinde state'i sıfırla
   if (!rec) {
     recorderState = 'idle';
+    isIdleRecording = false;
     releaseLock();
+  } else {
+    // Recorder hazır olduğunda arka plan crash koruması için idle kaydı başlat.
+    // Böylece native MediaRecorder her zaman Recording durumunda olur ve
+    // expo-audio'nun OnActivityEntersBackground pause() çağrısı başarısız olmaz.
+    startIdleRecordingIfPermitted();
   }
 }
 
@@ -145,6 +185,9 @@ export async function startRecording(): Promise<boolean> {
       showRecordingError('Ses kaydedici hazır değil. Lütfen ekranı yeniden açın.');
       return false;
     }
+
+    // 3b. Arka plan koruma idle kaydını durdur (gerçek kayıt başlamadan önce)
+    await stopIdleRecording();
 
     // 4. İzin ön kontrolü - önce mevcut izni kontrol et
     try {
@@ -352,10 +395,16 @@ export async function stopRecording(): Promise<string | null> {
 
     // 7. State: idle
     recorderState = 'idle';
+
+    // 8. Arka plan crash koruması: idle kaydı yeniden başlat
+    // Recorder Recording durumuna geri döner, expo-audio pause() çağırabilir
+    startIdleRecording().catch(() => {});
+
     return uri;
   } catch (error) {
     console.error('[EVP] Kayıt durdurma genel hatası:', error);
     recorderState = 'idle';
+    startIdleRecording().catch(() => {});
     return null;
   } finally {
     releaseLock();
@@ -406,10 +455,10 @@ export function cleanup(): void {
     currentPlayer = null;
   }
 
-  // Recorder duruyorsa durdur - DEFENSIVE STOP
-  if (globalRecorder && recorderState === 'recording') {
+  // Idle veya gerçek kayıt varsa durdur - DEFENSIVE STOP
+  if (globalRecorder && (recorderState === 'recording' || isIdleRecording)) {
+    isIdleRecording = false;
     try {
-      // Native state'i kontrol et
       if (globalRecorder.isRecording) {
         globalRecorder.stop();
       }
@@ -420,5 +469,6 @@ export function cleanup(): void {
 
   // State sıfırla
   recorderState = 'idle';
+  isIdleRecording = false;
   releaseLock();
 }

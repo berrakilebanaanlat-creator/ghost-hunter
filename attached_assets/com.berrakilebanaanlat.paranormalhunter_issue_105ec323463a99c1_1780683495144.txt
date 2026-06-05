@@ -1,0 +1,815 @@
+# Crashlytics - 
+# Application: com.berrakilebanaanlat.paranormalhunter
+# Platform: android
+# Version: 1.0.25 (10025)
+# Issue: 105ec323463a99c1721ff7d147ce6a54
+# Session: 6A22FBAB021E0001166491305A71DD48_DNE_6_v2
+# Date: Fri Jun 05 2026 19:45:20 GMT+0300 (Türkiye Standart Saati)
+
+Fatal Exception: java.lang.IllegalStateException:
+       at android.media.MediaRecorder.pause(MediaRecorder.java)
+       at expo.modules.audio.AudioRecorder.pauseRecording(SourceFile:5)
+       at expo.modules.audio.AudioModule$definition$lambda$67$$inlined$OnActivityEntersBackground$1.invoke(SourceFile:12)
+       at expo.modules.audio.AudioModule$definition$lambda$67$$inlined$OnActivityEntersBackground$1.invoke(SourceFile:1)
+       at I9.a.a(SourceFile:3)
+       at B9.q.k(SourceFile:31)
+       at B9.r.y(SourceFile:35)
+       at B9.c.H(SourceFile:9)
+       at B9.w.onHostPause(SourceFile:11)
+       at com.facebook.react.bridge.ReactContext.onHostPause(SourceFile:28)
+       at com.facebook.react.runtime.ReactLifecycleStateManager.moveToOnHostPause(SourceFile:27)
+       at com.facebook.react.runtime.ReactHostImpl.onHostPause(SourceFile:10)
+       at com.facebook.react.ReactDelegate.onHostPause(SourceFile:15)
+       at com.facebook.react.ReactActivityDelegate.onPause(SourceFile:6)
+       at O8.m$j.invokeSuspend(SourceFile:85)
+       at O8.m$j.invoke(SourceFile:1)
+       at O8.m$j.invoke(SourceFile:2)
+       at O8.m$c.invokeSuspend(SourceFile:90)
+       at kotlin.coroutines.jvm.internal.a.resumeWith(SourceFile:12)
+       at hd.i.b(SourceFile:130)
+       at id.a.b(SourceFile:17)
+       at cd.Q.e(SourceFile:36)
+       at cd.a.L0(SourceFile:1)
+       at cd.k.c(SourceFile:23)
+       at cd.i.c(:1)
+       at cd.k.d(SourceFile:13)
+       at cd.i.d(:1)
+       at O8.m.D(SourceFile:17)
+       at O8.m.E(SourceFile:7)
+       at O8.m.onPause(SourceFile:8)
+       at com.facebook.react.ReactActivity.onPause(SourceFile:6)
+       at android.app.Activity.performPause(Activity.java:8392)
+       at android.app.Instrumentation.callActivityOnPause(Instrumentation.java:1510)
+       at android.app.ActivityThread.performPauseActivityIfNeeded(ActivityThread.java:5256)
+       at android.app.ActivityThread.performPauseActivity(ActivityThread.java:5217)
+       at android.app.ActivityThread.handlePauseActivity(ActivityThread.java:5168)
+       at android.app.servertransaction.PauseActivityItem.execute(PauseActivityItem.java:46)
+       at android.app.servertransaction.TransactionExecutor.executeLifecycleState(TransactionExecutor.java:176)
+       at android.app.servertransaction.TransactionExecutor.execute(TransactionExecutor.java:97)
+       at android.app.ActivityThread$H.handleMessage(ActivityThread.java:2336)
+       at android.os.Handler.dispatchMessage(Handler.java:106)
+       at android.os.Looper.loop(Looper.java:246)
+       at android.app.ActivityThread.main(ActivityThread.java:8653)
+       at java.lang.reflect.Method.invoke(Method.java)
+       at com.android.internal.os.RuntimeInit$MethodAndArgsCaller.run(RuntimeInit.java:602)
+       at com.android.internal.os.ZygoteInit.main(ZygoteInit.java:1130)
+
+Firebase Background Thread #1:
+       at dalvik.system.VMStack.getThreadStackTrace(VMStack.java)
+       at java.lang.Thread.getStackTrace(Thread.java:1736)
+       at java.lang.Thread.getAllStackTraces(Thread.java:1812)
+       at com.google.firebase.crashlytics.internal.common.CrashlyticsReportDataCapture.populateThreadsList(SourceFile:17)
+       at com.google.firebase.crashlytics.internal.common.CrashlyticsReportDataCapture.populateExecutionData(SourceFile:2)
+       at com.google.firebase.crashlytics.internal.common.CrashlyticsReportDataCapture.populateEventApplicationData(SourceFile:9)
+       at com.google.firebase.crashlytics.internal.common.CrashlyticsReportDataCapture.captureEventData(SourceFile:38)
+       at com.google.firebase.crashlytics.internal.common.SessionReportingCoordinator.persistEvent(SourceFile:20)
+       at com.google.firebase.crashlytics.internal.common.SessionReportingCoordinator.persistFatalEvent(SourceFile:36)
+       at com.google.firebase.crashlytics.internal.common.CrashlyticsController$2.call(SourceFile:8)
+       at com.google.firebase.crashlytics.internal.common.CrashlyticsController$2.call(SourceFile:1)
+       at com.google.firebase.crashlytics.internal.concurrency.CrashlyticsWorker.h(SourceFile:1)
+       at com.google.firebase.crashlytics.internal.concurrency.e.a(SourceFile:1)
+       at k7.w.run(SourceFile:9)
+       at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1167)
+       at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:641)
+       at com.google.firebase.concurrent.CustomThreadFactory.a(SourceFile:13)
+       at com.google.firebase.concurrent.a.run(SourceFile:1)
+       at java.lang.Thread.run(Thread.java:923)
+
+FinalizerWatchdogDaemon:
+       at java.lang.Object.wait(Object.java)
+       at java.lang.Object.wait(Object.java:442)
+       at java.lang.Object.wait(Object.java:568)
+       at java.lang.Daemons$FinalizerWatchdogDaemon.sleepUntilNeeded(Daemons.java:341)
+       at java.lang.Daemons$FinalizerWatchdogDaemon.runInternal(Daemons.java:321)
+       at java.lang.Daemons$Daemon.run(Daemons.java:139)
+       at java.lang.Thread.run(Thread.java:923)
+
+PlayBillingLibrary-3:
+       at sun.misc.Unsafe.park(Unsafe.java)
+       at java.util.concurrent.locks.LockSupport.park(LockSupport.java:190)
+       at java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject.await(AbstractQueuedSynchronizer.java:2067)
+       at java.util.concurrent.LinkedBlockingQueue.take(LinkedBlockingQueue.java:442)
+       at java.util.concurrent.ThreadPoolExecutor.getTask(ThreadPoolExecutor.java:1092)
+       at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1152)
+       at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:641)
+       at java.lang.Thread.run(Thread.java:923)
+
+AdWorker(Default) #119:
+       at sun.misc.Unsafe.park(Unsafe.java)
+       at java.util.concurrent.locks.LockSupport.parkNanos(LockSupport.java:230)
+       at java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject.awaitNanos(AbstractQueuedSynchronizer.java:2109)
+       at java.util.concurrent.LinkedBlockingQueue.poll(LinkedBlockingQueue.java:467)
+       at java.util.concurrent.ThreadPoolExecutor.getTask(ThreadPoolExecutor.java:1091)
+       at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1152)
+       at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:641)
+       at java.lang.Thread.run(Thread.java:923)
+
+ProcessStablePhenotypeFlag:
+       at sun.misc.Unsafe.park(Unsafe.java)
+       at java.util.concurrent.locks.LockSupport.park(LockSupport.java:190)
+       at java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject.await(AbstractQueuedSynchronizer.java:2067)
+       at java.util.concurrent.ScheduledThreadPoolExecutor$DelayedWorkQueue.take(ScheduledThreadPoolExecutor.java:1120)
+       at java.util.concurrent.ScheduledThreadPoolExecutor$DelayedWorkQueue.take(ScheduledThreadPoolExecutor.java:849)
+       at java.util.concurrent.ThreadPoolExecutor.getTask(ThreadPoolExecutor.java:1092)
+       at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1152)
+       at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:641)
+       at java.lang.Thread.run(Thread.java:923)
+
+AdWorker(Default) #118:
+       at sun.misc.Unsafe.park(Unsafe.java)
+       at java.util.concurrent.locks.LockSupport.parkNanos(LockSupport.java:230)
+       at java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject.awaitNanos(AbstractQueuedSynchronizer.java:2109)
+       at java.util.concurrent.LinkedBlockingQueue.poll(LinkedBlockingQueue.java:467)
+       at java.util.concurrent.ThreadPoolExecutor.getTask(ThreadPoolExecutor.java:1091)
+       at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1152)
+       at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:641)
+       at java.lang.Thread.run(Thread.java:923)
+
+Chrome_ProcessLauncherThread:
+       at android.os.MessageQueue.nativePollOnce(MessageQueue.java)
+       at android.os.MessageQueue.next(MessageQueue.java:335)
+       at android.os.Looper.loop(Looper.java:206)
+       at android.os.HandlerThread.run(HandlerThread.java:67)
+
+AdWorker(Default) #130:
+       at sun.misc.Unsafe.park(Unsafe.java)
+       at java.util.concurrent.locks.LockSupport.parkNanos(LockSupport.java:230)
+       at java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject.awaitNanos(AbstractQueuedSynchronizer.java:2109)
+       at java.util.concurrent.LinkedBlockingQueue.poll(LinkedBlockingQueue.java:467)
+       at java.util.concurrent.ThreadPoolExecutor.getTask(ThreadPoolExecutor.java:1091)
+       at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1152)
+       at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:641)
+       at java.lang.Thread.run(Thread.java:923)
+
+WM.task-2:
+       at sun.misc.Unsafe.park(Unsafe.java)
+       at java.util.concurrent.locks.LockSupport.park(LockSupport.java:190)
+       at java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject.await(AbstractQueuedSynchronizer.java:2067)
+       at java.util.concurrent.LinkedBlockingQueue.take(LinkedBlockingQueue.java:442)
+       at java.util.concurrent.ThreadPoolExecutor.getTask(ThreadPoolExecutor.java:1092)
+       at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1152)
+       at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:641)
+       at java.lang.Thread.run(Thread.java:923)
+
+PlayBillingLibrary-2:
+       at sun.misc.Unsafe.park(Unsafe.java)
+       at java.util.concurrent.locks.LockSupport.park(LockSupport.java:190)
+       at java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject.await(AbstractQueuedSynchronizer.java:2067)
+       at java.util.concurrent.LinkedBlockingQueue.take(LinkedBlockingQueue.java:442)
+       at java.util.concurrent.ThreadPoolExecutor.getTask(ThreadPoolExecutor.java:1092)
+       at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1152)
+       at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:641)
+       at java.lang.Thread.run(Thread.java:923)
+
+DefaultDispatcher-worker-5:
+       at sun.misc.Unsafe.park(Unsafe.java)
+       at java.util.concurrent.locks.LockSupport.parkNanos(LockSupport.java:353)
+       at jd.a$c.k(SourceFile:24)
+       at jd.a$c.q(SourceFile:60)
+       at jd.a$c.m(SourceFile:61)
+       at jd.a$c.run(SourceFile:1)
+
+DefaultDispatcher-worker-2:
+       at sun.misc.Unsafe.park(Unsafe.java)
+       at java.util.concurrent.locks.LockSupport.parkNanos(LockSupport.java:353)
+       at jd.a$c.k(SourceFile:24)
+       at jd.a$c.q(SourceFile:60)
+       at jd.a$c.m(SourceFile:61)
+       at jd.a$c.run(SourceFile:1)
+
+NotificationsHandlerThread - class M9.d:
+       at android.os.MessageQueue.nativePollOnce(MessageQueue.java)
+       at android.os.MessageQueue.next(MessageQueue.java:335)
+       at android.os.Looper.loop(Looper.java:206)
+       at android.os.HandlerThread.run(HandlerThread.java:67)
+
+CameraAvailabilityObserver_ObservationThread:
+       at android.os.MessageQueue.nativePollOnce(MessageQueue.java)
+       at android.os.MessageQueue.next(MessageQueue.java:335)
+       at android.os.Looper.loop(Looper.java:206)
+       at android.os.HandlerThread.run(HandlerThread.java:67)
+
+WM.task-1:
+       at sun.misc.Unsafe.park(Unsafe.java)
+       at java.util.concurrent.locks.LockSupport.park(LockSupport.java:190)
+       at java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject.await(AbstractQueuedSynchronizer.java:2067)
+       at java.util.concurrent.LinkedBlockingQueue.take(LinkedBlockingQueue.java:442)
+       at java.util.concurrent.ThreadPoolExecutor.getTask(ThreadPoolExecutor.java:1092)
+       at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1152)
+       at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:641)
+       at java.lang.Thread.run(Thread.java:923)
+
+Thread-16:
+       at sun.misc.Unsafe.park(Unsafe.java)
+       at java.util.concurrent.locks.LockSupport.park(LockSupport.java:190)
+       at java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject.await(AbstractQueuedSynchronizer.java:2067)
+       at java.util.concurrent.PriorityBlockingQueue.take(PriorityBlockingQueue.java:548)
+       at m84.bbx.a(:com.google.android.gms.policy_ads_fdr_dynamite@260480608@260480602017.868869642.868869642:3)
+       at m84.bbx.run(:com.google.android.gms.policy_ads_fdr_dynamite@260480608@260480602017.868869642.868869642:6)
+
+AdWorker(Default) #122:
+       at sun.misc.Unsafe.park(Unsafe.java)
+       at java.util.concurrent.locks.LockSupport.parkNanos(LockSupport.java:230)
+       at java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject.awaitNanos(AbstractQueuedSynchronizer.java:2109)
+       at java.util.concurrent.LinkedBlockingQueue.poll(LinkedBlockingQueue.java:467)
+       at java.util.concurrent.ThreadPoolExecutor.getTask(ThreadPoolExecutor.java:1091)
+       at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1152)
+       at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:641)
+       at java.lang.Thread.run(Thread.java:923)
+
+Firebase Background Thread #3:
+       at sun.misc.Unsafe.park(Unsafe.java)
+       at java.util.concurrent.locks.LockSupport.park(LockSupport.java:190)
+       at java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject.await(AbstractQueuedSynchronizer.java:2067)
+       at java.util.concurrent.LinkedBlockingQueue.take(LinkedBlockingQueue.java:442)
+       at java.util.concurrent.ThreadPoolExecutor.getTask(ThreadPoolExecutor.java:1092)
+       at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1152)
+       at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:641)
+       at com.google.firebase.concurrent.CustomThreadFactory.a(SourceFile:13)
+       at com.google.firebase.concurrent.a.run(SourceFile:1)
+       at java.lang.Thread.run(Thread.java:923)
+
+GoogleApiHandler:
+       at android.os.MessageQueue.nativePollOnce(MessageQueue.java)
+       at android.os.MessageQueue.next(MessageQueue.java:335)
+       at android.os.Looper.loop(Looper.java:206)
+       at android.os.HandlerThread.run(HandlerThread.java:67)
+
+GmsDynamite:
+       at java.lang.Object.wait(Object.java)
+       at java.lang.Object.wait(Object.java:442)
+       at java.lang.Object.wait(Object.java:568)
+       at T6.c.run(SourceFile:7)
+
+HybridData DestructorThread:
+       at java.lang.Object.wait(Object.java)
+       at java.lang.Object.wait(Object.java:442)
+       at java.lang.ref.ReferenceQueue.remove(ReferenceQueue.java:190)
+       at java.lang.ref.ReferenceQueue.remove(ReferenceQueue.java:211)
+       at com.facebook.jni.DestructorThread$1.run(SourceFile:5)
+
+FinalizerDaemon:
+       at java.lang.Object.wait(Object.java)
+       at java.lang.Object.wait(Object.java:442)
+       at java.lang.ref.ReferenceQueue.remove(ReferenceQueue.java:190)
+       at java.lang.ref.ReferenceQueue.remove(ReferenceQueue.java:211)
+       at java.lang.Daemons$FinalizerDaemon.runInternal(Daemons.java:273)
+       at java.lang.Daemons$Daemon.run(Daemons.java:139)
+       at java.lang.Thread.run(Thread.java:923)
+
+AdWorker(Schedule) #3:
+       at sun.misc.Unsafe.park(Unsafe.java)
+       at java.util.concurrent.locks.LockSupport.park(LockSupport.java:190)
+       at java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject.await(AbstractQueuedSynchronizer.java:2067)
+       at java.util.concurrent.ScheduledThreadPoolExecutor$DelayedWorkQueue.take(ScheduledThreadPoolExecutor.java:1127)
+       at java.util.concurrent.ScheduledThreadPoolExecutor$DelayedWorkQueue.take(ScheduledThreadPoolExecutor.java:849)
+       at java.util.concurrent.ThreadPoolExecutor.getTask(ThreadPoolExecutor.java:1092)
+       at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1152)
+       at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:641)
+       at java.lang.Thread.run(Thread.java:923)
+
+PlayBillingLibrary-1:
+       at sun.misc.Unsafe.park(Unsafe.java)
+       at java.util.concurrent.locks.LockSupport.park(LockSupport.java:190)
+       at java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject.await(AbstractQueuedSynchronizer.java:2067)
+       at java.util.concurrent.LinkedBlockingQueue.take(LinkedBlockingQueue.java:442)
+       at java.util.concurrent.ThreadPoolExecutor.getTask(ThreadPoolExecutor.java:1092)
+       at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1152)
+       at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:641)
+       at java.lang.Thread.run(Thread.java:923)
+
+pool-22-thread-1:
+       at sun.misc.Unsafe.park(Unsafe.java)
+       at java.util.concurrent.locks.LockSupport.park(LockSupport.java:190)
+       at java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject.await(AbstractQueuedSynchronizer.java:2067)
+       at java.util.concurrent.LinkedBlockingQueue.take(LinkedBlockingQueue.java:442)
+       at java.util.concurrent.ThreadPoolExecutor.getTask(ThreadPoolExecutor.java:1092)
+       at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1152)
+       at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:641)
+       at java.lang.Thread.run(Thread.java:923)
+
+AdWorker(Default) #125:
+       at sun.misc.Unsafe.park(Unsafe.java)
+       at java.util.concurrent.locks.LockSupport.parkNanos(LockSupport.java:230)
+       at java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject.awaitNanos(AbstractQueuedSynchronizer.java:2109)
+       at java.util.concurrent.LinkedBlockingQueue.poll(LinkedBlockingQueue.java:467)
+       at java.util.concurrent.ThreadPoolExecutor.getTask(ThreadPoolExecutor.java:1091)
+       at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1152)
+       at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:641)
+       at java.lang.Thread.run(Thread.java:923)
+
+AdWorker(Schedule) #1:
+       at sun.misc.Unsafe.park(Unsafe.java)
+       at java.util.concurrent.locks.LockSupport.parkNanos(LockSupport.java:230)
+       at java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject.awaitNanos(AbstractQueuedSynchronizer.java:2109)
+       at java.util.concurrent.ScheduledThreadPoolExecutor$DelayedWorkQueue.take(ScheduledThreadPoolExecutor.java:1132)
+       at java.util.concurrent.ScheduledThreadPoolExecutor$DelayedWorkQueue.take(ScheduledThreadPoolExecutor.java:849)
+       at java.util.concurrent.ThreadPoolExecutor.getTask(ThreadPoolExecutor.java:1092)
+       at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1152)
+       at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:641)
+       at java.lang.Thread.run(Thread.java:923)
+
+AdWorker(Default) #121:
+       at sun.misc.Unsafe.park(Unsafe.java)
+       at java.util.concurrent.locks.LockSupport.parkNanos(LockSupport.java:230)
+       at java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject.awaitNanos(AbstractQueuedSynchronizer.java:2109)
+       at java.util.concurrent.LinkedBlockingQueue.poll(LinkedBlockingQueue.java:467)
+       at java.util.concurrent.ThreadPoolExecutor.getTask(ThreadPoolExecutor.java:1091)
+       at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1152)
+       at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:641)
+       at java.lang.Thread.run(Thread.java:923)
+
+OkHttp ConnectionPool:
+       at java.lang.Object.wait(Object.java)
+       at com.android.okhttp.ConnectionPool$1.run(ConnectionPool.java:106)
+       at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1167)
+       at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:641)
+       at java.lang.Thread.run(Thread.java:923)
+
+Firebase-Messaging-Init:
+       at sun.misc.Unsafe.park(Unsafe.java)
+       at java.util.concurrent.locks.LockSupport.park(LockSupport.java:190)
+       at java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject.await(AbstractQueuedSynchronizer.java:2067)
+       at java.util.concurrent.ScheduledThreadPoolExecutor$DelayedWorkQueue.take(ScheduledThreadPoolExecutor.java:1120)
+       at java.util.concurrent.ScheduledThreadPoolExecutor$DelayedWorkQueue.take(ScheduledThreadPoolExecutor.java:849)
+       at java.util.concurrent.ThreadPoolExecutor.getTask(ThreadPoolExecutor.java:1092)
+       at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1152)
+       at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:641)
+       at Q6.b.run(SourceFile:7)
+       at java.lang.Thread.run(Thread.java:923)
+
+AudioPortEventHandler:
+       at android.os.MessageQueue.nativePollOnce(MessageQueue.java)
+       at android.os.MessageQueue.next(MessageQueue.java:335)
+       at android.os.Looper.loop(Looper.java:206)
+       at android.os.HandlerThread.run(HandlerThread.java:67)
+
+queued-work-looper:
+       at android.os.MessageQueue.nativePollOnce(MessageQueue.java)
+       at android.os.MessageQueue.next(MessageQueue.java:335)
+       at android.os.Looper.loop(Looper.java:206)
+       at android.os.HandlerThread.run(HandlerThread.java:67)
+
+Thread-14:
+       at sun.misc.Unsafe.park(Unsafe.java)
+       at java.util.concurrent.locks.LockSupport.park(LockSupport.java:190)
+       at java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject.await(AbstractQueuedSynchronizer.java:2067)
+       at java.util.concurrent.PriorityBlockingQueue.take(PriorityBlockingQueue.java:548)
+       at m84.bbx.a(:com.google.android.gms.policy_ads_fdr_dynamite@260480608@260480602017.868869642.868869642:3)
+       at m84.bbx.run(:com.google.android.gms.policy_ads_fdr_dynamite@260480608@260480602017.868869642.868869642:6)
+
+pool-13-thread-1:
+       at sun.misc.Unsafe.park(Unsafe.java)
+       at java.util.concurrent.locks.LockSupport.park(LockSupport.java:190)
+       at java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject.await(AbstractQueuedSynchronizer.java:2067)
+       at java.util.concurrent.LinkedBlockingQueue.take(LinkedBlockingQueue.java:442)
+       at java.util.concurrent.ThreadPoolExecutor.getTask(ThreadPoolExecutor.java:1092)
+       at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1152)
+       at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:641)
+       at java.lang.Thread.run(Thread.java:923)
+
+AdWorker(Default) #127:
+       at sun.misc.Unsafe.park(Unsafe.java)
+       at java.util.concurrent.locks.LockSupport.parkNanos(LockSupport.java:230)
+       at java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject.awaitNanos(AbstractQueuedSynchronizer.java:2109)
+       at java.util.concurrent.LinkedBlockingQueue.poll(LinkedBlockingQueue.java:467)
+       at java.util.concurrent.ThreadPoolExecutor.getTask(ThreadPoolExecutor.java:1091)
+       at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1152)
+       at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:641)
+       at java.lang.Thread.run(Thread.java:923)
+
+AdWorker(ClientSingle) #1:
+       at sun.misc.Unsafe.park(Unsafe.java)
+       at java.util.concurrent.locks.LockSupport.park(LockSupport.java:190)
+       at java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject.await(AbstractQueuedSynchronizer.java:2067)
+       at java.util.concurrent.LinkedBlockingQueue.take(LinkedBlockingQueue.java:442)
+       at java.util.concurrent.ThreadPoolExecutor.getTask(ThreadPoolExecutor.java:1092)
+       at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1152)
+       at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:641)
+       at java.lang.Thread.run(Thread.java:923)
+
+mqt_v_js:
+       at com.facebook.jni.NativeRunnable.run(SourceFile)
+       at android.os.Handler.handleCallback(Handler.java:938)
+       at android.os.Handler.dispatchMessage(Handler.java:99)
+       at com.facebook.react.bridge.queue.MessageQueueThreadHandler.dispatchMessage(SourceFile:6)
+       at android.os.Looper.loop(Looper.java:246)
+       at com.facebook.react.bridge.queue.MessageQueueThreadImpl$Companion.startNewBackgroundThread$lambda$1(SourceFile:38)
+       at com.facebook.react.bridge.queue.MessageQueueThreadImpl$Companion.a(SourceFile:1)
+       at com.facebook.react.bridge.queue.c.run(SourceFile:1)
+       at java.lang.Thread.run(Thread.java:923)
+
+ReferenceQueueDaemon:
+       at java.lang.Object.wait(Object.java)
+       at java.lang.Object.wait(Object.java:442)
+       at java.lang.Object.wait(Object.java:568)
+       at java.lang.Daemons$ReferenceQueueDaemon.runInternal(Daemons.java:217)
+       at java.lang.Daemons$Daemon.run(Daemons.java:139)
+       at java.lang.Thread.run(Thread.java:923)
+
+Thread-12:
+       at sun.misc.Unsafe.park(Unsafe.java)
+       at java.util.concurrent.locks.LockSupport.park(LockSupport.java:190)
+       at java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject.await(AbstractQueuedSynchronizer.java:2067)
+       at java.util.concurrent.PriorityBlockingQueue.take(PriorityBlockingQueue.java:548)
+       at m84.bbp.b(:com.google.android.gms.policy_ads_fdr_dynamite@260480608@260480602017.868869642.868869642:3)
+       at m84.bbp.run(:com.google.android.gms.policy_ads_fdr_dynamite@260480608@260480602017.868869642.868869642:11)
+
+Thread-13:
+       at sun.misc.Unsafe.park(Unsafe.java)
+       at java.util.concurrent.locks.LockSupport.park(LockSupport.java:190)
+       at java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject.await(AbstractQueuedSynchronizer.java:2067)
+       at java.util.concurrent.PriorityBlockingQueue.take(PriorityBlockingQueue.java:548)
+       at m84.bbx.a(:com.google.android.gms.policy_ads_fdr_dynamite@260480608@260480602017.868869642.868869642:3)
+       at m84.bbx.run(:com.google.android.gms.policy_ads_fdr_dynamite@260480608@260480602017.868869642.868869642:6)
+
+pool-18-thread-1:
+       at sun.misc.Unsafe.park(Unsafe.java)
+       at java.util.concurrent.locks.LockSupport.parkNanos(LockSupport.java:230)
+       at java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject.awaitNanos(AbstractQueuedSynchronizer.java:2109)
+       at java.util.concurrent.ScheduledThreadPoolExecutor$DelayedWorkQueue.take(ScheduledThreadPoolExecutor.java:1132)
+       at java.util.concurrent.ScheduledThreadPoolExecutor$DelayedWorkQueue.take(ScheduledThreadPoolExecutor.java:849)
+       at java.util.concurrent.ThreadPoolExecutor.getTask(ThreadPoolExecutor.java:1092)
+       at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1152)
+       at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:641)
+       at java.lang.Thread.run(Thread.java:923)
+
+DefaultDispatcher-worker-4:
+       at sun.misc.Unsafe.park(Unsafe.java)
+       at java.util.concurrent.locks.LockSupport.parkNanos(LockSupport.java:353)
+       at jd.a$c.k(SourceFile:24)
+       at jd.a$c.q(SourceFile:60)
+       at jd.a$c.m(SourceFile:61)
+       at jd.a$c.run(SourceFile:1)
+
+Firebase Blocking Thread #4:
+       at sun.misc.Unsafe.park(Unsafe.java)
+       at java.util.concurrent.locks.LockSupport.parkNanos(LockSupport.java:230)
+       at java.util.concurrent.SynchronousQueue$TransferStack.awaitFulfill(SynchronousQueue.java:461)
+       at java.util.concurrent.SynchronousQueue$TransferStack.transfer(SynchronousQueue.java:362)
+       at java.util.concurrent.SynchronousQueue.poll(SynchronousQueue.java:937)
+       at java.util.concurrent.ThreadPoolExecutor.getTask(ThreadPoolExecutor.java:1091)
+       at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1152)
+       at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:641)
+       at com.google.firebase.concurrent.CustomThreadFactory.a(SourceFile:13)
+       at com.google.firebase.concurrent.a.run(SourceFile:1)
+       at java.lang.Thread.run(Thread.java:923)
+
+pool-16-thread-3:
+       at sun.misc.Unsafe.park(Unsafe.java)
+       at java.util.concurrent.locks.LockSupport.parkNanos(LockSupport.java:230)
+       at java.util.concurrent.SynchronousQueue$TransferStack.awaitFulfill(SynchronousQueue.java:461)
+       at java.util.concurrent.SynchronousQueue$TransferStack.transfer(SynchronousQueue.java:362)
+       at java.util.concurrent.SynchronousQueue.poll(SynchronousQueue.java:937)
+       at java.util.concurrent.ThreadPoolExecutor.getTask(ThreadPoolExecutor.java:1091)
+       at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1152)
+       at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:641)
+       at java.lang.Thread.run(Thread.java:923)
+
+AdWorker(Default) #124:
+       at sun.misc.Unsafe.park(Unsafe.java)
+       at java.util.concurrent.locks.LockSupport.parkNanos(LockSupport.java:230)
+       at java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject.awaitNanos(AbstractQueuedSynchronizer.java:2109)
+       at java.util.concurrent.LinkedBlockingQueue.poll(LinkedBlockingQueue.java:467)
+       at java.util.concurrent.ThreadPoolExecutor.getTask(ThreadPoolExecutor.java:1091)
+       at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1152)
+       at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:641)
+       at java.lang.Thread.run(Thread.java:923)
+
+AdWorker(Default) #116:
+       at sun.misc.Unsafe.park(Unsafe.java)
+       at java.util.concurrent.locks.LockSupport.parkNanos(LockSupport.java:230)
+       at java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject.awaitNanos(AbstractQueuedSynchronizer.java:2109)
+       at java.util.concurrent.LinkedBlockingQueue.poll(LinkedBlockingQueue.java:467)
+       at java.util.concurrent.ThreadPoolExecutor.getTask(ThreadPoolExecutor.java:1091)
+       at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1152)
+       at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:641)
+       at java.lang.Thread.run(Thread.java:923)
+
+Firebase Background Thread #0:
+       at sun.misc.Unsafe.park(Unsafe.java)
+       at java.util.concurrent.locks.LockSupport.park(LockSupport.java:190)
+       at java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject.await(AbstractQueuedSynchronizer.java:2067)
+       at java.util.concurrent.LinkedBlockingQueue.take(LinkedBlockingQueue.java:442)
+       at java.util.concurrent.ThreadPoolExecutor.getTask(ThreadPoolExecutor.java:1092)
+       at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1152)
+       at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:641)
+       at com.google.firebase.concurrent.CustomThreadFactory.a(SourceFile:13)
+       at com.google.firebase.concurrent.a.run(SourceFile:1)
+       at java.lang.Thread.run(Thread.java:923)
+
+AdWorker(Schedule) #2:
+       at sun.misc.Unsafe.park(Unsafe.java)
+       at java.util.concurrent.locks.LockSupport.park(LockSupport.java:190)
+       at java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject.await(AbstractQueuedSynchronizer.java:2067)
+       at java.util.concurrent.ScheduledThreadPoolExecutor$DelayedWorkQueue.take(ScheduledThreadPoolExecutor.java:1127)
+       at java.util.concurrent.ScheduledThreadPoolExecutor$DelayedWorkQueue.take(ScheduledThreadPoolExecutor.java:849)
+       at java.util.concurrent.ThreadPoolExecutor.getTask(ThreadPoolExecutor.java:1092)
+       at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1152)
+       at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:641)
+       at java.lang.Thread.run(Thread.java:923)
+
+AdWorker(Default) #128:
+       at sun.misc.Unsafe.park(Unsafe.java)
+       at java.util.concurrent.locks.LockSupport.parkNanos(LockSupport.java:230)
+       at java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject.awaitNanos(AbstractQueuedSynchronizer.java:2109)
+       at java.util.concurrent.LinkedBlockingQueue.poll(LinkedBlockingQueue.java:467)
+       at java.util.concurrent.ThreadPoolExecutor.getTask(ThreadPoolExecutor.java:1091)
+       at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1152)
+       at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:641)
+       at java.lang.Thread.run(Thread.java:923)
+
+mqt_v_native:
+       at android.os.MessageQueue.nativePollOnce(MessageQueue.java)
+       at android.os.MessageQueue.next(MessageQueue.java:335)
+       at android.os.Looper.loop(Looper.java:206)
+       at com.facebook.react.bridge.queue.MessageQueueThreadImpl$Companion.startNewBackgroundThread$lambda$1(SourceFile:38)
+       at com.facebook.react.bridge.queue.MessageQueueThreadImpl$Companion.a(SourceFile:1)
+       at com.facebook.react.bridge.queue.c.run(SourceFile:1)
+       at java.lang.Thread.run(Thread.java:923)
+
+AdWorker(Default) #115:
+       at sun.misc.Unsafe.park(Unsafe.java)
+       at java.util.concurrent.locks.LockSupport.parkNanos(LockSupport.java:230)
+       at java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject.awaitNanos(AbstractQueuedSynchronizer.java:2109)
+       at java.util.concurrent.LinkedBlockingQueue.poll(LinkedBlockingQueue.java:467)
+       at java.util.concurrent.ThreadPoolExecutor.getTask(ThreadPoolExecutor.java:1091)
+       at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1152)
+       at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:641)
+       at java.lang.Thread.run(Thread.java:923)
+
+AdWorker(ClientDefault) #1:
+       at sun.misc.Unsafe.park(Unsafe.java)
+       at java.util.concurrent.locks.LockSupport.park(LockSupport.java:190)
+       at java.util.concurrent.SynchronousQueue$TransferStack.awaitFulfill(SynchronousQueue.java:459)
+       at java.util.concurrent.SynchronousQueue$TransferStack.transfer(SynchronousQueue.java:362)
+       at java.util.concurrent.SynchronousQueue.take(SynchronousQueue.java:920)
+       at java.util.concurrent.ThreadPoolExecutor.getTask(ThreadPoolExecutor.java:1092)
+       at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1152)
+       at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:641)
+       at java.lang.Thread.run(Thread.java:923)
+
+pool-9-thread-1:
+       at sun.misc.Unsafe.park(Unsafe.java)
+       at java.util.concurrent.locks.LockSupport.park(LockSupport.java:190)
+       at java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject.await(AbstractQueuedSynchronizer.java:2067)
+       at java.util.concurrent.LinkedBlockingQueue.take(LinkedBlockingQueue.java:442)
+       at java.util.concurrent.ThreadPoolExecutor.getTask(ThreadPoolExecutor.java:1092)
+       at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1152)
+       at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:641)
+       at java.lang.Thread.run(Thread.java:923)
+
+InsetsAnimations:
+       at android.os.MessageQueue.nativePollOnce(MessageQueue.java)
+       at android.os.MessageQueue.next(MessageQueue.java:335)
+       at android.os.Looper.loop(Looper.java:206)
+       at android.os.HandlerThread.run(HandlerThread.java:67)
+
+pool-20-thread-1:
+       at sun.misc.Unsafe.park(Unsafe.java)
+       at java.util.concurrent.locks.LockSupport.park(LockSupport.java:190)
+       at java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject.await(AbstractQueuedSynchronizer.java:2067)
+       at java.util.concurrent.LinkedBlockingQueue.take(LinkedBlockingQueue.java:442)
+       at java.util.concurrent.ThreadPoolExecutor.getTask(ThreadPoolExecutor.java:1092)
+       at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1152)
+       at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:641)
+       at java.lang.Thread.run(Thread.java:923)
+
+FileObserver:
+       at android.os.FileObserver$ObserverThread.observe(FileObserver.java)
+       at android.os.FileObserver$ObserverThread.run(FileObserver.java:113)
+
+DefaultDispatcher-worker-3:
+       at sun.misc.Unsafe.park(Unsafe.java)
+       at java.util.concurrent.locks.LockSupport.parkNanos(LockSupport.java:353)
+       at jd.a$c.k(SourceFile:24)
+       at jd.a$c.q(SourceFile:60)
+       at jd.a$c.m(SourceFile:61)
+       at jd.a$c.run(SourceFile:1)
+
+Firebase Background Thread #2:
+       at sun.misc.Unsafe.park(Unsafe.java)
+       at java.util.concurrent.locks.LockSupport.park(LockSupport.java:190)
+       at java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject.await(AbstractQueuedSynchronizer.java:2067)
+       at java.util.concurrent.LinkedBlockingQueue.take(LinkedBlockingQueue.java:442)
+       at java.util.concurrent.ThreadPoolExecutor.getTask(ThreadPoolExecutor.java:1092)
+       at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1152)
+       at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:641)
+       at com.google.firebase.concurrent.CustomThreadFactory.a(SourceFile:13)
+       at com.google.firebase.concurrent.a.run(SourceFile:1)
+       at java.lang.Thread.run(Thread.java:923)
+
+AdWorker(ClientSingle) #1:
+       at sun.misc.Unsafe.park(Unsafe.java)
+       at java.util.concurrent.locks.LockSupport.park(LockSupport.java:190)
+       at java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject.await(AbstractQueuedSynchronizer.java:2067)
+       at java.util.concurrent.LinkedBlockingQueue.take(LinkedBlockingQueue.java:442)
+       at java.util.concurrent.ThreadPoolExecutor.getTask(ThreadPoolExecutor.java:1092)
+       at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1152)
+       at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:641)
+       at java.lang.Thread.run(Thread.java:923)
+
+AdWorker(Default) #117:
+       at sun.misc.Unsafe.park(Unsafe.java)
+       at java.util.concurrent.locks.LockSupport.parkNanos(LockSupport.java:230)
+       at java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject.awaitNanos(AbstractQueuedSynchronizer.java:2109)
+       at java.util.concurrent.LinkedBlockingQueue.poll(LinkedBlockingQueue.java:467)
+       at java.util.concurrent.ThreadPoolExecutor.getTask(ThreadPoolExecutor.java:1091)
+       at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1152)
+       at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:641)
+       at java.lang.Thread.run(Thread.java:923)
+
+DefaultDispatcher-worker-1:
+       at sun.misc.Unsafe.park(Unsafe.java)
+       at java.util.concurrent.locks.LockSupport.parkNanos(LockSupport.java:353)
+       at jd.a$c.k(SourceFile:24)
+       at jd.a$c.q(SourceFile:60)
+       at jd.a$c.m(SourceFile:61)
+       at jd.a$c.run(SourceFile:1)
+
+ConnectivityThread:
+       at android.os.MessageQueue.nativePollOnce(MessageQueue.java)
+       at android.os.MessageQueue.next(MessageQueue.java:335)
+       at android.os.Looper.loop(Looper.java:206)
+       at android.os.HandlerThread.run(HandlerThread.java:67)
+
+LooperProvider:
+       at android.os.MessageQueue.nativePollOnce(MessageQueue.java)
+       at android.os.MessageQueue.next(MessageQueue.java:335)
+       at android.os.Looper.loop(Looper.java:206)
+       at android.os.HandlerThread.run(HandlerThread.java:67)
+
+Expo JNI deallocator:
+       at java.lang.Object.wait(Object.java)
+       at java.lang.Object.wait(Object.java:442)
+       at java.lang.ref.ReferenceQueue.remove(ReferenceQueue.java:190)
+       at java.lang.ref.ReferenceQueue.remove(ReferenceQueue.java:211)
+       at expo.modules.kotlin.jni.JNIDeallocator.h(SourceFile:9)
+       at expo.modules.kotlin.jni.JNIDeallocator.e(SourceFile:1)
+       at expo.modules.kotlin.jni.JNIDeallocator$a.run(SourceFile:3)
+
+AdWorker(Default) #123:
+       at sun.misc.Unsafe.park(Unsafe.java)
+       at java.util.concurrent.locks.LockSupport.parkNanos(LockSupport.java:230)
+       at java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject.awaitNanos(AbstractQueuedSynchronizer.java:2109)
+       at java.util.concurrent.LinkedBlockingQueue.poll(LinkedBlockingQueue.java:467)
+       at java.util.concurrent.ThreadPoolExecutor.getTask(ThreadPoolExecutor.java:1091)
+       at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1152)
+       at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:641)
+       at java.lang.Thread.run(Thread.java:923)
+
+PlayBillingLibrary-5:
+       at sun.misc.Unsafe.park(Unsafe.java)
+       at java.util.concurrent.locks.LockSupport.park(LockSupport.java:190)
+       at java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject.await(AbstractQueuedSynchronizer.java:2067)
+       at java.util.concurrent.LinkedBlockingQueue.take(LinkedBlockingQueue.java:442)
+       at java.util.concurrent.ThreadPoolExecutor.getTask(ThreadPoolExecutor.java:1092)
+       at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1152)
+       at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:641)
+       at java.lang.Thread.run(Thread.java:923)
+
+GoogleApiHandler:
+       at android.os.MessageQueue.nativePollOnce(MessageQueue.java)
+       at android.os.MessageQueue.next(MessageQueue.java:335)
+       at android.os.Looper.loop(Looper.java:206)
+       at android.os.HandlerThread.run(HandlerThread.java:67)
+
+Thread-15:
+       at sun.misc.Unsafe.park(Unsafe.java)
+       at java.util.concurrent.locks.LockSupport.park(LockSupport.java:190)
+       at java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject.await(AbstractQueuedSynchronizer.java:2067)
+       at java.util.concurrent.PriorityBlockingQueue.take(PriorityBlockingQueue.java:548)
+       at m84.bbx.a(:com.google.android.gms.policy_ads_fdr_dynamite@260480608@260480602017.868869642.868869642:3)
+       at m84.bbx.run(:com.google.android.gms.policy_ads_fdr_dynamite@260480608@260480602017.868869642.868869642:6)
+
+PlayBillingLibrary-4:
+       at sun.misc.Unsafe.park(Unsafe.java)
+       at java.util.concurrent.locks.LockSupport.park(LockSupport.java:190)
+       at java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject.await(AbstractQueuedSynchronizer.java:2067)
+       at java.util.concurrent.LinkedBlockingQueue.take(LinkedBlockingQueue.java:442)
+       at java.util.concurrent.ThreadPoolExecutor.getTask(ThreadPoolExecutor.java:1092)
+       at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1152)
+       at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:641)
+       at java.lang.Thread.run(Thread.java:923)
+
+AdWorker(Default) #126:
+       at sun.misc.Unsafe.park(Unsafe.java)
+       at java.util.concurrent.locks.LockSupport.parkNanos(LockSupport.java:230)
+       at java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject.awaitNanos(AbstractQueuedSynchronizer.java:2109)
+       at java.util.concurrent.LinkedBlockingQueue.poll(LinkedBlockingQueue.java:467)
+       at java.util.concurrent.ThreadPoolExecutor.getTask(ThreadPoolExecutor.java:1091)
+       at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1152)
+       at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:641)
+       at java.lang.Thread.run(Thread.java:923)
+
+AdWorker(Default) #131:
+       at sun.misc.Unsafe.park(Unsafe.java)
+       at java.util.concurrent.locks.LockSupport.parkNanos(LockSupport.java:230)
+       at java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject.awaitNanos(AbstractQueuedSynchronizer.java:2109)
+       at java.util.concurrent.LinkedBlockingQueue.poll(LinkedBlockingQueue.java:467)
+       at java.util.concurrent.ThreadPoolExecutor.getTask(ThreadPoolExecutor.java:1091)
+       at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1152)
+       at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:641)
+       at java.lang.Thread.run(Thread.java:923)
+
+Okio Watchdog:
+       at java.lang.Object.wait(Object.java)
+       at com.android.okhttp.okio.AsyncTimeout.awaitTimeout(AsyncTimeout.java:325)
+       at com.android.okhttp.okio.AsyncTimeout.access$000(AsyncTimeout.java:42)
+       at com.android.okhttp.okio.AsyncTimeout$Watchdog.run(AsyncTimeout.java:288)
+
+AsyncTask #2:
+       at sun.misc.Unsafe.park(Unsafe.java)
+       at java.util.concurrent.locks.LockSupport.park(LockSupport.java:190)
+       at java.util.concurrent.SynchronousQueue$TransferStack.awaitFulfill(SynchronousQueue.java:459)
+       at java.util.concurrent.SynchronousQueue$TransferStack.transfer(SynchronousQueue.java:362)
+       at java.util.concurrent.SynchronousQueue.take(SynchronousQueue.java:920)
+       at java.util.concurrent.ThreadPoolExecutor.getTask(ThreadPoolExecutor.java:1092)
+       at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1152)
+       at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:641)
+       at java.lang.Thread.run(Thread.java:923)
+
+JavaBridge:
+       at android.os.MessageQueue.nativePollOnce(MessageQueue.java)
+       at android.os.MessageQueue.next(MessageQueue.java:335)
+       at android.os.Looper.loop(Looper.java:206)
+       at android.os.HandlerThread.run(HandlerThread.java:67)
+
+CleanupReference:
+       at java.lang.Object.wait(Object.java)
+       at java.lang.Object.wait(Object.java:442)
+       at java.lang.ref.ReferenceQueue.remove(ReferenceQueue.java:190)
+       at java.lang.ref.ReferenceQueue.remove(ReferenceQueue.java:211)
+       at WV.ux.run(chromium-SystemWebViewGoogle.aab-stable-777821501:3)
+
+AdWorker(Default) #129:
+       at sun.misc.Unsafe.park(Unsafe.java)
+       at java.util.concurrent.locks.LockSupport.parkNanos(LockSupport.java:230)
+       at java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject.awaitNanos(AbstractQueuedSynchronizer.java:2109)
+       at java.util.concurrent.LinkedBlockingQueue.poll(LinkedBlockingQueue.java:467)
+       at java.util.concurrent.ThreadPoolExecutor.getTask(ThreadPoolExecutor.java:1091)
+       at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1152)
+       at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:641)
+       at java.lang.Thread.run(Thread.java:923)
+
+expo.modules.AsyncFunctionQueue:
+       at android.os.MessageQueue.nativePollOnce(MessageQueue.java)
+       at android.os.MessageQueue.next(MessageQueue.java:335)
+       at android.os.Looper.loop(Looper.java:206)
+       at android.os.HandlerThread.run(HandlerThread.java:67)
+
+Firebase-Messaging-Topics-Io:
+       at sun.misc.Unsafe.park(Unsafe.java)
+       at java.util.concurrent.locks.LockSupport.park(LockSupport.java:190)
+       at java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject.await(AbstractQueuedSynchronizer.java:2067)
+       at java.util.concurrent.ScheduledThreadPoolExecutor$DelayedWorkQueue.take(ScheduledThreadPoolExecutor.java:1120)
+       at java.util.concurrent.ScheduledThreadPoolExecutor$DelayedWorkQueue.take(ScheduledThreadPoolExecutor.java:849)
+       at java.util.concurrent.ThreadPoolExecutor.getTask(ThreadPoolExecutor.java:1092)
+       at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1152)
+       at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:641)
+       at Q6.b.run(SourceFile:7)
+       at java.lang.Thread.run(Thread.java:923)
+
+AdWorker(NG) #1:
+       at sun.misc.Unsafe.park(Unsafe.java)
+       at java.util.concurrent.locks.LockSupport.parkNanos(LockSupport.java:230)
+       at java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject.awaitNanos(AbstractQueuedSynchronizer.java:2109)
+       at java.util.concurrent.ScheduledThreadPoolExecutor$DelayedWorkQueue.take(ScheduledThreadPoolExecutor.java:1132)
+       at java.util.concurrent.ScheduledThreadPoolExecutor$DelayedWorkQueue.take(ScheduledThreadPoolExecutor.java:849)
+       at java.util.concurrent.ThreadPoolExecutor.getTask(ThreadPoolExecutor.java:1092)
+       at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1152)
+       at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:641)
+       at java.lang.Thread.run(Thread.java:923)
+
+Firebase Blocking Thread #5:
+       at sun.misc.Unsafe.park(Unsafe.java)
+       at java.util.concurrent.locks.LockSupport.parkNanos(LockSupport.java:230)
+       at java.util.concurrent.SynchronousQueue$TransferStack.awaitFulfill(SynchronousQueue.java:461)
+       at java.util.concurrent.SynchronousQueue$TransferStack.transfer(SynchronousQueue.java:362)
+       at java.util.concurrent.SynchronousQueue.poll(SynchronousQueue.java:937)
+       at java.util.concurrent.ThreadPoolExecutor.getTask(ThreadPoolExecutor.java:1091)
+       at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1152)
+       at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:641)
+       at com.google.firebase.concurrent.CustomThreadFactory.a(SourceFile:13)
+       at com.google.firebase.concurrent.a.run(SourceFile:1)
+       at java.lang.Thread.run(Thread.java:923)
+
+AdWorker(Activeview) #3:
+       at sun.misc.Unsafe.park(Unsafe.java)
+       at java.util.concurrent.locks.LockSupport.parkNanos(LockSupport.java:230)
+       at java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject.awaitNanos(AbstractQueuedSynchronizer.java:2109)
+       at java.util.concurrent.LinkedBlockingQueue.poll(LinkedBlockingQueue.java:467)
+       at java.util.concurrent.ThreadPoolExecutor.getTask(ThreadPoolExecutor.java:1091)
+       at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1152)
+       at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:641)
+       at java.lang.Thread.run(Thread.java:923)
+
+pool-11-thread-1:
+       at sun.misc.Unsafe.park(Unsafe.java)
+       at java.util.concurrent.locks.LockSupport.park(LockSupport.java:190)
+       at java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject.await(AbstractQueuedSynchronizer.java:2067)
+       at java.util.concurrent.LinkedBlockingQueue.take(LinkedBlockingQueue.java:442)
+       at java.util.concurrent.ThreadPoolExecutor.getTask(ThreadPoolExecutor.java:1092)
+       at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1152)
+       at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:641)
+       at java.lang.Thread.run(Thread.java:923)
