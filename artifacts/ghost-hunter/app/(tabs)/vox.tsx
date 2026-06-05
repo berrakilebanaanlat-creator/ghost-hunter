@@ -359,34 +359,6 @@ export default function VoxScreen() {
     : "#9B4FDE";
   const micLevelColor = micState.voiceDetected ? "#FF4444" : isMicEnabled ? "#00FF88" : "#2A2A40";
 
-  // Seviye çubuğu bileşeni
-  const LevelBar = ({ label, value, color, onDecrease, onIncrease }: {
-    label: string; value: number; color: string;
-    onDecrease: () => void; onIncrease: () => void;
-  }) => (
-    <View style={styles.levelBarRow}>
-      <Text style={styles.levelLabel}>{label}</Text>
-      <View style={styles.levelControls}>
-        <Pressable
-          onPress={onDecrease}
-          style={({ pressed }) => [styles.levelBtn, pressed && { opacity: 0.6 }]}
-        >
-          <Text style={styles.levelBtnText}>−</Text>
-        </Pressable>
-        <View style={styles.levelTrack}>
-          <View style={[styles.levelFill, { width: `${value * 100}%`, backgroundColor: color }]} />
-        </View>
-        <Pressable
-          onPress={onIncrease}
-          style={({ pressed }) => [styles.levelBtn, pressed && { opacity: 0.6 }]}
-        >
-          <Text style={styles.levelBtnText}>+</Text>
-        </Pressable>
-        <Text style={[styles.levelValue, { color }]}>{Math.round(value * 100)}%</Text>
-      </View>
-    </View>
-  );
-
   return (
     <ScreenContainer containerClassName="bg-[#060609]">
       <View style={styles.container}>
@@ -1236,3 +1208,32 @@ const styles = StyleSheet.create({
     letterSpacing: 0.5,
   },
 });
+
+function LevelBar({ label, value, color, onDecrease, onIncrease }: {
+  label: string; value: number; color: string;
+  onDecrease: () => void; onIncrease: () => void;
+}) {
+  return (
+    <View style={styles.levelBarRow}>
+      <Text style={styles.levelLabel}>{label}</Text>
+      <View style={styles.levelControls}>
+        <Pressable
+          onPress={onDecrease}
+          style={({ pressed }) => [styles.levelBtn, pressed && { opacity: 0.6 }]}
+        >
+          <Text style={styles.levelBtnText}>−</Text>
+        </Pressable>
+        <View style={styles.levelTrack}>
+          <View style={[styles.levelFill, { width: `${value * 100}%`, backgroundColor: color }]} />
+        </View>
+        <Pressable
+          onPress={onIncrease}
+          style={({ pressed }) => [styles.levelBtn, pressed && { opacity: 0.6 }]}
+        >
+          <Text style={styles.levelBtnText}>+</Text>
+        </Pressable>
+        <Text style={[styles.levelValue, { color }]}>{Math.round(value * 100)}%</Text>
+      </View>
+    </View>
+  );
+}

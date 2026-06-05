@@ -566,6 +566,9 @@ class ITCVoiceEngine {
     sensitivity: 0.5,
   };
 
+  // Türkçe TTS başarısızlık bayrağı (ses yok sorunu için fallback)
+  private turkishTTSFailed: boolean = false;
+
   // Mikrofon
   private microphoneEnabled: boolean = false;
   private micAnalyserNode: AnalyserNode | null = null;
@@ -1010,25 +1013,38 @@ class ITCVoiceEngine {
   private speakOnNative(word: string, pitch: number, rate: number, volume: number): void {
     try { Speech.stop(); } catch { /* */ }
 
-    try {
-      const opts: Speech.SpeechOptions = {
-        language: "tr-TR",
-        pitch: Math.max(0.1, Math.min(2.0, pitch)),
-        rate: Math.max(0.1, Math.min(2.0, rate)),
-        volume: Math.max(0.0, Math.min(1.0, volume)),
-        onDone: () => { this.isSpeaking = false; },
-        onError: (err) => {
-          console.warn("[ITC] Speech.speak onError:", err);
-          this.isSpeaking = false;
-        },
-        onStopped: () => { this.isSpeaking = false; },
-      };
-      if (this.nativeTurkishVoiceId) opts.voice = this.nativeTurkishVoiceId;
-      Speech.speak(word, opts);
-    } catch (e) {
-      console.warn("[ITC] speakOnNative hatası:", e);
-      this.isSpeaking = false;
-    }
+    const trySpeak = (useTurkish: boolean) => {
+      try {
+        const opts: Speech.SpeechOptions = {
+          pitch: Math.max(0.1, Math.min(2.0, pitch)),
+          rate: Math.max(0.1, Math.min(2.0, rate)),
+          volume: Math.max(0.0, Math.min(1.0, volume)),
+          onDone: () => { this.isSpeaking = false; },
+          onError: (err) => {
+            console.warn("[ITC] Speech.speak onError:", err);
+            if (useTurkish) {
+              // Türkçe TTS bu cihazda çalışmıyor — dil kısıtı olmadan tekrar dene
+              this.turkishTTSFailed = true;
+              trySpeak(false);
+            } else {
+              this.isSpeaking = false;
+            }
+          },
+          onStopped: () => { this.isSpeaking = false; },
+        };
+        if (useTurkish) {
+          opts.language = "tr-TR";
+          if (this.nativeTurkishVoiceId) opts.voice = this.nativeTurkishVoiceId;
+        }
+        Speech.speak(word, opts);
+      } catch (e) {
+        console.warn("[ITC] speakOnNative hatası:", e);
+        this.isSpeaking = false;
+      }
+    };
+
+    // Türkçe TTS daha önce başarısız olduysa direkt varsayılan sesle devam et
+    trySpeak(!this.turkishTTSFailed);
   }
 
   // ============================================================
