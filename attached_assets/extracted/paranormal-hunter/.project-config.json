@@ -1,0 +1,50 @@
+{
+  "build_command": "pnpm run build",
+  "capabilities": [
+    "db",
+    "server",
+    "user"
+  ],
+  "dev_command": "pnpm run dev",
+  "env_vars": {
+    "DATABASE_URL": "mysql://3SJYp2Kyaq8BRrQ.root:X3QQ981g8VQ4MflYXCtF@gateway04.us-east-1.prod.aws.tidbcloud.com:4000/7vzrHb6AQT7gzoHG8Mz2RC?ssl={\"rejectUnauthorized\":true}"
+  },
+  "experiments": [
+    "no_db_push"
+  ],
+  "git_remote": {
+    "repo_url": "s3://vida-prod-gitrepo/webdev-git/310519663453478067/7vzrHb6AQT7gzoHG8Mz2RC",
+    "access_key_id": "ASIAZV3A2ECZJWONA7TI",
+    "secret_access_key": "8qcZIR8ZxFCCcEjPhifKnv3I8BicmBYuPpH3Oofr",
+    "session_token": "IQoJb3JpZ2luX2VjEK///////////wEaCXVzLWVhc3QtMSJHMEUCIGA3B2aMjP/vntF8wkGXPvOXley5tKU8atncIxLNLtxeAiEAmcduVdS7MWWz4tWpWX9lrPsVCDcB4S+4ujqjfWt7f9Eq9gMIdxAEGgw2NjUzODYwOTg4NjYiDJ/+OzYv+0zVS88+PirTA4Nz4tmf8zBQm4fB/e/kgN+LsZ235XorEQLQdAQQSWWMrrf9ZVwWrsNgcvVaGRXnxFQDLPoJ0rx8rPsq7WBzvg2oNfX7AtUxmjUj1VtfFnx+21bbhi7PyYHAK/F1e3DNvXDF1ZmS1xgu0nzcf+/xt08zgTug0bMyHm5g9jM/yq0Rxr73HtLKqXEEWtyj175CcGey0suvjp5tkE4GXQHtYGBeP4XX8DmXMdoaWsIoP89IYRD1X3fuhVdNABSiD3QDv1vdozMjMen+SWPgR76OzO8YreUWU/SdhArjzIfDjcrZjyYTX6Uc1kGR1bW4roNJTtZ1z46VAaLbGbgbvwV6QPcvYNEmIA0QTx/vlPjNF50MD6cuTZHhuuSTHgG/oFOogzb2E7+bo8Qmz8bD8D0GQjAJFy1IEJisazAuv84PIk3Vd67ieOepil0Sak05jRk1GATCTazpTLELSqvvKLrYHM1IsvRnQHjxXo0JyIBsqxqU5elb+/OKTTZCSiEgFWq5A/YGTBfwdX+gJ9G9j5z9ythM9Swzac/x9Op8OIwlVAj9DyWwZcwGUSUgzeYuSB7Y5lvtn1kXAM2asLK1vhTHwxuY3f1RXHzIGqHD3wBPIixqjj6SMJnVnNAGOp0Bjc/fkDwnGt0PT6KL6U2YMBhE8/dE/Jk6Hl5AMv+A/GC1CqEYBZMyNaxJ0orEy+XJWKusosMD57H8TMWVR4oTVvLF+kK1lf+CIDju8xITX0VXANfWJ58giJUwCB7i5Vbe+eM62jZOqNIhZyHxpTn1ZZ2KDOmiLzgUpki4cFwww7ygU0V+F8Z0+B46B/DegeSyUY4cT3wO2n12R/Acqg==",
+    "expiration": "2026-05-16T02:15:53.000Z"
+  },
+  "name": "paranormal-hunter",
+  "path": "/home/ubuntu/paranormal-hunter",
+  "port": 3000,
+  "secrets": {
+    "BUILT_IN_FORGE_API_KEY": "iJPJzfnK7hAEfDGeaB5U4Q",
+    "BUILT_IN_FORGE_API_URL": "https://forge.manus.ai",
+    "EXPO_APP_QR_URL": "exps://8081-ik3giho4ec3hqfl5um1tc-30efc531.sg1.manus.computer",
+    "EXPO_PACKAGER_PROXY_URL": "https://8081-ik3giho4ec3hqfl5um1tc-30efc531.sg1.manus.computer",
+    "EXPO_PUBLIC_ADMOB_APP_ID": "ca-app-pub-2683215724092307~4306569029",
+    "EXPO_PUBLIC_ADMOB_BANNER_AD_UNIT_ID": "ca-app-pub-2683215724092307/6082685121",
+    "EXPO_PUBLIC_ADMOB_INTERSTITIAL_AD_UNIT_ID": "ca-app-pub-2683215724092307/3123014711",
+    "EXPO_PUBLIC_API_BASE_URL": "https://3000-ik3giho4ec3hqfl5um1tc-30efc531.sg1.manus.computer",
+    "JWT_SECRET": "G2wr6AfPKN4AMAmSei929f",
+    "OAUTH_SERVER_URL": "https://api.manus.im",
+    "OWNER_NAME": "Bana Anlat",
+    "OWNER_OPEN_ID": "BJJvFDf6yzGJFTK58gNewN",
+    "REACT_NATIVE_PACKAGER_HOSTNAME": "8081-ik3giho4ec3hqfl5um1tc-30efc531.sg1.manus.computer",
+    "VITE_ANALYTICS_ENDPOINT": "https://manus-analytics.com",
+    "VITE_ANALYTICS_WEBSITE_ID": "5783a127-f945-4a42-8fe5-28fb5474fd1c",
+    "VITE_APP_ID": "7vzrHb6AQT7gzoHG8Mz2RC",
+    "VITE_APP_LOGO": "https://d2xsxph8kpxj0f.cloudfront.net/310519663453478067/7vzrHb6AQT7gzoHG8Mz2RC/antik-ghost-icon-iMvFdU7qJNqeyK5358tc8J.png",
+    "VITE_APP_TITLE": "Antik Ghost App",
+    "VITE_FRONTEND_FORGE_API_KEY": "fqV4bhJbsPPtXiTM4Ue2pE",
+    "VITE_FRONTEND_FORGE_API_URL": "https://forge.manus.ai",
+    "VITE_OAUTH_PORTAL_URL": "https://manus.im"
+  },
+  "template_id": "app",
+  "test_command": "pnpm test"
+}
