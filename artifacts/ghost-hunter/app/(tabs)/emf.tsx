@@ -40,8 +40,8 @@ export default function EMFScreen() {
     if (emfAccRef.current >= 400) {
       emfAccRef.current -= 400;
 
-      const baseNoise = Math.random() * 15;
-      const spike = Math.random() > 0.92 ? Math.random() * 60 + 30 : 0;
+      const baseNoise = Math.random() * 8;
+      const spike = Math.random() > 0.982 ? Math.random() * 45 + 20 : 0;
       const drift = Math.sin(Date.now() / 3000) * 8;
       const newLevel = Math.max(0, Math.min(100, baseNoise + spike + drift));
 

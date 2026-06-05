@@ -290,10 +290,10 @@ export class SLSSkeletonEngine {
   private scheduleNextSpawn() {
     if (!this.isActive) return;
 
-    // Manyetik alan yüksekse daha sık figür oluştur
-    const magneticBoost = this.magneticField > 50 ? 0.5 : 1;
-    const sensitivityFactor = 1 - this.sensitivity * 0.6;
-    const baseDelay = 8000 + Math.random() * 20000; // 8-28 saniye
+    // Manyetik alan yüksekse hafifçe daha sık figür oluştur
+    const magneticBoost = this.magneticField > 50 ? 0.75 : 1;
+    const sensitivityFactor = 1 - this.sensitivity * 0.35;
+    const baseDelay = 35000 + Math.random() * 55000; // 35-90 saniye
     const delay = baseDelay * magneticBoost * sensitivityFactor;
 
     this.spawnInterval = setTimeout(() => {
@@ -306,7 +306,7 @@ export class SLSSkeletonEngine {
 
   // Yeni figür oluştur
   private spawnFigure() {
-    if (this.figures.length >= 3) return; // Maksimum 3 figür
+    if (this.figures.length >= 2) return; // Maksimum 2 figür
 
     const types: SkeletonFigure["type"][] = ["full", "partial", "crouching", "reaching", "standing"];
     const type = types[Math.floor(Math.random() * types.length)];
@@ -337,7 +337,7 @@ export class SLSSkeletonEngine {
       joints,
       opacity: 0,
       createdAt: Date.now(),
-      lifespan: 3000 + Math.random() * 12000, // 3-15 saniye
+      lifespan: 6000 + Math.random() * 9000, // 6-15 saniye
       type,
       flickerPhase: 0,
     };

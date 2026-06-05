@@ -63,12 +63,12 @@ export default function RadarScreen() {
       setPulsePhase((p) => (p + steps) % 100);
     }
 
-    // Target spawn: her 80ms'de %15 şansla hedef oluştur
+    // Target spawn: her 4000ms'de %22 şansla hedef oluştur (~1 sinyal / 18 saniye)
     targetSpawnAccRef.current += deltaTime;
-    if (targetSpawnAccRef.current >= 80) {
-      targetSpawnAccRef.current -= 80;
+    if (targetSpawnAccRef.current >= 4000) {
+      targetSpawnAccRef.current -= 4000;
 
-      if (Math.random() > 0.85) {
+      if (Math.random() > 0.78) {
         const newTarget: RadarTarget = {
           id: Date.now().toString() + Math.random().toString(36).slice(2, 6),
           angle: Math.random() * 360,
@@ -83,7 +83,7 @@ export default function RadarScreen() {
 
         setTargets((prev) => {
           const updated = [...prev, newTarget];
-          return updated.length > 8 ? updated.slice(-8) : updated;
+          return updated.length > 5 ? updated.slice(-5) : updated;
         });
       }
     }
