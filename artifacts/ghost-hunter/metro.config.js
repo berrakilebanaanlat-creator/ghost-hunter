@@ -7,18 +7,19 @@ const workspaceRoot = path.resolve(projectRoot, "../..");
 
 const config = getDefaultConfig(projectRoot);
 
-// Workspace kökündeki node_modules'u Metro'ya tanıt
-config.watchFolders = [workspaceRoot];
-
+// Workspace kökündeki node_modules'u module resolution'a ekle
+// ama watchFolders'a EKLEME — tüm workspace'i izlemek Metro'yu çökürtüyor
 config.resolver.nodeModulesPaths = [
   path.resolve(projectRoot, "node_modules"),
   path.resolve(workspaceRoot, "node_modules"),
 ];
 
-// Firebase geçici klasörlerini izlemeden hariç tut
-// Bu klasörler build sırasında silinip ENOENT hatasına yol açıyor
+// Geçici ve sık değişen klasörleri izlemeden hariç tut
 config.resolver.blockList = [
-  /node_modules\/.pnpm\/@firebase\+[^/]+\/node_modules\/@firebase\/[^/]+_tmp_\d+\/.*/,
+  // Firebase geçici klasörleri
+  /node_modules\/\.pnpm\/@firebase\+[^/]+\/node_modules\/@firebase\/[^/]+_tmp_\d+\/.*/,
+  // Replit .local klasörü (skills, temp files)
+  /\/\.local\/.*/,
 ];
 
 module.exports = withNativeWind(config, {
