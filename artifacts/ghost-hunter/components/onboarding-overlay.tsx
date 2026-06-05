@@ -11,6 +11,7 @@ import {
 } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import * as Haptics from "expo-haptics";
+import * as Speech from "expo-speech";
 
 const ONBOARDING_KEY = "@onboarding_v1_seen";
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
@@ -58,6 +59,19 @@ export function OnboardingOverlay() {
             duration: 800,
             useNativeDriver: true,
           }).start();
+
+          if (Platform.OS !== "web") {
+            setTimeout(() => {
+              try {
+                Speech.speak("Köklerine bağlan", {
+                  language: "tr-TR",
+                  pitch: 0.6,
+                  rate: 0.45,
+                  volume: 0.75,
+                });
+              } catch {}
+            }, 900);
+          }
         }
       })
       .catch(() => {});
