@@ -1,0 +1,2 @@
+- [ElevenLabs TTS entegrasyonu](elevenlabs-tts.md) — API key var ama TTS izni eksik; Google TTS yedek aktif
+- [Keystore durumu](keystore.md) — .jks yok; Play Console upload key sıfırlama ile çözülecek
