@@ -6,3 +6,9 @@ id = "YrVwznsxjxoNRd6sY_Pel"
 uri = "file://artifacts/ghost-hunter/keystore/upload_certificate.tar.gz"
 type = "unspecified"
 title = "upload_certificate.tar.gz — Açıp içindeki .pem dosyasını Google Play'e yükle"
+
+[[outputs]]
+id = "tAnFdq3LUfe3-o4FI_7sz"
+uri = "file://artifacts/upload_certificate.txt"
+type = "text"
+title = "upload_certificate.pem — Google Play'e yüklenecek sertifika"
