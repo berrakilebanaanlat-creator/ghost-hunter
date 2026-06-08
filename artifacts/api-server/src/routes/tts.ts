@@ -4,15 +4,20 @@ const router = Router();
 
 // ElevenLabs ses karakteri → voice ID eşleştirmesi
 const VOICE_MAP: Record<string, string> = {
-  male:           "yoZ06aMxZJJ28mfd3POQ",
-  deep_male:      "pNInz6obpgDQGcFmaJgB",
-  old_male:       "VR6AewLTigWG4xSOukaG",
-  whisper_male:   "N2lVS1w4EtoT3dr4eOWO",
-  female:         "21m00Tcm4TlvDq8ikWAM",
-  old_female:     "AZnzlk1XvdvUeBnXmlld",
-  whisper_female: "EXAVITQu4vr4xnSDxMaL",
-  child:          "MF3mGyEYCl7XYWbV9V6O",
-  creepy_child:   "MF3mGyEYCl7XYWbV9V6O",
+  male:            "yoZ06aMxZJJ28mfd3POQ",
+  deep_male:       "pNInz6obpgDQGcFmaJgB",
+  old_male:        "VR6AewLTigWG4xSOukaG",
+  whisper_male:    "N2lVS1w4EtoT3dr4eOWO",
+  female:          "21m00Tcm4TlvDq8ikWAM",
+  old_female:      "AZnzlk1XvdvUeBnXmlld",
+  whisper_female:  "EXAVITQu4vr4xnSDxMaL",
+  child:           "MF3mGyEYCl7XYWbV9V6O",
+  creepy_child:    "MF3mGyEYCl7XYWbV9V6O",
+  // Yeni karakterler
+  girl_child:      "MF3mGyEYCl7XYWbV9V6O",   // çocuk sesiyle, client'ta pitch arttırılır
+  nine:            "AZnzlk1XvdvUeBnXmlld",    // yaşlı kadın (nine/büyükanne)
+  muffled_male:    "pNInz6obpgDQGcFmaJgB",    // boğuk → client'ta lowpass filtre
+  muffled_female:  "21m00Tcm4TlvDq8ikWAM",   // boğuk kadın → client'ta lowpass filtre
 };
 
 const DEFAULT_VOICE = "N2lVS1w4EtoT3dr4eOWO";

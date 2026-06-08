@@ -28,6 +28,53 @@
  */
 
 // ============================================================
+// NINE (Büyükanne/yaşlı kadın) SES CÜMLELERI
+// ============================================================
+export const NINE_PHRASES: string[] = [
+  "yavrum", "torunum", "canım", "evladım", "yavrucuğum",
+  "gel yanıma", "neredesin yavrum", "seni özledim", "gitme benden",
+  "beni duyuyor musun", "soğuk burada", "ışık yok", "karanlık çok",
+  "dua et", "namaz kıl", "kötüler var", "dikkat et yavrucuğum",
+  "ben hâlâ burdayım", "unutma beni", "mezarım ıssız",
+  "kimse gelmiyor", "yalnız kaldım", "çok zaman geçti",
+  "ölmek böyle miydi", "bekliyorum sizi", "gelin bir gün",
+  "al beni buradan", "soğuk toprak", "karanlık toprak",
+  "aman evladım", "hayırlısı olsun", "Allah korusun",
+  "kötü rüyalar", "geceleri ağlıyorum", "sabahı göremiyorum",
+];
+
+// ============================================================
+// KIZ ÇOCUK SES CÜMLELERİ
+// ============================================================
+export const GIRL_CHILD_PHRASES: string[] = [
+  "benimle oynar mısın", "yalnız kalmak istemiyorum", "annem nerede",
+  "evime gitmek istiyorum", "bebeğimi kaybettim", "neden karanlık",
+  "korkuyorum", "burada kimse yok mu", "sizi görüyorum",
+  "benimle oynayın", "bir şey gördüm", "o tekrar geldi",
+  "gözlerimi kapatıyorum", "gitmek istiyorum", "soğudum",
+  "ağlamak istiyorum", "bırakmayın beni", "arkamda biri var",
+  "o kötü adam yine geldi", "annem çağırıyor", "yavaş yavaş",
+  "hıhı", "hayır hayır hayır", "dur dur dur",
+  "onu görüyor musunuz", "ben de görebiliyorum",
+  "gelmeyin buraya", "tehlikeli", "o sizi de görüyor",
+];
+
+// ============================================================
+// BOĞUK / UZAKTAN GELEN SES CÜMLELERİ (phantom event)
+// ============================================================
+export const PHANTOM_PHRASES: string[] = [
+  "buradayım", "beni duyuyor musun", "yardım", "çıkamıyorum",
+  "hapsolduk", "bırakın bizi", "oradan git", "tehlikedesiniz",
+  "o geliyor", "kaçın", "hepiniz tehlikedesiniz", "duyuyor musunuz",
+  "ben de senin gibilerdim", "artık çok geç", "gitmeyin",
+  "bu evin sırrı var", "duvarların içindeyim", "dinleyin beni",
+  "onlar gerçek", "kimse inanmadı bana", "şimdi anlıyorsunuz",
+  "burası cehennem", "karanlıkta kayboldum", "ses verin bana",
+  "frekansı ayarlayın", "sinyalim zayıf", "bağlantı kopuyor",
+  "çok uzaktayım", "duyabiliyorum sizi", "oraya gelmeyin",
+];
+
+// ============================================================
 // FONEMLER (Ses parçacıkları - ITC tarzı kesik sesler)
 // ============================================================
 export const PHONEMES: string[] = [

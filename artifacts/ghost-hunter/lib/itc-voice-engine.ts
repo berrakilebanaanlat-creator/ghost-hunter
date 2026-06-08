@@ -40,6 +40,9 @@ import {
   RESEARCH_JARGON,
   ALL_WORDS as WB_ALL_WORDS,
   WORD_CATEGORIES,
+  NINE_PHRASES,
+  GIRL_CHILD_PHRASES,
+  PHANTOM_PHRASES,
 } from "./word-bank";
 
 // ============================================================
@@ -55,7 +58,11 @@ export type VoiceCharacter =
   | "old_female"
   | "whisper_female"
   | "child"
-  | "creepy_child";
+  | "creepy_child"
+  | "girl_child"
+  | "nine"
+  | "muffled_male"
+  | "muffled_female";
 
 export type WhiteNoiseMode = "off" | "slow" | "fast" | "continuous";
 
@@ -94,15 +101,20 @@ interface VoiceParams {
 }
 
 const VOICE_PARAMS: Record<VoiceCharacter, VoiceParams> = {
-  male:           { pitch: 0.75, rate: 0.80, volume: 0.9,  filterFreq: 800,  filterQ: 1.0, label: "ERKEK" },
-  deep_male:      { pitch: 0.50, rate: 0.65, volume: 1.0,  filterFreq: 500,  filterQ: 1.5, label: "DERİN" },
-  old_male:       { pitch: 0.60, rate: 0.55, volume: 0.7,  filterFreq: 700,  filterQ: 1.2, label: "YAŞLI" },
-  whisper_male:   { pitch: 0.80, rate: 0.60, volume: 0.35, filterFreq: 2000, filterQ: 0.8, label: "FISIL." },
-  female:         { pitch: 1.20, rate: 0.85, volume: 0.85, filterFreq: 1500, filterQ: 1.0, label: "KADIN" },
-  old_female:     { pitch: 1.05, rate: 0.50, volume: 0.65, filterFreq: 1200, filterQ: 1.3, label: "YAŞLI K." },
-  whisper_female: { pitch: 1.15, rate: 0.55, volume: 0.30, filterFreq: 2500, filterQ: 0.7, label: "FISIL. K." },
-  child:          { pitch: 1.50, rate: 0.95, volume: 0.75, filterFreq: 2000, filterQ: 0.9, label: "ÇOCUK" },
-  creepy_child:   { pitch: 1.30, rate: 0.45, volume: 0.55, filterFreq: 1800, filterQ: 1.5, label: "ÜRK. ÇOCUK" },
+  male:            { pitch: 0.75, rate: 0.80, volume: 0.9,  filterFreq: 800,  filterQ: 1.0, label: "ERKEK" },
+  deep_male:       { pitch: 0.50, rate: 0.65, volume: 1.0,  filterFreq: 500,  filterQ: 1.5, label: "DERİN" },
+  old_male:        { pitch: 0.60, rate: 0.55, volume: 0.7,  filterFreq: 700,  filterQ: 1.2, label: "YAŞLI" },
+  whisper_male:    { pitch: 0.80, rate: 0.60, volume: 0.35, filterFreq: 2000, filterQ: 0.8, label: "FISIL." },
+  female:          { pitch: 1.20, rate: 0.85, volume: 0.85, filterFreq: 1500, filterQ: 1.0, label: "KADIN" },
+  old_female:      { pitch: 1.05, rate: 0.50, volume: 0.65, filterFreq: 1200, filterQ: 1.3, label: "YAŞLI K." },
+  whisper_female:  { pitch: 1.15, rate: 0.55, volume: 0.30, filterFreq: 2500, filterQ: 0.7, label: "FISIL. K." },
+  child:           { pitch: 1.50, rate: 0.95, volume: 0.75, filterFreq: 2000, filterQ: 0.9, label: "ÇOCUK" },
+  creepy_child:    { pitch: 1.30, rate: 0.45, volume: 0.55, filterFreq: 1800, filterQ: 1.5, label: "ÜRK. ÇOCUK" },
+  // Yeni karakterler
+  girl_child:      { pitch: 1.70, rate: 0.90, volume: 0.70, filterFreq: 2400, filterQ: 0.8, label: "KIZ ÇOCUK" },
+  nine:            { pitch: 0.90, rate: 0.40, volume: 0.60, filterFreq: 900,  filterQ: 1.6, label: "NİNE" },
+  muffled_male:    { pitch: 0.60, rate: 0.70, volume: 0.80, filterFreq: 420,  filterQ: 0.4, label: "BOĞUK E." },
+  muffled_female:  { pitch: 1.10, rate: 0.70, volume: 0.75, filterFreq: 480,  filterQ: 0.4, label: "BOĞUK K." },
 };
 
 // Kelime bankası referansları
@@ -918,22 +930,35 @@ class ITCVoiceEngine {
   // ============================================================
 
   private getRandomWord(): { word: string; character: VoiceCharacter } {
-    // Karakter seçimi
+    // Karakter seçimi — genişletilmiş çeşitlilik
     const characterRoll = Math.random();
     let character: VoiceCharacter;
-    if (characterRoll < 0.15) character = "male";
-    else if (characterRoll < 0.25) character = "deep_male";
-    else if (characterRoll < 0.35) character = "old_male";
-    else if (characterRoll < 0.45) character = "whisper_male";
-    else if (characterRoll < 0.58) character = "female";
-    else if (characterRoll < 0.68) character = "old_female";
-    else if (characterRoll < 0.78) character = "whisper_female";
-    else if (characterRoll < 0.90) character = "child";
-    else character = "creepy_child";
+    if (characterRoll < 0.12)      character = "male";
+    else if (characterRoll < 0.22) character = "deep_male";
+    else if (characterRoll < 0.30) character = "old_male";
+    else if (characterRoll < 0.38) character = "whisper_male";
+    else if (characterRoll < 0.50) character = "female";
+    else if (characterRoll < 0.58) character = "old_female";
+    else if (characterRoll < 0.66) character = "whisper_female";
+    else if (characterRoll < 0.74) character = "child";
+    else if (characterRoll < 0.80) character = "creepy_child";
+    else if (characterRoll < 0.86) character = "girl_child";
+    else if (characterRoll < 0.92) character = "nine";
+    else                            character = "male";
 
-    // Kelime seçimi
-    const roll = Math.random();
+    // Karaktere özel kelime havuzu
     let word: string;
+    if (character === "nine") {
+      word = NINE_PHRASES[Math.floor(Math.random() * NINE_PHRASES.length)];
+      return { word, character };
+    }
+    if (character === "girl_child") {
+      word = GIRL_CHILD_PHRASES[Math.floor(Math.random() * GIRL_CHILD_PHRASES.length)];
+      return { word, character };
+    }
+
+    // Genel kelime seçimi
+    const roll = Math.random();
     if (roll < 0.35) {
       word = DARK_WORDS[Math.floor(Math.random() * DARK_WORDS.length)];
     } else if (roll < 0.55) {
@@ -950,6 +975,53 @@ class ITCVoiceEngine {
     }
 
     return { word, character };
+  }
+
+  // ============================================================
+  // PHANTOM EVENT (Boğuk/Fısıltı - ~3 kez / 10 dakika)
+  // ============================================================
+
+  private phantomTimeout: ReturnType<typeof setTimeout> | null = null;
+
+  private schedulePhantomEvent(): void {
+    if (!this.isActive) return;
+    // 100-300 saniye arası random → ortalama 200sn → 10 dk'da ~3 kez
+    const delayMs = (100 + Math.random() * 200) * 1000;
+    this.phantomTimeout = setTimeout(() => {
+      if (!this.isActive) return;
+      this.triggerPhantomEvent();
+      this.schedulePhantomEvent();
+    }, delayMs);
+  }
+
+  private triggerPhantomEvent(): void {
+    if (this.isSpeaking) return;
+    const roll = Math.random();
+    let character: VoiceCharacter;
+    let wordPool: string[];
+
+    if (roll < 0.30) {
+      character = "muffled_male";
+      wordPool = PHANTOM_PHRASES;
+    } else if (roll < 0.55) {
+      character = "muffled_female";
+      wordPool = PHANTOM_PHRASES;
+    } else if (roll < 0.68) {
+      character = "whisper_male";
+      wordPool = [...WHISPER_PHRASES, ...PHANTOM_PHRASES];
+    } else if (roll < 0.80) {
+      character = "whisper_female";
+      wordPool = [...WHISPER_PHRASES, ...PHANTOM_PHRASES];
+    } else if (roll < 0.90) {
+      character = "nine";
+      wordPool = NINE_PHRASES;
+    } else {
+      character = "girl_child";
+      wordPool = GIRL_CHILD_PHRASES;
+    }
+
+    const word = wordPool[Math.floor(Math.random() * wordPool.length)];
+    this.speakWord(word, character);
   }
 
   // ============================================================
@@ -1074,15 +1146,24 @@ class ITCVoiceEngine {
       // Rate değiştirme: playbackRate
       source.playbackRate.value = Math.max(0.25, Math.min(4.0, rate));
 
-      // Ses karakteri filtresi (bandpass)
+      // Ses karakteri filtresi — muffled/boğuk için lowpass, diğerleri bandpass
+      const isMuffled = this._currentCharacter === "muffled_male" || this._currentCharacter === "muffled_female";
       const filter = ctx.createBiquadFilter();
-      filter.type = "bandpass";
-      filter.frequency.value = 800 + (pitch - 0.5) * 1000; // pitch'e göre filtre
-      filter.Q.value = 0.7;
+      if (isMuffled) {
+        // Boğuk: duvar/mezar arkasından geliyor hissi
+        filter.type = "lowpass";
+        filter.frequency.value = 420 + Math.random() * 80; // 420-500 Hz
+        filter.Q.value = 0.3 + Math.random() * 0.2;
+      } else {
+        filter.type = "bandpass";
+        filter.frequency.value = 800 + (pitch - 0.5) * 1000;
+        filter.Q.value = 0.7;
+      }
 
-      // Gain (volume)
+      // Gain (volume) — muffled'da hafif ekstra azalt
       const gainNode = ctx.createGain();
-      gainNode.gain.value = Math.max(0.0, Math.min(1.5, volume));
+      const volumeMult = isMuffled ? 0.65 : 1.0;
+      gainNode.gain.value = Math.max(0.0, Math.min(1.5, volume * volumeMult));
 
       // Bağlantı zinciri: source -> filter -> gain -> destination
       source.connect(filter);
@@ -1227,6 +1308,12 @@ class ITCVoiceEngine {
         this.scheduleNextWord();
       }
     }, 20000 + Math.random() * 20000);
+
+    // Phantom event scheduler (boğuk/fısıltı/nine/kız çocuk — bağımsız zamanlayıcı)
+    // İlk phantom 60-120 saniye sonra, sonrakiler 100-300 saniye arası
+    setTimeout(() => {
+      if (this.isActive) this.schedulePhantomEvent();
+    }, 60000 + Math.random() * 60000);
   }
 
   stop(): void {
@@ -1243,6 +1330,7 @@ class ITCVoiceEngine {
     } catch { /* */ }
 
     if (this.speakTimeout) { clearTimeout(this.speakTimeout); this.speakTimeout = null; }
+    if (this.phantomTimeout) { clearTimeout(this.phantomTimeout); this.phantomTimeout = null; }
 
     // Efektleri durdur
     this.radioEffects?.dispose();

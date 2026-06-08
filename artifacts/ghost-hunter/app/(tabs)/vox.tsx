@@ -37,6 +37,10 @@ const CHARACTER_COLORS: Record<VoiceCharacter, string> = {
   whisper_female: "#664455",
   child: "#FFCC00",
   creepy_child: "#FF4400",
+  girl_child: "#FFB0D0",
+  nine: "#C8A882",
+  muffled_male: "#556677",
+  muffled_female: "#887799",
 };
 
 const CHARACTER_LABELS: Record<VoiceCharacter, string> = {
@@ -49,6 +53,10 @@ const CHARACTER_LABELS: Record<VoiceCharacter, string> = {
   whisper_female: "FISIL. K.",
   child: "ÇOCUK",
   creepy_child: "ÜRK. Ç.",
+  girl_child: "KIZ Ç.",
+  nine: "NİNE",
+  muffled_male: "BOĞUK E.",
+  muffled_female: "BOĞUK K.",
 };
 
 const NOISE_MODE_LABELS: Record<WhiteNoiseMode, string> = {
