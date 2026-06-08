@@ -136,6 +136,13 @@ export function AdProvider({ children }: { children: React.ReactNode }) {
         } catch {
           // Cleanup hatası uygulamayı çökertmemeli
         }
+        // Google Play Billing bağlantısını kapat
+        try {
+          const iap = require('expo-iap');
+          iap.endConnection?.();
+        } catch {
+          // endConnection opsiyonel, hata olursa sessizce geç
+        }
       };
     }
   }, []);

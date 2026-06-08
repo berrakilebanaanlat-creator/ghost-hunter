@@ -1,4 +1,4 @@
-import { Text, View, Pressable, StyleSheet, Dimensions, ScrollView, Platform } from "react-native";
+import { Text, View, Pressable, StyleSheet, Dimensions, ScrollView, Platform, Share, Modal } from "react-native";
 import { useState, useEffect, useRef, useCallback } from "react";
 import { ScreenContainer } from "@/components/screen-container";
 import { IconSymbol } from "@/components/ui/icon-symbol";
@@ -107,6 +107,14 @@ export default function VoxScreen() {
   const [echoLevel, setEchoLevel] = useState(0.3);
   const [distortionLevel, setDistortionLevel] = useState(0.5);
   const [sensitivity, setSensitivity] = useState(0.5);
+
+  const [showSummary, setShowSummary] = useState(false);
+  const [summaryData, setSummaryData] = useState<{
+    duration: number;
+    wordCount: number;
+    topCharacters: { character: VoiceCharacter; count: number }[];
+    topWords: string[];
+  } | null>(null);
 
   const logIdRef = useRef(0);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
@@ -228,6 +236,29 @@ export default function VoxScreen() {
           isListening: false,
           peakLevel: 0,
           voiceDetected: false,
+        });
+
+        // Oturum özeti hesapla
+        setWordLog((currentLog) => {
+          if (currentLog.length > 0) {
+            const charCounts: Partial<Record<VoiceCharacter, number>> = {};
+            currentLog.forEach((entry) => {
+              charCounts[entry.character] = (charCounts[entry.character] || 0) + 1;
+            });
+            const topCharacters = Object.entries(charCounts)
+              .map(([ch, cnt]) => ({ character: ch as VoiceCharacter, count: cnt as number }))
+              .sort((a, b) => b.count - a.count)
+              .slice(0, 3);
+            const topWords = currentLog.slice(0, 5).map((e) => e.word);
+            setSummaryData({
+              duration: elapsedTime,
+              wordCount: currentLog.length,
+              topCharacters,
+              topWords,
+            });
+            setShowSummary(true);
+          }
+          return currentLog;
         });
       } else {
         setElapsedTime(0);
@@ -354,6 +385,42 @@ export default function VoxScreen() {
     };
   }, []);
 
+  // Oturum paylaşım fonksiyonu
+  const handleShareSession = useCallback(async () => {
+    if (!summaryData) return;
+    if (Platform.OS !== "web") {
+      try { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); } catch { /* */ }
+    }
+    const fmt = (s: number) => {
+      const m = Math.floor(s / 60);
+      const sec = s % 60;
+      return `${m.toString().padStart(2, "0")}:${sec.toString().padStart(2, "0")}`;
+    };
+    const charLines = summaryData.topCharacters
+      .map((c) => `  ${CHARACTER_LABELS[c.character]}: ${c.count} mesaj`)
+      .join("\n");
+    const wordLines = summaryData.topWords.map((w) => `  "${w}"`).join("\n");
+    const text = [
+      "👻 ANTİK GHOST HUNTER — VOX ITC OTURUM RAPORU",
+      "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━",
+      `⏱  Süre: ${fmt(summaryData.duration)}`,
+      `📡 Toplam mesaj: ${summaryData.wordCount}`,
+      "",
+      "🎙 Aktif karakterler:",
+      charLines,
+      "",
+      "💬 Son alınan mesajlar:",
+      wordLines,
+      "",
+      "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━",
+      "📲 Antik Ghost Hunter ile ruhlarla iletişime geç!",
+      "#ghosthunter #paranormal #ruh #ITC #EVP",
+    ].join("\n");
+    try {
+      await Share.share({ message: text, title: "Ghost Hunter VOX Oturumu" });
+    } catch { /* */ }
+  }, [summaryData]);
+
   // VOX satın alınmamışsa kilit ekranı göster (hook'lardan SONRA)
   if (!isVoxPurchased) {
     return <VoxPaywall />;
@@ -373,6 +440,91 @@ export default function VoxScreen() {
 
   return (
     <ScreenContainer containerClassName="bg-[#060609]">
+      {/* ── OTURUM ÖZETİ MODAL ── */}
+      <Modal
+        visible={showSummary}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setShowSummary(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalBox}>
+            {/* Başlık */}
+            <View style={styles.modalHeader}>
+              <Text style={styles.modalIcon}>👻</Text>
+              <Text style={styles.modalTitle}>OTURUM TAMAMLANDI</Text>
+            </View>
+
+            {/* İstatistikler */}
+            <View style={styles.modalStats}>
+              <View style={styles.modalStatItem}>
+                <Text style={styles.modalStatValue}>
+                  {(() => {
+                    const m = Math.floor((summaryData?.duration ?? 0) / 60);
+                    const s = (summaryData?.duration ?? 0) % 60;
+                    return `${m.toString().padStart(2, "0")}:${s.toString().padStart(2, "0")}`;
+                  })()}
+                </Text>
+                <Text style={styles.modalStatLabel}>SÜRE</Text>
+              </View>
+              <View style={styles.modalStatDivider} />
+              <View style={styles.modalStatItem}>
+                <Text style={styles.modalStatValue}>{summaryData?.wordCount ?? 0}</Text>
+                <Text style={styles.modalStatLabel}>MESAJ</Text>
+              </View>
+              <View style={styles.modalStatDivider} />
+              <View style={styles.modalStatItem}>
+                <Text style={styles.modalStatValue}>{summaryData?.topCharacters.length ?? 0}</Text>
+                <Text style={styles.modalStatLabel}>RUH</Text>
+              </View>
+            </View>
+
+            {/* Aktif karakterler */}
+            {(summaryData?.topCharacters.length ?? 0) > 0 && (
+              <View style={styles.modalSection}>
+                <Text style={styles.modalSectionTitle}>AKTİF KARAKTERLER</Text>
+                {summaryData!.topCharacters.map((c) => (
+                  <View key={c.character} style={styles.modalCharRow}>
+                    <View style={[styles.modalCharDot, { backgroundColor: CHARACTER_COLORS[c.character] }]} />
+                    <Text style={[styles.modalCharName, { color: CHARACTER_COLORS[c.character] }]}>
+                      {CHARACTER_LABELS[c.character]}
+                    </Text>
+                    <Text style={styles.modalCharCount}>{c.count} mesaj</Text>
+                  </View>
+                ))}
+              </View>
+            )}
+
+            {/* Son mesajlar */}
+            {(summaryData?.topWords.length ?? 0) > 0 && (
+              <View style={styles.modalSection}>
+                <Text style={styles.modalSectionTitle}>SON MESAJLAR</Text>
+                {summaryData!.topWords.slice(0, 4).map((w, i) => (
+                  <Text key={i} style={styles.modalWord}>"{w}"</Text>
+                ))}
+              </View>
+            )}
+
+            {/* Butonlar */}
+            <View style={styles.modalButtons}>
+              <Pressable
+                onPress={handleShareSession}
+                style={({ pressed }) => [styles.modalShareBtn, pressed && { opacity: 0.8 }]}
+              >
+                <IconSymbol size={16} name="square.and.arrow.up" color="#000" />
+                <Text style={styles.modalShareText}>PAYLAŞ</Text>
+              </Pressable>
+              <Pressable
+                onPress={() => setShowSummary(false)}
+                style={({ pressed }) => [styles.modalCloseBtn, pressed && { opacity: 0.7 }]}
+              >
+                <Text style={styles.modalCloseBtnText}>KAPAT</Text>
+              </Pressable>
+            </View>
+          </View>
+        </View>
+      </Modal>
+
       <View style={styles.container}>
         {/* Header */}
         <View style={styles.header}>
@@ -1260,6 +1412,140 @@ const styles = StyleSheet.create({
     fontSize: 9,
     color: "#2A2A40",
     letterSpacing: 0.5,
+  },
+
+  // ── OTURUM ÖZETİ MODAL ──
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: "rgba(0,0,0,0.85)",
+    justifyContent: "center",
+    alignItems: "center",
+    paddingHorizontal: 20,
+  },
+  modalBox: {
+    width: "100%",
+    backgroundColor: "#0D0D18",
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: "#9B4FDE40",
+    padding: 20,
+    gap: 16,
+  },
+  modalHeader: {
+    alignItems: "center",
+    gap: 6,
+  },
+  modalIcon: {
+    fontSize: 36,
+  },
+  modalTitle: {
+    fontSize: 13,
+    fontWeight: "700",
+    color: "#9B4FDE",
+    letterSpacing: 3,
+  },
+  modalStats: {
+    flexDirection: "row",
+    justifyContent: "space-around",
+    backgroundColor: "#060609",
+    borderRadius: 10,
+    paddingVertical: 14,
+    borderWidth: 1,
+    borderColor: "#1A1A2E",
+  },
+  modalStatItem: {
+    alignItems: "center",
+    gap: 4,
+    flex: 1,
+  },
+  modalStatValue: {
+    fontSize: 22,
+    fontWeight: "700",
+    color: "#E0E0FF",
+    fontVariant: ["tabular-nums"],
+  },
+  modalStatLabel: {
+    fontSize: 9,
+    color: "#3A3A50",
+    letterSpacing: 2,
+    fontWeight: "600",
+  },
+  modalStatDivider: {
+    width: 1,
+    backgroundColor: "#1A1A2E",
+  },
+  modalSection: {
+    gap: 6,
+  },
+  modalSectionTitle: {
+    fontSize: 9,
+    color: "#3A3A50",
+    letterSpacing: 2,
+    fontWeight: "600",
+    marginBottom: 2,
+  },
+  modalCharRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+    paddingVertical: 3,
+  },
+  modalCharDot: {
+    width: 6,
+    height: 6,
+    borderRadius: 3,
+  },
+  modalCharName: {
+    fontSize: 12,
+    fontWeight: "600",
+    flex: 1,
+  },
+  modalCharCount: {
+    fontSize: 11,
+    color: "#3A3A50",
+  },
+  modalWord: {
+    fontSize: 12,
+    color: "#9B88CC",
+    fontStyle: "italic",
+    paddingVertical: 2,
+  },
+  modalButtons: {
+    flexDirection: "row",
+    gap: 10,
+    marginTop: 4,
+  },
+  modalShareBtn: {
+    flex: 1,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 8,
+    backgroundColor: "#9B4FDE",
+    borderRadius: 10,
+    paddingVertical: 13,
+  },
+  modalShareText: {
+    fontSize: 13,
+    fontWeight: "700",
+    color: "#fff",
+    letterSpacing: 2,
+  },
+  modalCloseBtn: {
+    flex: 1,
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: "#0A0A12",
+    borderRadius: 10,
+    paddingVertical: 13,
+    borderWidth: 1,
+    borderColor: "#1A1A2E",
+  },
+  modalCloseBtnText: {
+    fontSize: 13,
+    fontWeight: "600",
+    color: "#3A3A50",
+    letterSpacing: 2,
   },
 });
 
