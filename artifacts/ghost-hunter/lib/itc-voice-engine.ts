@@ -43,6 +43,7 @@ import {
   NINE_PHRASES,
   GIRL_CHILD_PHRASES,
   PHANTOM_PHRASES,
+  HOME_OBJECT_PHRASES,
 } from "./word-bank";
 
 // ============================================================
@@ -964,7 +965,7 @@ class ITCVoiceEngine {
     } else if (roll < 0.55) {
       word = DARK_PHRASES[Math.floor(Math.random() * DARK_PHRASES.length)];
     } else if (roll < 0.65) {
-      const ext = [...LONG_PHRASES, ...MANIPULATIVE_RESPONSES, ...DIALOG_PHRASES, ...WHISPER_PHRASES, ...HORROR_STORY_WORDS, ...CURSES];
+      const ext = [...LONG_PHRASES, ...MANIPULATIVE_RESPONSES, ...DIALOG_PHRASES, ...WHISPER_PHRASES, ...HORROR_STORY_WORDS, ...CURSES, ...HOME_OBJECT_PHRASES];
       word = ext[Math.floor(Math.random() * ext.length)];
     } else if (roll < 0.80) {
       const cultural = [...MYTHOLOGY_WORDS, ...FOLK_BELIEFS, ...DREAM_WORDS, ...RESEARCH_JARGON];
@@ -1008,10 +1009,10 @@ class ITCVoiceEngine {
       wordPool = PHANTOM_PHRASES;
     } else if (roll < 0.68) {
       character = "whisper_male";
-      wordPool = [...WHISPER_PHRASES, ...PHANTOM_PHRASES];
+      wordPool = [...WHISPER_PHRASES, ...PHANTOM_PHRASES, ...HOME_OBJECT_PHRASES];
     } else if (roll < 0.80) {
       character = "whisper_female";
-      wordPool = [...WHISPER_PHRASES, ...PHANTOM_PHRASES];
+      wordPool = [...WHISPER_PHRASES, ...PHANTOM_PHRASES, ...HOME_OBJECT_PHRASES];
     } else if (roll < 0.90) {
       character = "nine";
       wordPool = NINE_PHRASES;

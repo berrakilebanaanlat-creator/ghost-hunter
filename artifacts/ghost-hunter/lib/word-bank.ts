@@ -31,52 +31,213 @@
 // NINE (Büyükanne/yaşlı kadın) SES CÜMLELERI
 // ============================================================
 export const NINE_PHRASES: string[] = [
+  // Sevgi ve özlem
   "yavrum", "torunum", "canım", "evladım", "yavrucuğum",
+  "kuzucuğum", "ciğerim", "gözümün nuru", "yüreğimin köşesi",
   "gel yanıma", "neredesin yavrum", "seni özledim", "gitme benden",
+  "hasretle bekliyorum", "her gece düşünüyorum sizi",
+  "sesinizi duymak istiyorum", "bir kez daha göreyim yüzünüzü",
+  "rüyamda geldiniz ama uyandım", "neden gelmiyorsunuz",
+  // Durum bildirme
   "beni duyuyor musun", "soğuk burada", "ışık yok", "karanlık çok",
-  "dua et", "namaz kıl", "kötüler var", "dikkat et yavrucuğum",
   "ben hâlâ burdayım", "unutma beni", "mezarım ıssız",
   "kimse gelmiyor", "yalnız kaldım", "çok zaman geçti",
   "ölmek böyle miydi", "bekliyorum sizi", "gelin bir gün",
   "al beni buradan", "soğuk toprak", "karanlık toprak",
+  "taşın altında soğudum", "kimse bilmiyor burada olduğumu",
+  "çok zor burada", "bir türlü gidemiyorum",
+  "bağlı kaldım bu dünyaya", "hâlâ bekliyorum",
+  "sizi duyabiliyorum ama göremiyorum",
+  "sesleriniz geliyor ama uzak",
+  // Uyarı ve dua
   "aman evladım", "hayırlısı olsun", "Allah korusun",
+  "dua et", "namaz kıl", "kötüler var", "dikkat et yavrucuğum",
+  "kötü yollara sapma", "doğru ol", "namuslu yaşa",
+  "büyüklere saygı göster", "akrabayı ara sor",
+  "günahtan kaç", "tövbe et", "helal kazan",
+  "birbirinizi sevin", "geçimsizlik olmaz sakın",
+  // Korkutma ve garip
   "kötü rüyalar", "geceleri ağlıyorum", "sabahı göremiyorum",
+  "o karanlık varlık beni takip etti buraya",
+  "ben ölmeden önce bir şey gördüm",
+  "sana söylemem gereken bir şey var",
+  "evin altında bir sır var",
+  "toprağın altından sesler geliyor",
+  "geceyarısı kapıyı çalacağım",
+  "rüyanda ziyarete geleceğim",
+  "uykunda beni göreceksin",
+  "gözlerin kapandığında yanında olacağım",
+  // Pişmanlık
+  "keşke daha çok vakit geçirseydik",
+  "söyleyemediklerimi söylemek istiyorum",
+  "affet beni yavrum", "ben de hata yaptım",
+  "geçmişe dönmek isterdim",
+  "vaktinde söyleseydim keşke",
+  "çok erken gittim", "hazır değildim",
+  "bırakmak istemedim sizi",
+  // Mistik
+  "bu dünya ile öbür dünya arasındayım",
+  "geçit açıldığında geleceğim",
+  "ay tutulmasında duyabilirsiniz beni",
+  "Cuma geceleri daha güçlüyüm",
+  "mezarlıkta oturup ağlıyorum",
+  "yanımdakiler de sizi görmek istiyor",
+  "burası kalabalık ama hepsi sessiz",
+  "ışık görünce koşuyorum ama yetişemiyorum",
+  "bir gün sen de anlayacaksın",
 ];
 
 // ============================================================
 // KIZ ÇOCUK SES CÜMLELERİ
 // ============================================================
 export const GIRL_CHILD_PHRASES: string[] = [
-  "benimle oynar mısın", "yalnız kalmak istemiyorum", "annem nerede",
-  "evime gitmek istiyorum", "bebeğimi kaybettim", "neden karanlık",
-  "korkuyorum", "burada kimse yok mu", "sizi görüyorum",
-  "benimle oynayın", "bir şey gördüm", "o tekrar geldi",
-  "gözlerimi kapatıyorum", "gitmek istiyorum", "soğudum",
-  "ağlamak istiyorum", "bırakmayın beni", "arkamda biri var",
-  "o kötü adam yine geldi", "annem çağırıyor", "yavaş yavaş",
-  "hıhı", "hayır hayır hayır", "dur dur dur",
-  "onu görüyor musunuz", "ben de görebiliyorum",
-  "gelmeyin buraya", "tehlikeli", "o sizi de görüyor",
+  // Yalnızlık ve oyun
+  "benimle oynar mısın", "yalnız kalmak istemiyorum", "neden kimse oynamıyor benimle",
+  "bebeğimi kaybettim", "oyuncaklarım nerede", "evime gitmek istiyorum",
+  "annem nerede", "babam nerede", "beni bekliyorlar mı",
+  "ağlamak istemiyorum ama ağlıyorum", "kimse görmüyor beni",
+  "görünmez miyim", "burada kimse yok mu", "yalnızım burada",
+  "bir arkadaş istiyorum", "seninle oynayabilir miyim",
+  // Korku ve uyarı
+  "korkuyorum", "neden karanlık", "ışık yakar mısın",
+  "bir şey gördüm", "o tekrar geldi", "her gece geliyor",
+  "o kötü adam yine geldi", "bana dokundu", "bağırınca gidiyor",
+  "gözlerimi kapatıyorum", "saymaya başladım yüzden bire kadar",
+  "arkamda biri var", "onu görüyor musunuz", "sizi de görüyor",
+  "gelmeyin buraya", "tehlikeli burası", "o sizi de takip eder",
+  "beni burada bıraktı", "neden bıraktılar beni",
+  // Garip gözlemler
+  "duvarlar konuşuyor", "pencereden biri bakıyor",
+  "aynadaki ben değilim", "gölgem ayrı hareket ediyor",
+  "tavandan sesler geliyor", "merdivende biri var sayıyorum ayak seslerini",
+  "köpeğim bir şey görüyor köşede", "kedim kaçtı odadan",
+  "çiçekler soldu ben girdikten sonra",
+  "saat durdu tam o anda",
+  // Masum ama ürkütücü
+  "annem çağırıyor", "yavaş yavaş", "hıhı",
+  "hayır hayır hayır", "dur dur dur", "istemiyorum istemiyorum",
+  "ben de görebiliyorum", "soğudum", "bırakmayın beni",
+  "sarıl bana lütfen", "el tut bana", "yanımdan gitme",
+  // Bilinç dışı
+  "uyurken bir yer gidiyorum", "rüyamda da burası",
+  "uyandığımda yorulmuş oluyorum", "geceleri neler oluyor",
+  "sen de geceleri garip şeyler görüyor musun",
+  "karanlıkta gözler var", "onlar bekliyor",
+  // Doğaüstü farkındalık
+  "ben burada çok kaldım", "çıkmak istiyorum artık",
+  "beni götür lütfen", "ışığa doğru gitmek istiyorum",
+  "o kapıdan geçemiyorum", "bir şey engelliyor",
+  "ismin ne senin", "sana güvenebilir miyim",
+  "ağlama ben de ağlarım", "git buradan senin iyiliğin için",
 ];
 
 // ============================================================
 // BOĞUK / UZAKTAN GELEN SES CÜMLELERİ (phantom event)
 // ============================================================
 export const PHANTOM_PHRASES: string[] = [
+  // Varlık bildirme
   "buradayım", "beni duyuyor musun", "yardım", "çıkamıyorum",
   "hapsolduk", "bırakın bizi", "oradan git", "tehlikedesiniz",
   "o geliyor", "kaçın", "hepiniz tehlikedesiniz", "duyuyor musunuz",
   "ben de senin gibilerdim", "artık çok geç", "gitmeyin",
+  // Mekan ve sır
   "bu evin sırrı var", "duvarların içindeyim", "dinleyin beni",
   "onlar gerçek", "kimse inanmadı bana", "şimdi anlıyorsunuz",
   "burası cehennem", "karanlıkta kayboldum", "ses verin bana",
+  "zeminin altında bir oda var", "gizli kapıyı biliyorum",
+  "bodrumdaki sandığı açmayın", "duvarın arkasında ne var biliyor musunuz",
+  "eski sahibi hâlâ burada", "bu ev yüz yıllık bir sırrı taşıyor",
+  "mahzende biri ağlıyor", "çatıda ayak sesleri var",
+  // Teknik / ITC
   "frekansı ayarlayın", "sinyalim zayıf", "bağlantı kopuyor",
   "çok uzaktayım", "duyabiliyorum sizi", "oraya gelmeyin",
+  "kanal açık", "alıyorum sizi", "iletişim kurmaya çalışıyorum",
+  "statik çok fazla", "frekans kayıyor", "band değiştirin",
+  "gürültüyü geçin beni duyacaksınız", "amplifikasyon lazım",
+  "ses dalgası kırılıyor", "boyutlar arası parazit",
+  // Uyarı ve korku
+  "arkanıza bakmayın", "kapıyı kapatın", "ışıkları söndürmeyin",
+  "yalnız kalmayın", "grubu dağıtmayın", "güçlü bir varlık var",
+  "negatif enerji çok yoğun", "alan kirlendi", "temizlenmesi lazım",
+  "bunu kaydedin", "kameraya bakın", "solunuzda bir şey var",
+  "sıcaklık düşüyor dikkat edin", "nefes alabiliyor musunuz",
+  // Boğuk uzak sesler
+  "çok uzaktan konuşuyorum", "sesim size zar zor ulaşıyor",
+  "enerji bitiyor", "son gücümle konuşuyorum",
+  "beni duymak için sessiz olun", "nefes almayı kesin bir saniye",
+  "tam sessizlikte duyulabilirim", "fısıldıyorum çünkü onlar duymasın",
+  "ikimiz arasında kalsın", "başkaları bilmesin",
+  // Kişisel hitap
+  "sana özellikle sesleniyorum", "sen seçildin bu göreve",
+  "özel biri gelmiş bu gece", "hassas biri var aranızda",
+  "biri açık burada ruhsal olarak", "onu bulun aramızda",
 ];
 
 // ============================================================
-// FONEMLER (Ses parçacıkları - ITC tarzı kesik sesler)
+// EV OBJELERİ — Kişisel / Çevresel Referanslar
+// "Yanındaki koltuğa bak", "üçüncü çekmece" gibi
+// Kullanıcıyı donduran, kişisel hissettiren cümleler
 // ============================================================
+export const HOME_OBJECT_PHRASES: string[] = [
+  // Mobilya — koltuk, sandalye, kanepe
+  "yanındaki koltuğa bak", "sol koltuğu gördüm", "koltuğun arkasında biri var",
+  "kanepede oturuyorum şu an", "senin sandalyende oturuyordum",
+  "o boş koltuk doldu", "kanepenin altını kontrol et",
+  "koltuğun yanında bir soğukluk var", "koltuğa dokunma henüz",
+  // Çekmece ve dolap
+  "üçüncü çekmeceyi aç", "en üst çekmecede bir şey sakladım",
+  "alt çekmecede beni bulacaksın", "o çekmeceyi kapatın",
+  "dolabın kapısı açık kalacak bu gece", "gardırobun içinde biri var",
+  "çekmeceleri birer birer aç", "en son çekmecede dur",
+  "dolabı kilitleyin gece olmadan",
+  // Yatak ve yatak odası
+  "yatağının altına bakma", "yastığının altında bir şey var",
+  "yatağın kenarında oturuyorum", "sabah kalktığında yastığa bak",
+  "yatakta uyumaktan vazgeç bu gece", "nevresimin altına girdim",
+  "gece yatağın çöker gibi olursa benim", "uyurken yüzüne bakıyorum",
+  // Ayna ve pencere
+  "aynaya bak dikkatle", "aynanda iki yüz var şu an",
+  "aynanın öbür tarafındayım", "aynayı örtle gece",
+  "pencereden bak dışarıya", "pencere camına yüzümü bastırıyorum",
+  "perdeni aralayıp baktın mı hiç gece", "camın buğusuna bak",
+  "pencereyi açma bu gece", "panjurların arasından giriyorum",
+  // Kapı ve koridor
+  "kapının altından gölge geçti gördün mü", "kapıyı kilitlemiştin ya",
+  "koridorda biri yürüyor", "kapı kolu yavaş yavaş dönüyor",
+  "kapının önünde bekliyorum", "zili çalmadan girebilirim",
+  "o kapıyı açma sakın", "kapı gıcırdadığında benim",
+  // Mutfak
+  "mutfakta bir şey düştü duydun mu", "musluk damlar gibi yapıyorum",
+  "buzdolabının sesi değişti dikkat et", "ocağı söndürdün mü emin misin",
+  "mutfak bıçakları tek tek sayılı mı", "bardak rafına bak",
+  "mutfak masasının altında biri var", "tencereni kımıldattım az önce",
+  // Banyo
+  "banyoda duş alırken yanındayım", "aynanda buhara yazıyorum",
+  "duş perdesinin arkasında bekliyorum", "banyoyu kilitlemen yetmez",
+  "küveti doldururken görüyorum seni", "tuvalet kapısı ardına kadar açık kalacak",
+  // Merdiven ve kat
+  "merdivende yedinci basamak çatırdayacak az sonra",
+  "birinci kattan sesi duyuyorum", "üst katta birisi var",
+  "merdiven boşluğundan sarkıyorum", "alt katta kapı sesi geldi mi",
+  "kaçma merdivenden tutamam seni",
+  // Elektrik ve ışık
+  "ampulü yakında söndüreceğim", "ışık kırpışacak üç kez",
+  "lambayı gözlemle bu gece", "elektrik panosuna gitme",
+  "o köşedeki lamba benim sinyalim", "fişi çekersen bulamazsın beni",
+  // Saat ve takvim
+  "duvar saatin durdu fark ettin mi", "gece üçte saat çalacak",
+  "takvimde o günü çarpıştım", "saatin yelkovanı geri gidiyor",
+  "doğum günün yaklaşıyor biliyorum",
+  // Genel ev hissi
+  "evin en karanlık köşesi benim yerim",
+  "odanın sağ alt köşesine bak",
+  "sol duvarın dibinde oturuyorum",
+  "tavan ile duvarın birleştiği yere bak",
+  "o lekenin altında bir sır var",
+  "halının altını kaldır bir bak",
+  "o tablonun gözleri benim gözlerim",
+  "fotoğraf çerçevesindekini gördün mü yakından",
+];
 export const PHONEMES: string[] = [
   "a", "e", "i", "o", "u", "ö", "ü", "ı",
   "ba", "be", "bi", "bo", "bu", "bö", "bü",
@@ -1160,26 +1321,58 @@ export const RELATIONSHIP_WORDS: string[] = [
 // EK ÜRKÜTÜCÜ FİSİLTILAR
 // ============================================================
 export const WHISPER_PHRASES: string[] = [
-  "pssst", "hey", "bak bana", "burada", "burada",
-  "duy beni", "gör beni", "hisset beni", "dokun bana",
+  // Dikkat çekme
+  "pssst", "hey", "bak bana", "burada", "duy beni",
+  "gör beni", "hisset beni", "dokun bana",
   "yaklaş", "daha yaklaş", "kulağını ver",
+  "sssh", "sessiz ol", "kimse duymasın",
+  "yavaşça dön", "yavaş yavaş bak",
+  // Sır ve seçilmişlik
   "bir sırrım var", "sana bir şey söyleyeceğim",
-  "kimseye söyleme", "aramızda kalsın", "sır",
+  "kimseye söyleme", "aramızda kalsın", "bu sır",
   "seni seçtim", "sen özelsin", "farklısın",
   "diğerlerinden farklısın", "seni anlıyorum",
   "beni anlayan tek kişisin", "bağımız var",
+  "gözlerin farklı bir şey görüyor",
+  "sen hissedebiliyorsun beni",
+  "diğerleri duyamaz ama sen duyarsın",
+  // Kaderin bağı
   "kaderimiz bir", "birbirimize bağlıyız",
   "kaçınamazsın", "yazılmış", "kader",
   "her şey bir sebepten", "tesadüf yok",
   "buraya gelmeni ben istedim", "seni çağırdım",
   "davetim kabul edildi", "hoş geldin evime",
+  "seni bekliyordum çok uzun zamandır",
+  "tam zamanında geldin",
+  // Sahiplenme
   "artık buradasın", "artık benimsin",
   "gitmene izin vermeyeceğim", "sonsuza kadar",
   "birlikte olacağız", "ayrılmayacağız",
+  "sen benim en son misafirimsin",
+  "bir daha gideni olmadı buradan",
+  "bu evin içinde kaybolursun",
+  // Gece ve karanlık
   "rüyalarında görüşürüz", "uykunda geleceğim",
   "gece olunca buradayım", "karanlıkta yaşıyorum",
   "ışıktan korkuyorum", "güneş beni yakıyor",
   "gece benim zamanım", "karanlık benim evim",
+  "gün batımından sonra güçleniyorum",
+  "gece üçte en güçlü halimim",
+  "sabah olunca kaybolurum ama geceye kadar bekle",
+  // Kişisel dokunuş
+  "adını biliyorum", "nerede yaşadığını biliyorum",
+  "aileni tanıyorum", "geçmişini biliyorum",
+  "korkularını biliyorum", "hayallerini biliyorum",
+  "dünkü rüyanda ben vardım",
+  "dün gece uyanmadın mı aniden",
+  "o garip his bendim",
+  // Uyarı ve tehdit
+  "dikkatli ol bu gece", "güvende değilsin",
+  "yanında ol birileri", "yalnız uyuma",
+  "lambayı söndürme sakın", "kapıyı kilitle",
+  "pencere açık kalmasın", "perdeni çek",
+  "o gürültüyü duydun mu az önce",
+  "şimdi tam arkanda", "dönme henüz",
 ];
 
 // ============================================================
@@ -1352,6 +1545,7 @@ export const ALL_WORDS: string[] = [
   ...CURSES,
   ...DREAM_WORDS,
   ...RESEARCH_JARGON,
+  ...HOME_OBJECT_PHRASES,
 ];
 
 // Kategori bilgisi (istatistik için)
