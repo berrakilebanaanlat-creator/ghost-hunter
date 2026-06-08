@@ -197,6 +197,18 @@ class RadioEffectsEngine {
   // Crackle efekti
   private crackleInterval: ReturnType<typeof setInterval> | null = null;
 
+  // ── Ses efekti zinciri (Reverb / Echo / Distortion) ──────────────────────
+  private distortionNode: WaveShaperNode;
+  private echoDelay: DelayNode;
+  private echoFeedback: GainNode;
+  private echoWetGain: GainNode;
+  private reverbConvolver: ConvolverNode;
+  private reverbWetGain: GainNode;
+  // Mevcut efekt seviyeleri (0–1)
+  private _voiceReverbLevel = 0;
+  private _voiceEchoLevel = 0;
+  private _voiceDistortionAmount = 0;
+
   constructor(ctx: AudioContext) {
     this.ctx = ctx;
 
@@ -226,6 +238,94 @@ class RadioEffectsEngine {
     this.staticGain.gain.value = 0;
     this.staticFilter.connect(this.staticGain);
     this.staticGain.connect(this.masterGain);
+
+    // ── Distortion (WaveShaper) ──────────────────────────────────────────
+    this.distortionNode = ctx.createWaveShaper();
+    this.distortionNode.curve = this._makeDistortionCurve(0);
+    this.distortionNode.oversample = "4x";
+
+    // ── Echo (Delay + feedback loop) ────────────────────────────────────
+    this.echoDelay = ctx.createDelay(1.5);
+    this.echoDelay.delayTime.value = 0.38;
+    this.echoFeedback = ctx.createGain();
+    this.echoFeedback.gain.value = 0;
+    this.echoWetGain = ctx.createGain();
+    this.echoWetGain.gain.value = 0;
+    this.echoDelay.connect(this.echoFeedback);
+    this.echoFeedback.connect(this.echoDelay);
+    this.echoDelay.connect(this.echoWetGain);
+    this.echoWetGain.connect(this.masterGain);
+
+    // ── Reverb (Convolver + yapay impulse response) ─────────────────────
+    this.reverbConvolver = ctx.createConvolver();
+    this.reverbConvolver.buffer = this._generateImpulseResponse(2.5, 3.0);
+    this.reverbWetGain = ctx.createGain();
+    this.reverbWetGain.gain.value = 0;
+    this.reverbConvolver.connect(this.reverbWetGain);
+    this.reverbWetGain.connect(this.masterGain);
+
+    // Distortion çıkışı → echo + reverb girdilerine bağla
+    this.distortionNode.connect(this.echoDelay);
+    this.distortionNode.connect(this.reverbConvolver);
+    // Distortion çıkışı → doğrudan master (distorted dry yol)
+    this.distortionNode.connect(this.masterGain);
+  }
+
+  // ── Yapay impulse response (oda yankısı simülasyonu) ─────────────────────
+  private _generateImpulseResponse(duration: number, decay: number): AudioBuffer {
+    const rate = this.ctx.sampleRate;
+    const length = Math.floor(rate * duration);
+    const buf = this.ctx.createBuffer(2, length, rate);
+    for (let ch = 0; ch < 2; ch++) {
+      const d = buf.getChannelData(ch);
+      for (let i = 0; i < length; i++) {
+        d[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / length, decay);
+      }
+    }
+    return buf;
+  }
+
+  // ── Distortion eğrisi ────────────────────────────────────────────────────
+  private _makeDistortionCurve(amount: number): Float32Array<ArrayBuffer> {
+    const n = 256;
+    const curve = new Float32Array(new ArrayBuffer(n * Float32Array.BYTES_PER_ELEMENT));
+    const k = amount * 150;
+    for (let i = 0; i < n; i++) {
+      const x = (i * 2) / n - 1;
+      curve[i] = k > 0
+        ? ((3 + k) * x * 20 * (Math.PI / 180)) / (Math.PI + k * Math.abs(x))
+        : x;
+    }
+    return curve as Float32Array<ArrayBuffer>;
+  }
+
+  // ── Efekt seviyesi güncelleme metodları (dışarıdan çağrılır) ─────────────
+  setVoiceReverbLevel(level: number): void {
+    this._voiceReverbLevel = Math.max(0, Math.min(1, level));
+    this.reverbWetGain.gain.setTargetAtTime(
+      this._voiceReverbLevel * 0.65,
+      this.ctx.currentTime,
+      0.08,
+    );
+  }
+
+  setVoiceEchoLevel(level: number): void {
+    this._voiceEchoLevel = Math.max(0, Math.min(1, level));
+    this.echoFeedback.gain.setTargetAtTime(
+      this._voiceEchoLevel * 0.42,
+      this.ctx.currentTime,
+      0.08,
+    );
+    this.echoWetGain.gain.setTargetAtTime(
+      this._voiceEchoLevel * 0.55,
+      this.ctx.currentTime,
+      0.08,
+    );
+  }
+
+  setVoiceDistortionLevel(level: number): void {
+    this._voiceDistortionAmount = Math.max(0, Math.min(1, level));
+    this.distortionNode.curve = this._makeDistortionCurve(this._voiceDistortionAmount);
   }
 
   // --- Beyaz Gürültü ---
@@ -492,8 +592,11 @@ class RadioEffectsEngine {
       const gainNode = this.ctx.createGain();
       gainNode.gain.value = Math.max(0.0, Math.min(1.0, volume));
 
+      // Ses efekti zinciri üzerinden yönlendir:
+      // source → gainNode → distortionNode → (echo / reverb / dry master)
+      // Distortion node yokken (level=0) eğri linear → ses bozulmadan geçer
       source.connect(gainNode);
-      gainNode.connect(this.masterGain);
+      gainNode.connect(this.distortionNode);
       source.start();
 
       source.onended = () => {
@@ -533,6 +636,12 @@ class RadioEffectsEngine {
       this.noiseFilter.disconnect();
       this.staticGain.disconnect();
       this.staticFilter.disconnect();
+      this.distortionNode.disconnect();
+      this.echoDelay.disconnect();
+      this.echoFeedback.disconnect();
+      this.echoWetGain.disconnect();
+      this.reverbConvolver.disconnect();
+      this.reverbWetGain.disconnect();
       this.masterGain.disconnect();
     } catch { /* */ }
   }
@@ -1166,14 +1275,17 @@ class ITCVoiceEngine {
 
   setReverbLevel(level: number): void {
     this.settings.reverbLevel = Math.max(0, Math.min(1, level));
+    this.radioEffects?.setVoiceReverbLevel(this.settings.reverbLevel);
   }
 
   setEchoLevel(level: number): void {
     this.settings.echoLevel = Math.max(0, Math.min(1, level));
+    this.radioEffects?.setVoiceEchoLevel(this.settings.echoLevel);
   }
 
   setDistortionLevel(level: number): void {
     this.settings.distortionLevel = Math.max(0, Math.min(1, level));
+    this.radioEffects?.setVoiceDistortionLevel(this.settings.distortionLevel);
     // Crackle yoğunluğunu güncelle
     if (this.radioEffects) {
       this.radioEffects.stopCrackle();
