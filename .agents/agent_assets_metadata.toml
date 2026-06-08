@@ -1,0 +1,8 @@
+uploads = []
+generated = []
+
+[[outputs]]
+id = "YrVwznsxjxoNRd6sY_Pel"
+uri = "file://artifacts/ghost-hunter/keystore/upload_certificate.tar.gz"
+type = "unspecified"
+title = "upload_certificate.tar.gz — Açıp içindeki .pem dosyasını Google Play'e yükle"

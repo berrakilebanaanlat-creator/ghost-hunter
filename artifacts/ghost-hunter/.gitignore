@@ -34,6 +34,10 @@ yarn-error.*
 # local env files
 .env*.local
 
+# Keystore & credentials (güvenlik)
+credentials.json
+keystore/
+
 # typescript
 *.tsbuildinfo
 .vercel
