@@ -4,18 +4,51 @@ import { ScreenContainer } from "@/components/screen-container";
 import { IconSymbol } from "@/components/ui/icon-symbol";
 import { AdBanner } from "@/components/ad-banner";
 import * as Haptics from "expo-haptics";
+import { Magnetometer } from "expo-sensors";
 import { t } from "@/lib/i18n";
 
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
 const RADAR_SIZE = Math.min(SCREEN_WIDTH - 64, 260);
 const RADAR_HALF = RADAR_SIZE / 2;
 
+// Kalibrasyon süresi (ms) — bu süre boyunca baseline ölçülür
+const CALIBRATION_MS = 3500;
+// Baseline'dan bu kadar μT sapma olursa sinyal oluşur
+const EMF_THRESHOLD_LOW = 4;    // düşük sinyal
+const EMF_THRESHOLD_MED = 10;   // orta sinyal
+const EMF_THRESHOLD_HIGH = 22;  // güçlü sinyal
+// Aynı yönde art arda kaç ölçüm gerekli (debounce)
+const DEBOUNCE_COUNT = 2;
+// Bir sinyal oluştuktan sonra ne kadar süre cooldown (ms)
+const SPAWN_COOLDOWN = 6000;
+// Hedefin radar üzerinde kalma süresi (ms)
+const TARGET_LIFETIME = 12000;
+
 interface RadarTarget {
   id: string;
   angle: number;
   distance: number;
   strength: number;
+  emfMicrotesla: number;
   timestamp: Date;
+  expiresAt: number;
+}
+
+interface MagReading {
+  x: number;
+  y: number;
+  z: number;
+}
+
+function magnitude(r: MagReading) {
+  return Math.sqrt(r.x * r.x + r.y * r.y + r.z * r.z);
+}
+
+// Magnetometer x,y'den pusula açısı (0=Kuzey, 90=Doğu, saat yönü)
+function compassBearing(r: MagReading) {
+  let angle = Math.atan2(r.y, r.x) * (180 / Math.PI);
+  angle = (angle + 360) % 360;
+  return angle;
 }
 
 export default function RadarScreen() {
@@ -25,18 +58,138 @@ export default function RadarScreen() {
   const [elapsedTime, setElapsedTime] = useState(0);
   const [pulsePhase, setPulsePhase] = useState(0);
 
+  // Magnetometre durumu
+  const [isCalibrating, setIsCalibrating] = useState(false);
+  const [calibrationProgress, setCalibrationProgress] = useState(0); // 0-100
+  const [currentEmf, setCurrentEmf] = useState(0);
+  const [sensorAvailable, setSensorAvailable] = useState<boolean | null>(null);
+
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const rafRef = useRef<number | null>(null);
   const lastTimeRef = useRef<number | null>(null);
+  const magSubscriptionRef = useRef<ReturnType<typeof Magnetometer.addListener> | null>(null);
 
-  // ANR FIX: Animasyon accumulators
+  // Kalibrasyon verileri
+  const calibrationReadings = useRef<number[]>([]);
+  const calibrationStartRef = useRef<number>(0);
+  const baselineMagnitude = useRef<number>(0);
+  const lastReading = useRef<MagReading>({ x: 0, y: 0, z: 0 });
+  const lastSpawnTime = useRef<number>(0);
+  const debounceBuffer = useRef<number[]>([]); // son N okumada eşik aşıldı mı
+
+  // Animasyon accumulators
   const rotationAccRef = useRef(0);
   const pulseAccRef = useRef(0);
-  const targetSpawnAccRef = useRef(0);
 
-  // ANR FIX: Tek bir requestAnimationFrame loop'u ile tüm animasyonları yönet
-  // Önceki: 80ms interval (rotation + target spawn) + 50ms interval (pulse) = 2 ayrı setInterval
-  // Şimdi: Tek RAF loop, UI thread'i bloklamaz
+  // Hedef oluştur (sensör tetikli)
+  const spawnTarget = useCallback((delta: number, reading: MagReading) => {
+    const now = Date.now();
+    if (now - lastSpawnTime.current < SPAWN_COOLDOWN) return;
+    lastSpawnTime.current = now;
+
+    const angle = compassBearing(reading);
+    // Sinyal gücü kuvvetliyse daha yakın göster
+    const normalizedStrength = Math.min(1, delta / 40);
+    const distance = Math.max(10, 90 - normalizedStrength * 75);
+    const strengthPct = Math.min(100, (delta / EMF_THRESHOLD_HIGH) * 100);
+    const emfMicrotesla = baselineMagnitude.current + delta;
+
+    const newTarget: RadarTarget = {
+      id: `${now}_${Math.random().toString(36).slice(2, 5)}`,
+      angle,
+      distance,
+      strength: strengthPct,
+      emfMicrotesla,
+      timestamp: new Date(),
+      expiresAt: now + TARGET_LIFETIME,
+    };
+
+    if (Platform.OS !== "web" && strengthPct > 50) {
+      Haptics.impactAsync(
+        strengthPct > 75
+          ? Haptics.ImpactFeedbackStyle.Heavy
+          : Haptics.ImpactFeedbackStyle.Medium,
+      );
+    }
+
+    setTargets((prev) => {
+      const alive = prev.filter((t) => t.expiresAt > now);
+      return [...alive, newTarget].slice(-6);
+    });
+  }, []);
+
+  // Magnetometre aboneliği başlat
+  const startMagnetometer = useCallback(() => {
+    Magnetometer.setUpdateInterval(200);
+    calibrationReadings.current = [];
+    calibrationStartRef.current = Date.now();
+    baselineMagnitude.current = 0;
+    debounceBuffer.current = [];
+    setIsCalibrating(true);
+    setCalibrationProgress(0);
+
+    magSubscriptionRef.current = Magnetometer.addListener((data) => {
+      lastReading.current = data;
+      const mag = magnitude(data);
+      setCurrentEmf(mag);
+
+      const elapsed = Date.now() - calibrationStartRef.current;
+
+      if (elapsed < CALIBRATION_MS) {
+        // Kalibrasyon fazı: baseline hesapla
+        calibrationReadings.current.push(mag);
+        setCalibrationProgress(Math.min(100, (elapsed / CALIBRATION_MS) * 100));
+      } else {
+        if (isCalibrating) {
+          // Kalibrasyon bitti — ortalama al
+          const sum = calibrationReadings.current.reduce((a, b) => a + b, 0);
+          baselineMagnitude.current =
+            calibrationReadings.current.length > 0
+              ? sum / calibrationReadings.current.length
+              : mag;
+          setIsCalibrating(false);
+        }
+
+        if (baselineMagnitude.current === 0) return;
+
+        // Mevcut okuma ile baseline arasındaki sapma
+        const delta = Math.abs(mag - baselineMagnitude.current);
+
+        // Debounce: yeterince ardışık ölçüm gerekli
+        debounceBuffer.current.push(delta >= EMF_THRESHOLD_LOW ? 1 : 0);
+        if (debounceBuffer.current.length > DEBOUNCE_COUNT + 2) {
+          debounceBuffer.current.shift();
+        }
+        const aboveThreshold = debounceBuffer.current
+          .slice(-DEBOUNCE_COUNT)
+          .every((v) => v === 1);
+
+        if (aboveThreshold && delta >= EMF_THRESHOLD_LOW) {
+          spawnTarget(delta, data);
+        }
+      }
+    });
+  }, [isCalibrating, spawnTarget]);
+
+  // Magnetometre aboneliğini durdur
+  const stopMagnetometer = useCallback(() => {
+    magSubscriptionRef.current?.remove();
+    magSubscriptionRef.current = null;
+    setIsCalibrating(false);
+    setCalibrationProgress(0);
+    setCurrentEmf(0);
+    baselineMagnitude.current = 0;
+    debounceBuffer.current = [];
+  }, []);
+
+  // Sensör müsaitliğini kontrol et
+  useEffect(() => {
+    Magnetometer.isAvailableAsync().then((avail) => {
+      setSensorAvailable(avail);
+    }).catch(() => setSensorAvailable(false));
+  }, []);
+
+  // RAF animasyon döngüsü (sadece görsel)
   const animateFrame = useCallback((time: number) => {
     if (lastTimeRef.current === null) {
       lastTimeRef.current = time;
@@ -47,7 +200,6 @@ export default function RadarScreen() {
     const deltaTime = time - lastTimeRef.current;
     lastTimeRef.current = time;
 
-    // Rotation: her 80ms'de 3 derece dön
     rotationAccRef.current += deltaTime;
     if (rotationAccRef.current >= 80) {
       const steps = Math.floor(rotationAccRef.current / 80);
@@ -55,7 +207,6 @@ export default function RadarScreen() {
       setRotation((prev) => (prev + steps * 3) % 360);
     }
 
-    // Pulse: her 50ms'de 1 birim ilerle
     pulseAccRef.current += deltaTime;
     if (pulseAccRef.current >= 50) {
       const steps = Math.floor(pulseAccRef.current / 50);
@@ -63,42 +214,24 @@ export default function RadarScreen() {
       setPulsePhase((p) => (p + steps) % 100);
     }
 
-    // Target spawn: her 4000ms'de %22 şansla hedef oluştur (~1 sinyal / 18 saniye)
-    targetSpawnAccRef.current += deltaTime;
-    if (targetSpawnAccRef.current >= 4000) {
-      targetSpawnAccRef.current -= 4000;
-
-      if (Math.random() > 0.78) {
-        const newTarget: RadarTarget = {
-          id: Date.now().toString() + Math.random().toString(36).slice(2, 6),
-          angle: Math.random() * 360,
-          distance: 15 + Math.random() * 80,
-          strength: Math.random() * 100,
-          timestamp: new Date(),
-        };
-
-        if (Platform.OS !== "web" && newTarget.strength > 60) {
-          Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-        }
-
-        setTargets((prev) => {
-          const updated = [...prev, newTarget];
-          return updated.length > 5 ? updated.slice(-5) : updated;
-        });
-      }
-    }
+    // Süresi dolan hedefleri temizle
+    const now = Date.now();
+    setTargets((prev) => prev.filter((t) => t.expiresAt > now));
 
     rafRef.current = requestAnimationFrame(animateFrame);
   }, []);
 
-  // RAF loop'u başlat/durdur
+  // Tarama başlat/durdur
   useEffect(() => {
     if (isScanning) {
       lastTimeRef.current = null;
       rotationAccRef.current = 0;
       pulseAccRef.current = 0;
-      targetSpawnAccRef.current = 0;
       rafRef.current = requestAnimationFrame(animateFrame);
+
+      if (sensorAvailable) {
+        startMagnetometer();
+      }
     } else {
       if (rafRef.current !== null) {
         cancelAnimationFrame(rafRef.current);
@@ -106,6 +239,7 @@ export default function RadarScreen() {
       }
       lastTimeRef.current = null;
       setPulsePhase(0);
+      stopMagnetometer();
     }
 
     return () => {
@@ -115,13 +249,13 @@ export default function RadarScreen() {
       }
       lastTimeRef.current = null;
     };
-  }, [isScanning, animateFrame]);
+  }, [isScanning, animateFrame, sensorAvailable, startMagnetometer, stopMagnetometer]);
 
-  // Süre sayacı - 1s interval (hafif, ANR riski yok)
+  // Süre sayacı
   useEffect(() => {
     if (isScanning) {
       timerRef.current = setInterval(() => {
-        setElapsedTime((t) => t + 1);
+        setElapsedTime((s) => s + 1);
       }, 1000);
     } else {
       if (timerRef.current) clearInterval(timerRef.current);
@@ -133,19 +267,21 @@ export default function RadarScreen() {
 
   const getTargetColor = (strength: number) => {
     if (strength > 70) return "#FF3333";
-    if (strength > 40) return "#FFCC00";
+    if (strength > 35) return "#FFCC00";
     return "#00CCFF";
   };
 
   const getTargetLabel = (strength: number) => {
-    if (strength > 70) return t("emf.high").toUpperCase();
-    if (strength > 40) return t("emf.medium").toUpperCase();
-    return t("emf.low").toUpperCase();
+    if (strength > 70) return "EMF YÜKSEK";
+    if (strength > 35) return "EMF ORTA";
+    return "EMF DÜŞÜK";
   };
 
   const toggleScanning = () => {
     if (isScanning) {
       setIsScanning(false);
+      setTargets([]);
+      setElapsedTime(0);
     } else {
       setTargets([]);
       setElapsedTime(0);
@@ -163,9 +299,15 @@ export default function RadarScreen() {
   };
 
   const pulseOpacity = isScanning ? 0.3 + Math.sin(pulsePhase * 0.12) * 0.2 : 0.1;
-
-  // Radar çemberleri
   const rings = [0.25, 0.5, 0.75, 1.0];
+
+  // Kalibrasyon durumu etiketi
+  const statusLabel = () => {
+    if (!isScanning) return t("common.off").toUpperCase();
+    if (!sensorAvailable) return "SİMÜLASYON";
+    if (isCalibrating) return `KALİBRASYON %${calibrationProgress.toFixed(0)}`;
+    return "EMF TARAMA";
+  };
 
   return (
     <ScreenContainer containerClassName="bg-[#060609]">
@@ -175,10 +317,36 @@ export default function RadarScreen() {
           <View style={styles.headerLeft}>
             <View style={[styles.headerDot, { backgroundColor: isScanning ? "#00CCFF" : "#2A2A40", opacity: pulseOpacity + 0.5 }]} />
             <Text style={styles.headerTitle}>RADAR</Text>
-            <Text style={styles.headerSub}>{t("radar.title").replace("PARANORMAL ", "").replace("RADAR", "").trim() || t("home.radarSub")}</Text>
+            <Text style={styles.headerSub}>EMF DEDEKTÖR</Text>
           </View>
           <Text style={styles.headerTime}>{formatTime(elapsedTime)}</Text>
         </View>
+
+        {/* Kalibrasyon çubuğu */}
+        {isScanning && isCalibrating && (
+          <View style={styles.calibBar}>
+            <View style={[styles.calibFill, { width: `${calibrationProgress}%` }]} />
+            <Text style={styles.calibText}>KALİBRASYON — ORTAM ÖLÇÜLİYOR...</Text>
+          </View>
+        )}
+
+        {/* EMF anlık okuma */}
+        {isScanning && !isCalibrating && sensorAvailable && (
+          <View style={styles.emfReadout}>
+            <Text style={styles.emfLabel}>ALAN</Text>
+            <Text style={[
+              styles.emfValue,
+              { color: currentEmf > (baselineMagnitude.current + EMF_THRESHOLD_HIGH)
+                ? "#FF3333"
+                : currentEmf > (baselineMagnitude.current + EMF_THRESHOLD_MED)
+                  ? "#FFCC00"
+                  : "#00CCFF" },
+            ]}>
+              {currentEmf.toFixed(1)} μT
+            </Text>
+            <Text style={styles.emfLabel}>BASE {baselineMagnitude.current.toFixed(1)} μT</Text>
+          </View>
+        )}
 
         {/* Radar Görüntüsü */}
         <View style={styles.radarContainer}>
@@ -229,7 +397,12 @@ export default function RadarScreen() {
               const r = (target.distance / 100) * maxR;
               const x = r * Math.cos(rad);
               const y = r * Math.sin(rad);
-              const dotSize = target.strength > 70 ? 8 : target.strength > 40 ? 6 : 4;
+              const dotSize = target.strength > 70 ? 9 : target.strength > 35 ? 6 : 4;
+              const color = getTargetColor(target.strength);
+
+              // Hedef soluklaşma (zaman kalan oranına göre)
+              const remaining = Math.max(0, target.expiresAt - Date.now());
+              const fadeOpacity = Math.min(1, remaining / 2000);
 
               return (
                 <View
@@ -240,9 +413,10 @@ export default function RadarScreen() {
                       width: dotSize,
                       height: dotSize,
                       borderRadius: dotSize / 2,
-                      backgroundColor: getTargetColor(target.strength),
+                      backgroundColor: color,
                       left: RADAR_HALF + x - dotSize / 2,
                       top: RADAR_HALF + y - dotSize / 2,
+                      opacity: fadeOpacity,
                     },
                   ]}
                 />
@@ -268,13 +442,17 @@ export default function RadarScreen() {
           </View>
           <View style={styles.statDivider} />
           <View style={styles.statItem}>
-            <Text style={styles.statValue}>{rotation.toFixed(0)}°</Text>
-            <Text style={styles.statLabel}>ANG</Text>
+            <Text style={styles.statValue}>
+              {isScanning && !isCalibrating && baselineMagnitude.current > 0
+                ? `${Math.abs(currentEmf - baselineMagnitude.current).toFixed(1)}μT`
+                : "---"}
+            </Text>
+            <Text style={styles.statLabel}>SAPMA</Text>
           </View>
           <View style={styles.statDivider} />
           <View style={styles.statItem}>
             <Text style={[styles.statValue, { color: isScanning ? "#00CCFF" : "#2A2A40" }]}>
-              {isScanning ? t("radar.scanning").replace("...", "") : t("common.off").toUpperCase()}
+              {statusLabel()}
             </Text>
             <Text style={styles.statLabel}>{t("emf.status").toUpperCase()}</Text>
           </View>
@@ -283,18 +461,22 @@ export default function RadarScreen() {
         {/* Hedef Listesi */}
         <View style={styles.targetList}>
           <View style={styles.targetListHeader}>
-            <Text style={styles.targetListTitle}>{t("radar.detected").toUpperCase()}</Text>
+            <Text style={styles.targetListTitle}>ALGILANAN EMF SİNYALLERİ</Text>
             <Text style={styles.targetListCount}>{targets.length}</Text>
           </View>
           <FlatList
-            data={targets}
+            data={[...targets].reverse()}
             keyExtractor={(item) => item.id}
             style={styles.targetScroll}
             showsVerticalScrollIndicator={false}
             ListEmptyComponent={
               <View style={styles.targetEmpty}>
                 <Text style={styles.targetEmptyText}>
-                  {isScanning ? t("radar.scanning") : t("radar.startScan")}
+                  {isScanning
+                    ? isCalibrating
+                      ? "Ortam kalibre ediliyor..."
+                      : "Elektromanyetik alan izleniyor..."
+                    : t("radar.startScan")}
                 </Text>
               </View>
             }
@@ -306,7 +488,7 @@ export default function RadarScreen() {
                     {getTargetLabel(item.strength)}
                   </Text>
                   <Text style={styles.targetItemMeta}>
-                    {item.angle.toFixed(0)}° · {item.distance.toFixed(0)}m · %{item.strength.toFixed(0)}
+                    {item.angle.toFixed(0)}° · {item.distance.toFixed(0)}m · {item.emfMicrotesla.toFixed(1)} μT
                   </Text>
                 </View>
                 <Text style={styles.targetItemTime}>
@@ -352,7 +534,7 @@ const styles = StyleSheet.create({
     flex: 1,
     paddingHorizontal: 16,
     paddingTop: 4,
-    gap: 12,
+    gap: 10,
   },
   header: {
     flexDirection: "row",
@@ -391,11 +573,57 @@ const styles = StyleSheet.create({
     fontVariant: ["tabular-nums"],
   },
 
+  // Kalibrasyon
+  calibBar: {
+    height: 20,
+    backgroundColor: "#0A0A12",
+    borderRadius: 4,
+    overflow: "hidden",
+    borderWidth: 1,
+    borderColor: "#00CCFF20",
+    justifyContent: "center",
+  },
+  calibFill: {
+    position: "absolute",
+    left: 0,
+    top: 0,
+    bottom: 0,
+    backgroundColor: "#00CCFF18",
+  },
+  calibText: {
+    fontSize: 8,
+    fontWeight: "600",
+    color: "#00CCFF80",
+    letterSpacing: 2,
+    textAlign: "center",
+  },
+
+  // EMF anlık okuma
+  emfReadout: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 8,
+    paddingVertical: 4,
+  },
+  emfLabel: {
+    fontSize: 8,
+    fontWeight: "600",
+    color: "#3A3A50",
+    letterSpacing: 2,
+  },
+  emfValue: {
+    fontSize: 15,
+    fontWeight: "800",
+    letterSpacing: 1,
+    fontVariant: ["tabular-nums"],
+  },
+
   // Radar
   radarContainer: {
     alignItems: "center",
     justifyContent: "center",
-    paddingVertical: 8,
+    paddingVertical: 4,
     position: "relative",
   },
   radarCircle: {
@@ -457,7 +685,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   statValue: {
-    fontSize: 14,
+    fontSize: 13,
     fontWeight: "700",
     color: "#D0D0E0",
     fontVariant: ["tabular-nums"],
@@ -493,7 +721,7 @@ const styles = StyleSheet.create({
     borderBottomColor: "#141420",
   },
   targetListTitle: {
-    fontSize: 10,
+    fontSize: 9,
     fontWeight: "600",
     color: "#3A3A50",
     letterSpacing: 2,
