@@ -59,11 +59,11 @@ const CHARACTER_LABELS: Record<VoiceCharacter, string> = {
   muffled_female: "BOĞUK K.",
 };
 
-const NOISE_MODE_LABELS: Record<WhiteNoiseMode, string> = {
-  off: "KAPALI",
-  slow: "YAVAŞ",
-  fast: "HIZLI",
-  continuous: "SÜREKLİ",
+const NOISE_MODE_KEYS: Record<WhiteNoiseMode, string> = {
+  off: "vox.noiseOff",
+  slow: "vox.noiseSlow",
+  fast: "vox.noiseFast",
+  continuous: "vox.noiseCont",
 };
 
 const NOISE_MODES: WhiteNoiseMode[] = ["off", "slow", "fast", "continuous"];
@@ -397,27 +397,26 @@ export default function VoxScreen() {
       return `${m.toString().padStart(2, "0")}:${sec.toString().padStart(2, "0")}`;
     };
     const charLines = summaryData.topCharacters
-      .map((c) => `  ${CHARACTER_LABELS[c.character]}: ${c.count} mesaj`)
+      .map((c) => `  ${CHARACTER_LABELS[c.character]}: ${c.count}`)
       .join("\n");
     const wordLines = summaryData.topWords.map((w) => `  "${w}"`).join("\n");
     const text = [
-      "👻 ANTİK GHOST HUNTER — VOX ITC OTURUM RAPORU",
+      `👻 ANTIK GHOST HUNTER — VOX ITC`,
       "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━",
-      `⏱  Süre: ${fmt(summaryData.duration)}`,
-      `📡 Toplam mesaj: ${summaryData.wordCount}`,
+      `⏱  ${t("vox.duration")}: ${fmt(summaryData.duration)}`,
+      `📡 ${t("vox.messages")}: ${summaryData.wordCount}`,
       "",
-      "🎙 Aktif karakterler:",
+      `🎙 ${t("vox.activeCharacters")}:`,
       charLines,
       "",
-      "💬 Son alınan mesajlar:",
+      `💬 ${t("vox.recentMessages")}:`,
       wordLines,
       "",
       "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━",
-      "📲 Antik Ghost Hunter ile ruhlarla iletişime geç!",
-      "#ghosthunter #paranormal #ruh #ITC #EVP",
+      "#ghosthunter #paranormal #ITC #EVP",
     ].join("\n");
     try {
-      await Share.share({ message: text, title: "Ghost Hunter VOX Oturumu" });
+      await Share.share({ message: text, title: "Ghost Hunter VOX" });
     } catch { /* */ }
   }, [summaryData]);
 
@@ -452,7 +451,7 @@ export default function VoxScreen() {
             {/* Başlık */}
             <View style={styles.modalHeader}>
               <Text style={styles.modalIcon}>👻</Text>
-              <Text style={styles.modalTitle}>OTURUM TAMAMLANDI</Text>
+              <Text style={styles.modalTitle}>{t("vox.sessionComplete")}</Text>
             </View>
 
             {/* İstatistikler */}
@@ -465,24 +464,24 @@ export default function VoxScreen() {
                     return `${m.toString().padStart(2, "0")}:${s.toString().padStart(2, "0")}`;
                   })()}
                 </Text>
-                <Text style={styles.modalStatLabel}>SÜRE</Text>
+                <Text style={styles.modalStatLabel}>{t("vox.duration")}</Text>
               </View>
               <View style={styles.modalStatDivider} />
               <View style={styles.modalStatItem}>
                 <Text style={styles.modalStatValue}>{summaryData?.wordCount ?? 0}</Text>
-                <Text style={styles.modalStatLabel}>MESAJ</Text>
+                <Text style={styles.modalStatLabel}>{t("vox.messages")}</Text>
               </View>
               <View style={styles.modalStatDivider} />
               <View style={styles.modalStatItem}>
                 <Text style={styles.modalStatValue}>{summaryData?.topCharacters.length ?? 0}</Text>
-                <Text style={styles.modalStatLabel}>RUH</Text>
+                <Text style={styles.modalStatLabel}>{t("vox.spirits")}</Text>
               </View>
             </View>
 
             {/* Aktif karakterler */}
             {(summaryData?.topCharacters.length ?? 0) > 0 && (
               <View style={styles.modalSection}>
-                <Text style={styles.modalSectionTitle}>AKTİF KARAKTERLER</Text>
+                <Text style={styles.modalSectionTitle}>{t("vox.activeCharacters")}</Text>
                 {summaryData!.topCharacters.map((c) => (
                   <View key={c.character} style={styles.modalCharRow}>
                     <View style={[styles.modalCharDot, { backgroundColor: CHARACTER_COLORS[c.character] }]} />
@@ -498,7 +497,7 @@ export default function VoxScreen() {
             {/* Son mesajlar */}
             {(summaryData?.topWords.length ?? 0) > 0 && (
               <View style={styles.modalSection}>
-                <Text style={styles.modalSectionTitle}>SON MESAJLAR</Text>
+                <Text style={styles.modalSectionTitle}>{t("vox.recentMessages")}</Text>
                 {summaryData!.topWords.slice(0, 4).map((w, i) => (
                   <Text key={i} style={styles.modalWord}>"{w}"</Text>
                 ))}
@@ -512,13 +511,13 @@ export default function VoxScreen() {
                 style={({ pressed }) => [styles.modalShareBtn, pressed && { opacity: 0.8 }]}
               >
                 <IconSymbol size={16} name="square.and.arrow.up" color="#000" />
-                <Text style={styles.modalShareText}>PAYLAŞ</Text>
+                <Text style={styles.modalShareText}>{t("vox.share")}</Text>
               </Pressable>
               <Pressable
                 onPress={() => setShowSummary(false)}
                 style={({ pressed }) => [styles.modalCloseBtn, pressed && { opacity: 0.7 }]}
               >
-                <Text style={styles.modalCloseBtnText}>KAPAT</Text>
+                <Text style={styles.modalCloseBtnText}>{t("vox.close")}</Text>
               </Pressable>
             </View>
           </View>
@@ -538,7 +537,7 @@ export default function VoxScreen() {
               <View style={styles.micIndicator}>
                 <View style={[styles.micDot, { backgroundColor: micLevelColor }]} />
                 <Text style={[styles.micLabel, { color: micLevelColor }]}>
-                  {micState.voiceDetected ? "SES" : "MİK"}
+                  {micState.voiceDetected ? t("vox.voiceLabel") : t("vox.micLabel")}
                 </Text>
               </View>
             )}
@@ -592,7 +591,7 @@ export default function VoxScreen() {
                       styles.noiseModeBtnText,
                       whiteNoiseMode === mode && { color: "#9B4FDE" },
                     ]}>
-                      {NOISE_MODE_LABELS[mode]}
+                      {t(NOISE_MODE_KEYS[mode])}
                     </Text>
                   </Pressable>
                 ))}

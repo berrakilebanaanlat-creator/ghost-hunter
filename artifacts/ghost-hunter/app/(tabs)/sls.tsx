@@ -369,7 +369,7 @@ export default function SLSScreen() {
       <ScreenContainer edges={["top", "left", "right"]} containerClassName="bg-background">
         <View style={styles.permissionContainer}>
           <IconSymbol name="camera.fill" size={48} color="#2A2A40" />
-          <Text style={styles.permissionTitle}>KAMERA İZNİ GEREKLİ</Text>
+          <Text style={styles.permissionTitle}>{t("sls.cameraPermission")}</Text>
           <Text style={styles.permissionText}>
             SLS taraması için kameraya erişim izni vermeniz gerekmektedir.
           </Text>
@@ -534,13 +534,13 @@ export default function SLSScreen() {
 
                 {/* Termal renk skalası */}
                 <View style={styles.thermalScale}>
-                  <Text style={styles.thermalScaleLabel}>SICAK</Text>
+                  <Text style={styles.thermalScaleLabel}>{t("sls.thermalHot")}</Text>
                   <View style={styles.thermalScaleBar}>
                     {THERMAL_COLORS.slice().reverse().map((color, i) => (
                       <View key={i} style={[styles.thermalScaleSegment, { backgroundColor: color }]} />
                     ))}
                   </View>
-                  <Text style={styles.thermalScaleLabel}>SOĞUK</Text>
+                  <Text style={styles.thermalScaleLabel}>{t("sls.thermalCold")}</Text>
                 </View>
               </View>
             )}

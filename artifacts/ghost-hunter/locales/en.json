@@ -84,7 +84,21 @@
     "whiteNoise": "White Noise",
     "signalStrength": "Signal Strength",
     "activity": "Activity",
-    "premiumActive": "VOX Premium Active"
+    "premiumActive": "VOX Premium Active",
+    "sessionComplete": "SESSION COMPLETE",
+    "duration": "DURATION",
+    "messages": "MESSAGES",
+    "spirits": "SPIRITS",
+    "activeCharacters": "ACTIVE CHARACTERS",
+    "recentMessages": "RECENT MESSAGES",
+    "share": "SHARE",
+    "close": "CLOSE",
+    "noiseOff": "OFF",
+    "noiseSlow": "SLOW",
+    "noiseFast": "FAST",
+    "noiseCont": "CONT.",
+    "micLabel": "MIC",
+    "voiceLabel": "VOICE"
   },
   "sls": {
     "title": "SLS CAMERA",
@@ -99,7 +113,10 @@
     "switchCamera": "Switch Camera",
     "thermal": "Thermal",
     "normal": "Normal",
-    "premiumActive": "SLS Premium Active"
+    "premiumActive": "SLS Premium Active",
+    "cameraPermission": "CAMERA PERMISSION REQUIRED",
+    "thermalHot": "HOT",
+    "thermalCold": "COLD"
   },
   "records": {
     "title": "EVIDENCE WALL",

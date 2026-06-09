@@ -84,7 +84,21 @@
     "whiteNoise": "Beyaz Gürültü",
     "signalStrength": "Sinyal Gücü",
     "activity": "Aktivite",
-    "premiumActive": "VOX Premium Aktif"
+    "premiumActive": "VOX Premium Aktif",
+    "sessionComplete": "OTURUM TAMAMLANDI",
+    "duration": "SÜRE",
+    "messages": "MESAJ",
+    "spirits": "RUH",
+    "activeCharacters": "AKTİF KARAKTERLER",
+    "recentMessages": "SON MESAJLAR",
+    "share": "PAYLAŞ",
+    "close": "KAPAT",
+    "noiseOff": "KAPALI",
+    "noiseSlow": "YAVAŞ",
+    "noiseFast": "HIZLI",
+    "noiseCont": "SÜREKLİ",
+    "micLabel": "MİK",
+    "voiceLabel": "SES"
   },
   "sls": {
     "title": "SLS KAMERA",
@@ -99,7 +113,10 @@
     "switchCamera": "Kamera Değiştir",
     "thermal": "Termal",
     "normal": "Normal",
-    "premiumActive": "SLS Premium Aktif"
+    "premiumActive": "SLS Premium Aktif",
+    "cameraPermission": "KAMERA İZNİ GEREKLİ",
+    "thermalHot": "SICAK",
+    "thermalCold": "SOĞUK"
   },
   "records": {
     "title": "KANIT DUVARI",

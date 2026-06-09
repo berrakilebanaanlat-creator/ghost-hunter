@@ -6,7 +6,7 @@
     "evp": "EVP",
     "vox": "VOX",
     "sls": "SLS",
-    "records": "REGISTROS",
+    "records": "EVIDENCIAS",
     "history": "HISTORIAL",
     "premium": "PREMIUM"
   },
@@ -26,8 +26,8 @@
     "voxSub": "Comunicación Espiritual",
     "sls": "SLS",
     "slsSub": "Sensor de Luz Estructurada",
-    "records": "REGISTROS",
-    "recordsSub": "Archivo de Eventos"
+    "records": "EVIDENCIAS",
+    "recordsSub": "Muro de Evidencias"
   },
   "emf": {
     "title": "ESCÁNER EMF",
@@ -83,7 +83,22 @@
     "sensitivity": "Sensibilidad",
     "whiteNoise": "Ruido Blanco",
     "signalStrength": "Fuerza de Señal",
-    "activity": "Actividad"
+    "activity": "Actividad",
+    "premiumActive": "VOX Premium Activo",
+    "sessionComplete": "SESIÓN COMPLETADA",
+    "duration": "DURACIÓN",
+    "messages": "MSGS",
+    "spirits": "ESPÍRITUS",
+    "activeCharacters": "PERSONAJES ACTIVOS",
+    "recentMessages": "MENSAJES RECIENTES",
+    "share": "COMPARTIR",
+    "close": "CERRAR",
+    "noiseOff": "OFF",
+    "noiseSlow": "LENTO",
+    "noiseFast": "RÁPIDO",
+    "noiseCont": "CONTINUO",
+    "micLabel": "MIC",
+    "voiceLabel": "VOZ"
   },
   "sls": {
     "title": "CÁMARA SLS",
@@ -97,22 +112,31 @@
     "capture": "Capturar",
     "switchCamera": "Cambiar Cámara",
     "thermal": "Térmico",
-    "normal": "Normal"
+    "normal": "Normal",
+    "premiumActive": "SLS Premium Activo",
+    "cameraPermission": "PERMISO DE CÁMARA REQUERIDO",
+    "thermalHot": "CALIENTE",
+    "thermalCold": "FRÍO"
   },
   "records": {
-    "title": "ARCHIVO DE EVENTOS",
-    "newEvent": "Nuevo Evento",
-    "eventTitle": "Título del Evento",
-    "eventDescription": "Descripción",
-    "eventLocation": "Ubicación",
-    "save": "Guardar",
-    "cancel": "Cancelar",
-    "delete": "Eliminar",
-    "noEvents": "Sin registros",
-    "startRecording": "Comience a registrar eventos paranormales",
-    "date": "Fecha",
-    "type": "Tipo",
-    "emfLevel": "Nivel EMF"
+    "title": "MURO DE EVIDENCIAS",
+    "subtitle": "Evidence Wall",
+    "newEvidence": "Nueva Evidencia",
+    "addNote": "Agregar Nota",
+    "noEvidence": "Sin evidencias aún",
+    "startCollecting": "Recopile evidencias con las herramientas de escaneo",
+    "archiveFiles": "Archivos del Archivo",
+    "all": "Todo",
+    "slsImage": "Imagen SLS",
+    "evpAudio": "Audio EVP",
+    "emfPeak": "Pico EMF",
+    "radarDetection": "Radar",
+    "note": "Nota",
+    "locked": "Bloqueado",
+    "unlockWithAd": "Ver Anuncio - Desbloquear",
+    "deleteConfirm": "¿Está seguro de que desea eliminar esta evidencia?",
+    "deleteTitle": "Eliminar Evidencia",
+    "intensityLevel": "Nivel de Intensidad"
   },
   "premium": {
     "title": "PREMIUM",
@@ -139,7 +163,7 @@
     "eventRecords": "Registros de Eventos",
     "renew": "Renovar Suscripción",
     "syncBilling": "Sincronizar con Google Play",
-    "restoreSuccess": "\u00a1Compras Restauradas!",
+    "restoreSuccess": "¡Compras Restauradas!",
     "adsIncluded": "Anuncios",
     "securePayment": "Pago seguro - Google Play",
     "clearCache": "Borrar Caché",
@@ -183,7 +207,11 @@
     "back": "Atrás",
     "next": "Siguiente",
     "on": "Encendido",
-    "off": "Apagado"
+    "off": "Apagado",
+    "watchAdFor10Min": "Ver Anuncio - 10 min de Acceso",
+    "adDisclaimer": "Accesible 10 minutos después de ver",
+    "remaining": "restante",
+    "premiumActive": "Acceso Premium Activo"
   },
   "whatsNew": {
     "title": "Novedades",
