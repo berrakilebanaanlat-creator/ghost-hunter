@@ -1,2 +1,4 @@
 - [ElevenLabs TTS entegrasyonu](elevenlabs-tts.md) — API key var ama TTS izni eksik; Google TTS yedek aktif
 - [Keystore durumu](keystore.md) — .jks yok; Play Console upload key sıfırlama ile çözülecek
+- [i18n sistemi](i18n-system.md) — 10 dil, 234 anahtar her biri tam; yeni anahtar eklenince tüm 10 locale dosyası güncellenmelidir
+- [VOX hardcoded etiketler](vox-labels.md) — CHARACTER_LABELS hâlâ Türkçe hardcoded; modal/noise/mic etiketleri i18n'e bağlandı
