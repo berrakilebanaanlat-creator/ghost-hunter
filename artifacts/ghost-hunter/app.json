@@ -80,6 +80,12 @@
           "savePhotosPermission": "SLS fotoğraflarını kaydetmek için izin gereklidir.",
           "isAccessMediaLocationEnabled": true
         }
+      ],
+      [
+        "react-native-google-mobile-ads",
+        {
+          "androidAppId": "ca-app-pub-2683215724092307~4306569029"
+        }
       ]
     ],
     "extra": {
