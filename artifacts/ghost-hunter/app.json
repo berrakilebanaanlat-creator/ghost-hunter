@@ -15,6 +15,7 @@
     "android": {
       "versionCode": 10026,
       "package": "com.berrakilebanaanlat.paranormalhunter",
+      "googleServicesFile": "./google-services.json",
       "adaptiveIcon": {
         "backgroundColor": "#0A0A0F",
         "foregroundImage": "./assets/images/android-icon-foreground.png",
@@ -85,6 +86,16 @@
         "react-native-google-mobile-ads",
         {
           "androidAppId": "ca-app-pub-2683215724092307~4306569029"
+        }
+      ],
+      "@react-native-firebase/app",
+      "@react-native-firebase/crashlytics",
+      [
+        "expo-build-properties",
+        {
+          "android": {
+            "extraProguardRules": "-keep class com.google.firebase.** { *; }"
+          }
         }
       ]
     ],
