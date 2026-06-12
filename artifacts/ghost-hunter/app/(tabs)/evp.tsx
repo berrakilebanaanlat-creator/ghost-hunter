@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from "react";
-import { Text, View, Pressable, StyleSheet, FlatList, Platform, Alert } from "react-native";
+import { Text, View, Pressable, StyleSheet, FlatList, Platform, Alert, AppState, type AppStateStatus } from "react-native";
 import { ScreenContainer } from "@/components/screen-container";
 import { IconSymbol } from "@/components/ui/icon-symbol";
 import { AdBanner } from "@/components/ad-banner";
@@ -8,8 +8,6 @@ import { t } from "@/lib/i18n";
 import { addRecording } from "@/lib/recording-history";
 import {
   setGlobalRecorder,
-  stopIdleRecording,
-  startIdleRecordingIfPermitted,
 } from "@/lib/evp-audio-recorder";
 import {
   useAudioRecorder,
@@ -116,14 +114,35 @@ export default function EVPScreen() {
     };
   }, [isRecording]);
 
-  // Arka plan crash koruması: audioRecorder'ı global'e bağla
-  // Bu sayede expo-audio'nun OnActivityEntersBackground pause() çağrısı
-  // her zaman Recording durumundaki bir recorder'a yapılır (IllegalStateException önlenir)
+  // Global recorder referansı
   useEffect(() => {
     setGlobalRecorder(audioRecorder);
     return () => {
       setGlobalRecorder(null);
     };
+  }, [audioRecorder]);
+
+  // AppState listener: arka plana geçişte recorder'ı durdur
+  // Bu sayede expo-audio'nun background pause() çağrısı zaten durmuş bir recorder'a gelir
+  // ve IllegalStateException oluşmaz
+  useEffect(() => {
+    const subscription = AppState.addEventListener('change', (nextState: AppStateStatus) => {
+      if (nextState === 'background' || nextState === 'inactive') {
+        if (phaseRef.current === 'recording' && !lockRef.current) {
+          // Arka plana geçmeden recorder'ı güvenli durdur
+          phaseRef.current = 'stopping';
+          setIsRecording(false);
+          if (timerRef.current) clearInterval(timerRef.current);
+          if (waveRef.current) clearInterval(waveRef.current);
+          if (pulseRef.current) clearInterval(pulseRef.current);
+          try {
+            audioRecorder.stop();
+          } catch { /* */ }
+          phaseRef.current = 'idle';
+        }
+      }
+    });
+    return () => subscription.remove();
   }, [audioRecorder]);
 
   // Cleanup on unmount - recorder'ı güvenli şekilde durdur
@@ -217,10 +236,6 @@ export default function EVPScreen() {
           try { await withTimeout(audioRecorder.stop(), 3000, "pre-stop"); } catch { /* */ }
         }
       } catch { /* isRecording kontrolü başarısız, devam et */ }
-
-      // 6b. Arka plan idle kaydını durdur (gerçek kayıt başlamadan önce)
-      // Eğer idle kayıt çalışıyorsa, recorder'ı serbest bırak
-      await stopIdleRecording();
 
       // 7. Prepare (timeout korumalı)
       try {
@@ -386,16 +401,11 @@ export default function EVPScreen() {
 
       // 8. Phase: idle
       phaseRef.current = "idle";
-
-      // 9. Arka plan crash koruması: idle kaydı yeniden başlat
-      // Recorder her zaman Recording durumunda olmalı
-      startIdleRecordingIfPermitted().catch(() => {});
     } catch (error) {
       console.error("[EVP] Kayıt durdurma genel hatası:", error);
       // Guaranteed cleanup
       setIsRecording(false);
       phaseRef.current = "idle";
-      startIdleRecordingIfPermitted().catch(() => {});
     } finally {
       lockRef.current = false;
     }
