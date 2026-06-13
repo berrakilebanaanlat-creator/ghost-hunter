@@ -18,3 +18,9 @@ id = "p4SYUrIzC3zsXrewvNZhD"
 uri = "file://downloads/GhostHunter-1.0.28-PlayStore.zip"
 type = "unspecified"
 title = "Ghost Hunter 1.0.28 — Doğru imzalı AAB (zip içinde, FD:8D...)"
+
+[[outputs]]
+id = "7qVGkuZwQdx3uO94kL-nv"
+uri = "file://downloads/EAS-upload-certificate-FD8D.zip"
+type = "unspecified"
+title = "EAS Upload Sertifikası (FD:8D) — zip içinde .pem"
