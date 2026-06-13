@@ -167,7 +167,8 @@
     "adsIncluded": "광고",
     "securePayment": "안전한 결제 - Google Play",
     "clearCache": "캐시 지우기",
-    "cacheCleared": "캐시 지워짐 ✓"
+    "cacheCleared": "캐시 지워짐 ✓",
+    "purchaseError": "구매를 완료할 수 없습니다. 잠시 후 다시 시도해 주세요."
   },
   "disclaimer": {
     "title": "초자연 연구 주의사항",

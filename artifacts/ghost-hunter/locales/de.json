@@ -167,7 +167,8 @@
     "adsIncluded": "Werbung",
     "securePayment": "Sichere Zahlung - Google Play",
     "clearCache": "Cache Leeren",
-    "cacheCleared": "Cache Geleert ✓"
+    "cacheCleared": "Cache Geleert ✓",
+    "purchaseError": "Kauf konnte nicht abgeschlossen werden. Bitte versuchen Sie es gleich erneut."
   },
   "disclaimer": {
     "title": "Hinweis zur Paranormalen Forschung",

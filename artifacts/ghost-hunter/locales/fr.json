@@ -167,7 +167,8 @@
     "adsIncluded": "Publicités",
     "securePayment": "Paiement sécurisé - Google Play",
     "clearCache": "Vider le Cache",
-    "cacheCleared": "Cache Vidé ✓"
+    "cacheCleared": "Cache Vidé ✓",
+    "purchaseError": "L’achat n’a pas pu être finalisé. Veuillez réessayer dans un instant."
   },
   "disclaimer": {
     "title": "Avis de Recherche Paranormale",

@@ -167,7 +167,8 @@
     "adsIncluded": "إعلانات",
     "securePayment": "دفع آمن - Google Play",
     "clearCache": "مسح ذاكرة التخزين المؤقت",
-    "cacheCleared": "تم مسح الذاكرة ✓"
+    "cacheCleared": "تم مسح الذاكرة ✓",
+    "purchaseError": "تعذّر إتمام عملية الشراء. يرجى المحاولة مرة أخرى بعد لحظات."
   },
   "disclaimer": {
     "title": "تنبيه أبحاث الخوارق",

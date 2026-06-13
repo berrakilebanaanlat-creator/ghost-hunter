@@ -4,7 +4,7 @@
  * Fiyatlar Google Play Billing API'den dinamik olarak alınır
  */
 import React, { useState } from 'react';
-import { View, Text, Pressable, StyleSheet, Platform, ActivityIndicator, ScrollView } from 'react-native';
+import { View, Text, Pressable, StyleSheet, Platform, ActivityIndicator, ScrollView, Alert } from 'react-native';
 import { ScreenContainer } from '@/components/screen-container';
 import { IconSymbol } from '@/components/ui/icon-symbol';
 import { PriceShimmerLarge, PriceShimmerSmall } from '@/components/price-shimmer';
@@ -26,12 +26,20 @@ export function VoxPaywall() {
     }
     setLoading(true);
     try {
-      const success = await purchaseVoxSubscription(selectedPlan);
-      if (success && Platform.OS !== 'web') {
-        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+      const result = await purchaseVoxSubscription(selectedPlan);
+      if (result.ok) {
+        if (Platform.OS !== 'web') {
+          Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+        }
+      } else if (!result.cancelled) {
+        if (Platform.OS !== 'web') {
+          Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
+        }
+        Alert.alert(t('common.error'), t('premium.purchaseError'));
       }
     } catch (error) {
       console.warn('[VoxPaywall] Abonelik hatası:', error);
+      Alert.alert(t('common.error'), t('premium.purchaseError'));
     } finally {
       setLoading(false);
     }

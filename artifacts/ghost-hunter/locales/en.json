@@ -167,7 +167,8 @@
     "adsIncluded": "Ads",
     "securePayment": "Secure payment - Google Play",
     "clearCache": "Clear Cache",
-    "cacheCleared": "Cache Cleared ✓"
+    "cacheCleared": "Cache Cleared ✓",
+    "purchaseError": "Purchase could not be completed. Please try again in a moment."
   },
   "disclaimer": {
     "title": "Paranormal Research Disclaimer",

@@ -167,7 +167,8 @@
     "adsIncluded": "広告",
     "securePayment": "安全な支払い - Google Play",
     "clearCache": "キャッシュを消去",
-    "cacheCleared": "キャッシュ消去済み ✓"
+    "cacheCleared": "キャッシュ消去済み ✓",
+    "purchaseError": "購入を完了できませんでした。少し時間をおいて再度お試しください。"
   },
   "disclaimer": {
     "title": "超常研究に関する注意",

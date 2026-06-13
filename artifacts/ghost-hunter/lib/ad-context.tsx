@@ -26,6 +26,16 @@ export interface VoxPrices {
   yearlyPerMonth: string;
 }
 
+/** Satın alma sonucu — UI'ın hata/iptal durumunu ayırt edebilmesi için */
+export interface PurchaseResult {
+  /** Satın alma başarılı mı */
+  ok: boolean;
+  /** Kullanıcı satın almayı iptal etti mi (hata mesajı gösterilmemeli) */
+  cancelled?: boolean;
+  /** Gerçek bir hata oluştuysa kullanıcıya gösterilecek mesaj */
+  errorMessage?: string;
+}
+
 interface AdContextType {
   /** Interstitial reklam göster (premium değilse) */
   showInterstitial: () => Promise<void>;
@@ -42,7 +52,7 @@ interface AdContextType {
   /** Google Play Billing'den gelen yerelleştirilmiş fiyatlar */
   voxPrices: VoxPrices | null;
   /** VOX abonelik satın al (aylık veya yıllık) */
-  purchaseVoxSubscription: (period: 'monthly' | 'yearly') => Promise<boolean>;
+  purchaseVoxSubscription: (period: 'monthly' | 'yearly') => Promise<PurchaseResult>;
   /** Eski tek seferlik VOX satın al (geriye uyumluluk) */
   purchaseVox: () => Promise<boolean>;
   /** Satın almaları geri yükle */
@@ -336,36 +346,39 @@ export function AdProvider({ children }: { children: React.ReactNode }) {
     }
   }, []);
 
-  const handlePurchaseVoxSubscription = useCallback(async (period: 'monthly' | 'yearly'): Promise<boolean> => {
+  const handlePurchaseVoxSubscription = useCallback(async (period: 'monthly' | 'yearly'): Promise<PurchaseResult> => {
     const productId = period === 'monthly' ? 'vox_monthly' : 'vox_yearly';
     
     if (Platform.OS !== 'web') {
+      let iap: any;
       try {
-        const iap = require('expo-iap');
-        const purchased = await purchaseVoxWithIAP(iap, productId);
-        if (purchased) {
-          await PremiumManager.purchaseVoxSubscription(period);
-          await checkStatuses();
-          return true;
-        }
-        return false;
+        iap = require('expo-iap');
       } catch {
-        // IAP kullanılamıyorsa (dev), AsyncStorage ile kaydet
+        // IAP modülü kullanılamıyorsa (dev/emulator), AsyncStorage ile kaydet
         await PremiumManager.purchaseVoxSubscription(period);
         await checkStatuses();
-        return true;
+        return { ok: true };
       }
+      // IAP mevcut — gerçek satın alma akışını çalıştır.
+      // Hata olursa kullanıcıya gösterilebilecek yapılandırılmış sonuç döner.
+      const result = await purchaseVoxWithIAP(iap, productId);
+      if (result.ok) {
+        await PremiumManager.purchaseVoxSubscription(period);
+        await checkStatuses();
+      }
+      return result;
     }
     // Web'de doğrudan aç (test amaçlı)
     await PremiumManager.purchaseVoxSubscription(period);
     await checkStatuses();
-    return true;
+    return { ok: true };
   }, []);
 
   /** Eski tek seferlik satın alma (geriye uyumluluk) */
   const handlePurchaseVox = useCallback(async (): Promise<boolean> => {
     // Aylık abonelik olarak yönlendir
-    return handlePurchaseVoxSubscription('monthly');
+    const result = await handlePurchaseVoxSubscription('monthly');
+    return result.ok;
   }, [handlePurchaseVoxSubscription]);
 
   const handleRestorePurchases = useCallback(async () => {
@@ -456,11 +469,40 @@ async function verifySubscriptionWithStore(): Promise<void> {
 // IAP YARDIMCI FONKSİYONLARI (expo-iap v3.4.10+ API)
 // ============================================================
 
-async function purchaseVoxWithIAP(iap: any, productId: string): Promise<boolean> {
+async function purchaseVoxWithIAP(iap: any, productId: string): Promise<PurchaseResult> {
   try {
     // Bağlantı kur
     await iap.initConnection();
-    
+
+    // ============================================================
+    // KRİTİK: ABONELİK YÜKSELTME / DEĞİŞTİRME (aylık → yıllık)
+    // Kullanıcı zaten farklı bir VOX aboneliğine sahipse, Google Play
+    // yeni satın alma için eski aboneliğin purchaseToken'ını VE bir
+    // replacementMode'u ZORUNLU ister. Bunlar olmadan Google Play
+    // "zaten bu ürüne sahipsiniz" (E_ALREADY_OWNED) hatası döner ve
+    // satın alma sessizce başarısız olur — buton "tepkisiz" görünür.
+    // ============================================================
+    let oldPurchaseToken: string | undefined;
+    let oldProductId: string | undefined;
+    if (Platform.OS === 'android') {
+      try {
+        const existingPurchases = await iap.getAvailablePurchases();
+        if (existingPurchases && existingPurchases.length > 0) {
+          for (const p of existingPurchases) {
+            const pid = p?.productId;
+            // Farklı bir VOX aboneliği bulunduysa onu değiştir
+            if ((pid === 'vox_monthly' || pid === 'vox_yearly') && pid !== productId) {
+              oldPurchaseToken = p?.purchaseToken ?? p?.purchaseTokenAndroid;
+              oldProductId = pid;
+              break;
+            }
+          }
+        }
+      } catch (e) {
+        console.warn('[IAP] Mevcut abonelik tespiti başarısız:', e);
+      }
+    }
+
     // Abonelik ürünlerini getir (yeni API: fetchProducts)
     const products = await iap.fetchProducts({
       skus: [productId],
@@ -469,7 +511,7 @@ async function purchaseVoxWithIAP(iap: any, productId: string): Promise<boolean>
 
     if (!products || products.length === 0) {
       console.warn('[IAP] VOX abonelik ürünü bulunamadı:', productId);
-      return false;
+      return { ok: false, errorMessage: 'product-not-found' };
     }
 
     const product = products[0];
@@ -487,18 +529,33 @@ async function purchaseVoxWithIAP(iap: any, productId: string): Promise<boolean>
       }
     }
 
+    // Google Play satın alma isteği gövdesi
+    const googleRequest: any = {
+      skus: [productId],
+      ...(offerToken ? {
+        subscriptionOffers: [{ sku: productId, offerToken }],
+      } : {}),
+    };
+
+    // Yükseltme/değiştirme: eski abonelik token'ı + değiştirme modu
+    if (oldPurchaseToken && oldProductId) {
+      googleRequest.purchaseToken = oldPurchaseToken;
+      // Item-seviyesi değiştirme parametresi (Billing 8.1.0+)
+      googleRequest.subscriptionProductReplacementParams = {
+        oldProductId,
+        // 'with-time-proration': kalan süre yeni plana orantılı aktarılır
+        replacementMode: 'with-time-proration',
+      };
+      console.log('[IAP] Abonelik yükseltme/değiştirme:', oldProductId, '→', productId);
+    }
+
     // Satın alma isteği (yeni API: requestPurchase with type: 'subs')
     // NOT: finishTransaction burada YAPILMAZ — purchaseUpdatedListener'da yapılır
     // Bu sayede uygulama arka plana geçse bile acknowledge garantilenir
     const purchaseResult = await iap.requestPurchase({
       request: {
         apple: { sku: productId },
-        google: {
-          skus: [productId],
-          ...(offerToken ? {
-            subscriptionOffers: [{ sku: productId, offerToken }],
-          } : {}),
-        },
+        google: googleRequest,
       },
       type: 'subs',
     });
@@ -519,17 +576,21 @@ async function purchaseVoxWithIAP(iap: any, productId: string): Promise<boolean>
         // Listener zaten yapacak, burada hata olursa sorun değil
         console.warn('[IAP] finishTransaction hatası (listener halleder):', finishError);
       }
-      return true;
+      return { ok: true };
     }
-    return false;
+    // purchaseResult boş — satın alma tamamlanmadı
+    return { ok: false, errorMessage: 'no-purchase-result' };
   } catch (error: any) {
-    // Kullanıcı iptal ettiyse sessizce geç
+    // Kullanıcı iptal ettiyse hata mesajı gösterme
     if (error?.code === 'user-cancelled' || error?.code === 'E_USER_CANCELLED') {
       console.log('[IAP] Kullanıcı satın almayı iptal etti');
-      return false;
+      return { ok: false, cancelled: true };
     }
     console.warn('[IAP] Abonelik satın alma hatası:', error);
-    return false;
+    return {
+      ok: false,
+      errorMessage: error?.code ? `${error.code}` : String(error?.message ?? error),
+    };
   }
 }
 

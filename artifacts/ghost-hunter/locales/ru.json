@@ -167,7 +167,8 @@
     "adsIncluded": "Реклама",
     "securePayment": "Безопасная оплата - Google Play",
     "clearCache": "Очистить Кэш",
-    "cacheCleared": "Кэш Очищен ✓"
+    "cacheCleared": "Кэш Очищен ✓",
+    "purchaseError": "Не удалось завершить покупку. Повторите попытку через мгновение."
   },
   "disclaimer": {
     "title": "Предупреждение о Паранормальных Исследованиях",

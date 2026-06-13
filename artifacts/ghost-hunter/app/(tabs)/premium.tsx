@@ -36,9 +36,16 @@ export default function PremiumScreen() {
     }
     setLoading(true);
     try {
-      const success = await purchaseVoxSubscription(selectedPlan);
-      if (success && Platform.OS !== "web") {
-        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+      const result = await purchaseVoxSubscription(selectedPlan);
+      if (result.ok) {
+        if (Platform.OS !== "web") {
+          Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+        }
+      } else if (!result.cancelled) {
+        if (Platform.OS !== "web") {
+          Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
+        }
+        Alert.alert(t("common.error"), t("premium.purchaseError"));
       }
     } finally {
       setLoading(false);
@@ -110,6 +117,29 @@ export default function PremiumScreen() {
       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     }
     setSelectedPlan(plan);
+  };
+
+  // Aylık aboneyi yıllığa yükselt (Google Play değiştirme akışı)
+  const handleUpgradeToYearly = async () => {
+    if (Platform.OS !== "web") {
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+    }
+    setLoading(true);
+    try {
+      const result = await purchaseVoxSubscription("yearly");
+      if (result.ok) {
+        if (Platform.OS !== "web") {
+          Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+        }
+      } else if (!result.cancelled) {
+        if (Platform.OS !== "web") {
+          Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
+        }
+        Alert.alert(t("common.error"), t("premium.purchaseError"));
+      }
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -296,6 +326,34 @@ export default function PremiumScreen() {
                     <Text style={styles.activeSubExpiry}>{expiryText}</Text>
                   ) : null}
                 </View>
+
+                {/* Aylıktan Yıllığa Yükselt — sadece aylık abonelikte göster */}
+                {voxSubscription.period === "monthly" && (
+                  <Pressable
+                    onPress={handleUpgradeToYearly}
+                    disabled={loading}
+                    style={({ pressed }) => [
+                      styles.upgradeBtn,
+                      {
+                        transform: [{ scale: pressed ? 0.97 : 1 }],
+                        opacity: pressed ? 0.9 : loading ? 0.5 : 1,
+                      },
+                    ]}
+                  >
+                    <View style={styles.upgradeBtnRow}>
+                      <Text style={styles.upgradeBtnText}>
+                        {loading
+                          ? t("common.loading")
+                          : `${t("premium.yearly").toUpperCase()} — ${voxPrices?.yearlyPrice || "…"}${t("paywall.perYear")}`}
+                      </Text>
+                      {!loading && (
+                        <View style={styles.upgradeSaveBadge}>
+                          <Text style={styles.upgradeSaveBadgeText}>{t("premium.save58")}</Text>
+                        </View>
+                      )}
+                    </View>
+                  </Pressable>
+                )}
 
                 {/* Yenileme/Düzeltme Butonu */}
                 <Pressable
@@ -719,6 +777,40 @@ const styles = StyleSheet.create({
     fontSize: 11,
     fontWeight: "700",
     letterSpacing: 3,
+  },
+
+  // Yıllığa yükselt butonu
+  upgradeBtn: {
+    backgroundColor: "#9B4FDE",
+    borderRadius: 8,
+    paddingVertical: 13,
+    paddingHorizontal: 12,
+    alignItems: "center",
+    marginTop: 4,
+  },
+  upgradeBtnRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 8,
+  },
+  upgradeBtnText: {
+    fontSize: 12,
+    fontWeight: "800",
+    color: "#060609",
+    letterSpacing: 2,
+  },
+  upgradeSaveBadge: {
+    backgroundColor: "#06060925",
+    borderRadius: 4,
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+  },
+  upgradeSaveBadgeText: {
+    fontSize: 8,
+    fontWeight: "800",
+    color: "#060609",
+    letterSpacing: 1,
   },
 
   // Bilgi

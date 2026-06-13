@@ -5,3 +5,4 @@
 - [Expo native startup crash](expo-native-startup-crash.md) — standalone Android ~2s'de kapanma = native modül (AdMob, Firebase) app.json plugin/config eksik; JS try/catch kurtarmaz
 - [iOS Geçiş Planı](ios-gecis.md) — App Store build süreci, Apple API Key adımları, bundle ID ve EAS config
 - [Build ve Komut Geçmişi](build-history.md) — Tüm EAS build ID'leri, komutlar, keystore SHA1'ler
+- [IAP subscription base-plan upgrade](iap-subscription-upgrade.md) — monthly→yearly needs purchaseToken + replacementMode; return structured PurchaseResult, alert on real errors only.

@@ -167,7 +167,8 @@
     "adsIncluded": "Reklamlar",
     "securePayment": "Güvenli ödeme - Google Play",
     "clearCache": "Önbelleği Temizle",
-    "cacheCleared": "Önbellek Temizlendi ✓"
+    "cacheCleared": "Önbellek Temizlendi ✓",
+    "purchaseError": "Satın alma tamamlanamadı. Lütfen tekrar deneyin veya birkaç dakika sonra tekrar deneyin."
   },
   "disclaimer": {
     "title": "Paranormal Araştırma Uyarısı",

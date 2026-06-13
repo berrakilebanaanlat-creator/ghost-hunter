@@ -167,7 +167,8 @@
     "adsIncluded": "Anúncios",
     "securePayment": "Pagamento seguro - Google Play",
     "clearCache": "Limpar Cache",
-    "cacheCleared": "Cache Limpo ✓"
+    "cacheCleared": "Cache Limpo ✓",
+    "purchaseError": "Não foi possível concluir a compra. Tente novamente em instantes."
   },
   "disclaimer": {
     "title": "Aviso de Pesquisa Paranormal",
