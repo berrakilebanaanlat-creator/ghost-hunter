@@ -11,10 +11,10 @@ router.use(ttsRouter);
 
 router.get("/upload-cert", (_req, res) => {
   try {
-    const pemPath = join(process.cwd(), "..", "..", "downloads", "EAS-upload-certificate-FD8D.pem");
+    const pemPath = join(process.cwd(), "..", "..", "downloads", "EAS-upload-certificate-NEW-D9EF.pem");
     const pem = readFileSync(pemPath, "utf-8");
     res.setHeader("Content-Type", "application/x-pem-file");
-    res.setHeader("Content-Disposition", 'attachment; filename="EAS-upload-certificate-FD8D.pem"');
+    res.setHeader("Content-Disposition", 'attachment; filename="upload_certificate_NEW.pem"');
     res.send(pem);
   } catch {
     res.status(404).json({ error: "Dosya bulunamadı" });
