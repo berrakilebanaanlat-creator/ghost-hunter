@@ -1,0 +1,23 @@
+# Dependencies (reinstalled on EAS build servers)
+node_modules/
+**/node_modules/
+
+# Large local artifacts / backups
+downloads/
+*.aab
+*.apk
+*.zip
+*.ipa
+
+# Build output
+**/dist/
+**/.expo/
+**/web-build/
+
+# Logs / tmp
+*.log
+/tmp/
+
+# Other artifacts in the monorepo not needed for the ghost-hunter build
+artifacts/api-server/
+artifacts/mockup-sandbox/

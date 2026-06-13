@@ -24,3 +24,15 @@ id = "7qVGkuZwQdx3uO94kL-nv"
 uri = "file://downloads/EAS-upload-certificate-FD8D.zip"
 type = "unspecified"
 title = "EAS Upload Sertifikası (FD:8D) — zip içinde .pem"
+
+[[outputs]]
+id = "2xhoR3oW0ZtIT3veRbhZO"
+uri = "file://downloads/GOOGLE-ICIN-yeni-sertifika-D9EF.zip"
+type = "unspecified"
+title = "Google'a yükleyeceğiniz YENİ sertifika (içinde .pem)"
+
+[[outputs]]
+id = "VuUPwkJNzS2dZnjId7Vi3"
+uri = "file://downloads/KEYSTORE-BACKUP-D9EF-SAKLA.zip"
+type = "unspecified"
+title = "Anahtar yedeği — güvenli yerde saklayın, kaybetmeyin"

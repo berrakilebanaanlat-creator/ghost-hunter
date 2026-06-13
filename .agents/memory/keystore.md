@@ -19,10 +19,24 @@ Play'in kayıtlı upload key'i `04:B7...`. EAS ise `FD:8D...` ile imzalıyor. İ
 
 **Why:** Play App Signing aktifken yüklenen AAB, Play'in kayıtlı UPLOAD key'iyle imzalanmalı (app signing key Google'da ayrı). Hata mesajındaki "mevcut APK FD:8D" eski/reset öncesi durumdu; bugünkü gerçek upload key `04:B7...`.
 
-## Çözüm
-`04:B7...` özel anahtarı kayıp ve geri getirilemiyor. İki yol:
-1. **Kullanıcı `04:B7...` keystore'unu (.jks/.p12) bulursa** (kendi bilgisayarı / GitHub'daki Manus reposu) → EAS'a `credentials.json` ile verilip build alınır.
-2. **Upload key reset (kalıcı, ÖNERİLEN):** Play Console → Uygulama bütünlüğü → Uygulama imzalama → "Yükleme anahtarını sıfırla" → `downloads/EAS-upload-certificate-FD8D.pem` (FD:8D EAS cert) yüklenir. Google onaylayınca (≤48s) zaten elde hazır FD:8D 1.0.28 AAB yüklenebilir; sonraki tüm EAS build'leri otomatik çalışır.
+## Çözüm — GÜNCEL (13 Haziran 2026, ikinci tur)
+`04:B7...` özel anahtarı kayıp. Upload key reset şart. AMA: FD:8D EAS cert ile reset denendi → **Google REDDETTİ**: "Yükleme sertifikası eski yükleme sertifikalarından biriyle aynı. Yeni bir sertifika kullanın." Yani FD:8D daha önce upload cert olarak kayıtlıydı; Google reset için HİÇ KULLANILMAMIŞ yeni bir sertifika istiyor.
+
+**Yeni anahtar üretildi (5. anahtar):**
+| Anahtar | SHA1 | Konum |
+|--------|------|-------|
+| **YENİ upload key (D9:EF)** | `D9:EF:90:93:18:78:CE:53:99:24:5E:FB:16:62:79:A2:25:C7:B0:50` | openssl ile üretildi; `artifacts/ghost-hunter/keystore/paranormal-hunter-upload-NEW.p12` (alias `upload`), parola `keystore/.keystore-password.txt`; cert PEM `downloads/EAS-upload-certificate-NEW-D9EF.pem`. Geçerlilik 2053. SHA256 `7B:F4:B2:B7:7A:2C:6C:EC:70:92:47:80:63:AA:99:AF:23:3C:1F:74:5E:86:7E:91:81:4E:5A:08:DA:02:D3:EF` |
+
+**Adımlar:**
+1. Kullanıcı Play Console → Uygulama imzalama → "Yükleme anahtarını sıfırla" → `EAS-upload-certificate-NEW-D9EF.pem` yükler. (FD:8D'yi DEĞİL — o reddedildi.)
+2. Google onaylayınca, D9:EF ile imzalı yeni 1.0.28 AAB yüklenir.
+3. EAS artık `credentialsSource: local` + `credentials.json` ile D9:EF keystore'unu kullanıyor (eas.json production). Keystore + credentials.json gitignore'lu (güvenlik) → KULLANICIYA YEDEK VERİLDİ; kaybolursa anahtar tekrar kaybolur.
+4. Build (D9:EF imzalı): EAS_NO_VCS=1 + workspace kökünde `.easignore` gerekli (yoksa monorepo + 170MB downloads/ arşivi timeout). Build ID `5890495b-8619-415d-bfe3-0f04ee03ecf3` (13 Haz başlatıldı).
+
+**Why git lock:** Main agent sandbox `.git/index.lock` yoluna ve git yazma komutlarına dokunmayı engeller; EAS git-VCS modu bu yüzden patlar → daima `EAS_NO_VCS=1` kullan.
+
+## (Eski, başarısız) ilk çözüm denemesi
+FD:8D reset denendi, Google reddetti (yukarı bakınız). `downloads/EAS-upload-certificate-FD8D.pem` artık KULLANILMAZ.
 
 ## Araçlar (bu ortamda)
 - keytool/java YOK. `.jks` okumak için: `pip install pyjks` + Python (`jks.KeyStore.load(path, pass)`).
