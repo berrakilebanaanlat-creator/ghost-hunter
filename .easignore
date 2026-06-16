@@ -21,3 +21,9 @@ downloads/
 # Other artifacts in the monorepo not needed for the ghost-hunter build
 artifacts/api-server/
 artifacts/mockup-sandbox/
+
+# Local-only assets / VCS not needed for the build
+attached_assets/
+.git/
+.agents/
+.local/

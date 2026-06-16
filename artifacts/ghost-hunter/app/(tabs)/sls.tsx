@@ -95,7 +95,7 @@ export default function SLSScreen() {
   const [isRecordingVideo, setIsRecordingVideo] = useState(false);
 
   const [cameraPermission, requestCameraPermission] = useCameraPermissions();
-  const [mediaPermission, requestMediaPermission] = MediaLibrary.usePermissions();
+  const [mediaPermission, requestMediaPermission] = MediaLibrary.usePermissions({ writeOnly: true });
 
   const cameraRef = useRef<CameraView>(null);
   const engineRef = useRef(getSLSEngine());

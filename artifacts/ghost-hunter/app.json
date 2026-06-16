@@ -2,7 +2,7 @@
   "expo": {
     "name": "Antik Ghost App",
     "slug": "paranormal-hunter",
-    "version": "1.0.28",
+    "version": "1.0.30",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
     "scheme": "manusparnormalhunter",
@@ -13,7 +13,7 @@
       "bundleIdentifier": "com.berrakilebanaanlat.paranormalhunter"
     },
     "android": {
-      "versionCode": 10028,
+      "versionCode": 10030,
       "package": "com.berrakilebanaanlat.paranormalhunter",
       "googleServicesFile": "./google-services.json",
       "adaptiveIcon": {
@@ -77,9 +77,9 @@
       [
         "expo-media-library",
         {
-          "photosPermission": "SLS taramalarını kaydetmek için galeri erişimi gereklidir.",
-          "savePhotosPermission": "SLS fotoğraflarını kaydetmek için izin gereklidir.",
-          "isAccessMediaLocationEnabled": true
+          "savePhotosPermission": "SLS taramalarını galeriye kaydetmek için izin gereklidir.",
+          "isAccessMediaLocationEnabled": false,
+          "granularPermissions": []
         }
       ],
       [
@@ -97,7 +97,8 @@
             "extraProguardRules": "-keep class com.google.firebase.** { *; }"
           }
         }
-      ]
+      ],
+      "./plugins/withRemoveAndroidMediaPermissions.js"
     ],
     "extra": {
       "eas": {
