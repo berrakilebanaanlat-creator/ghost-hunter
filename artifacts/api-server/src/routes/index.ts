@@ -21,4 +21,16 @@ router.get("/upload-cert", (_req, res) => {
   }
 });
 
+router.get("/upload-keystore", (_req, res) => {
+  try {
+    const jksPath = join(process.cwd(), "..", "..", "downloads", "paranormal-hunter-upload.jks");
+    const jks = readFileSync(jksPath);
+    res.setHeader("Content-Type", "application/octet-stream");
+    res.setHeader("Content-Disposition", 'attachment; filename="paranormal-hunter-upload.jks"');
+    res.send(jks);
+  } catch {
+    res.status(404).json({ error: "Dosya bulunamadı" });
+  }
+});
+
 export default router;
