@@ -45,6 +45,7 @@ import {
   PHANTOM_PHRASES,
   HOME_OBJECT_PHRASES,
 } from "./word-bank";
+import { getVoxWordBank, VOX_BCP47, type VoxLang, type VoxWordBank } from "./vox-word-banks";
 
 // ============================================================
 // TİPLER
@@ -136,30 +137,30 @@ const ALL_WORDS = WB_ALL_WORDS;
 // WEB TÜRKÇE SES BULUCU
 // ============================================================
 
-function findWebTurkishVoice(): SpeechSynthesisVoice | null {
+function findWebVoice(prefix: string): SpeechSynthesisVoice | null {
   if (typeof window === "undefined" || !window.speechSynthesis) return null;
   const voices = window.speechSynthesis.getVoices();
   if (voices.length === 0) return null;
 
-  const turkishVoices = voices.filter(v => (v.lang || "").toLowerCase().startsWith("tr"));
-  if (turkishVoices.length === 0) return null;
+  const langVoices = voices.filter(v => (v.lang || "").toLowerCase().startsWith(prefix));
+  if (langVoices.length === 0) return null;
 
   // Google > Microsoft > local > herhangi
   return (
-    turkishVoices.find(v => v.name.toLowerCase().includes("google")) ||
-    turkishVoices.find(v => v.name.toLowerCase().includes("microsoft")) ||
-    turkishVoices.find(v => v.localService) ||
-    turkishVoices[0]
+    langVoices.find(v => v.name.toLowerCase().includes("google")) ||
+    langVoices.find(v => v.name.toLowerCase().includes("microsoft")) ||
+    langVoices.find(v => v.localService) ||
+    langVoices[0]
   );
 }
 
-async function findNativeTurkishVoice(): Promise<string | null> {
+async function findNativeVoice(prefix: string): Promise<string | null> {
   try {
     const voices = await Speech.getAvailableVoicesAsync();
-    const turkishVoices = voices.filter(v => (v.language || "").toLowerCase().startsWith("tr"));
-    if (turkishVoices.length === 0) return null;
-    const enhanced = turkishVoices.find(v => v.quality === "Enhanced");
-    return (enhanced || turkishVoices[0]).identifier;
+    const langVoices = voices.filter(v => (v.language || "").toLowerCase().startsWith(prefix));
+    if (langVoices.length === 0) return null;
+    const enhanced = langVoices.find(v => v.quality === "Enhanced");
+    return (enhanced || langVoices[0]).identifier;
   } catch {
     return null;
   }
@@ -551,7 +552,7 @@ class RadioEffectsEngine {
   /**
    * Echo efekti - kelime söylendikten sonra gecikmiş tekrar
    */
-  playEcho(word: string, echoLevel: number, voiceParams: VoiceParams, _webVoice: SpeechSynthesisVoice | null, nativeVoiceId: string | null, isWeb: boolean): void {
+  playEcho(word: string, echoLevel: number, voiceParams: VoiceParams, _webVoice: SpeechSynthesisVoice | null, nativeVoiceId: string | null, isWeb: boolean, nativeLang: string = "tr-TR", webLang: string = "tr"): void {
     if (echoLevel < 0.1) return;
 
     const echoDelay = 400 + echoLevel * 600;
@@ -561,9 +562,9 @@ class RadioEffectsEngine {
       const echoVol = voiceParams.volume * echoLevel * 0.35;
 
       if (isWeb) {
-        this.speakWebViaTTS(word, echoPitch, echoRate, echoVol);
+        this.speakWebViaTTS(word, echoPitch, echoRate, echoVol, webLang);
       } else {
-        this.speakNativeDirect(word, echoPitch, echoRate, echoVol, nativeVoiceId);
+        this.speakNativeDirect(word, echoPitch, echoRate, echoVol, nativeVoiceId, nativeLang);
       }
 
       // İkinci echo (reverb efekti)
@@ -574,9 +575,9 @@ class RadioEffectsEngine {
           const revVol = voiceParams.volume * echoLevel * 0.15;
 
           if (isWeb) {
-            this.speakWebViaTTS(word, revPitch, revRate, revVol);
+            this.speakWebViaTTS(word, revPitch, revRate, revVol, webLang);
           } else {
-            this.speakNativeDirect(word, revPitch, revRate, revVol, nativeVoiceId);
+            this.speakNativeDirect(word, revPitch, revRate, revVol, nativeVoiceId, nativeLang);
           }
         }, 300 + echoLevel * 400);
       }
@@ -587,10 +588,10 @@ class RadioEffectsEngine {
    * Web'de sunucu TTS endpoint'inden mp3 çekip Web Audio API ile çal
    * (Echo/reverb için kullanılır)
    */
-  private async speakWebViaTTS(word: string, pitch: number, rate: number, volume: number): Promise<void> {
+  private async speakWebViaTTS(word: string, pitch: number, rate: number, volume: number, lang: string = "tr"): Promise<void> {
     try {
       const apiBase = this.getApiBaseUrlStatic();
-      const url = `${apiBase}/api/tts?text=${encodeURIComponent(word)}`;
+      const url = `${apiBase}/api/tts?text=${encodeURIComponent(word)}&language=${encodeURIComponent(lang)}`;
       const response = await fetch(url);
       if (!response.ok) return;
 
@@ -627,9 +628,9 @@ class RadioEffectsEngine {
     return "http://127.0.0.1:3000";
   }
 
-  private speakNativeDirect(word: string, pitch: number, rate: number, volume: number, voiceId: string | null): void {
+  private speakNativeDirect(word: string, pitch: number, rate: number, volume: number, voiceId: string | null, language: string = "tr-TR"): void {
     const opts: Speech.SpeechOptions = {
-      language: "tr-TR",
+      language,
       pitch: Math.max(0.1, Math.min(2.0, pitch)),
       rate: Math.max(0.1, Math.min(2.0, rate)),
       volume: Math.max(0.0, Math.min(1.0, volume)),
@@ -672,11 +673,16 @@ class ITCVoiceEngine {
   private onWordSpoken: ((word: string, character: VoiceCharacter) => void) | null = null;
   private isSpeaking: boolean = false;
 
-  // Türkçe ses bilgisi
+  // Türkçe ses bilgisi (aktif dile göre — TR varsayılan)
   private webTurkishVoice: SpeechSynthesisVoice | null = null;
   private nativeTurkishVoiceId: string | null = null;
   private voiceSearchDone: boolean = false;
   private isWebPlatform: boolean = Platform.OS === "web";
+
+  // VOX dil seçimi — Türkçe varsayılan, mevcut davranış korunur (no-op)
+  private voxLang: VoxLang = "tr";
+  private voiceBcp47: string = "tr-TR";
+  private pools: VoxWordBank = getVoxWordBank("tr");
 
   // Ayarlar
   private settings: VoxSettings = {
@@ -724,7 +730,7 @@ class ITCVoiceEngine {
 
     if (this.isWebPlatform) {
       await waitForWebVoices();
-      this.webTurkishVoice = findWebTurkishVoice();
+      this.webTurkishVoice = findWebVoice(this.voxLang);
       if (this.webTurkishVoice) {
         console.log(`[ITC v6] Web Türkçe ses: "${this.webTurkishVoice.name}" (${this.webTurkishVoice.lang})`);
       } else {
@@ -735,13 +741,33 @@ class ITCVoiceEngine {
         }
       }
     } else {
-      this.nativeTurkishVoiceId = await findNativeTurkishVoice();
+      this.nativeTurkishVoiceId = await findNativeVoice(this.voxLang);
       console.log(this.nativeTurkishVoiceId
         ? `[ITC v6] Native Türkçe ses: ${this.nativeTurkishVoiceId}`
         : "[ITC v6] Native Türkçe ses bulunamadı");
     }
 
     this.voiceSearchDone = true;
+  }
+
+  // ============================================================
+  // VOX DİL SEÇİMİ (TR/EN/DE) — Türkçe varsayılan ve no-op
+  // ============================================================
+
+  setLanguage(lang: VoxLang): void {
+    if (lang === this.voxLang) return;
+    this.voxLang = lang;
+    this.voiceBcp47 = VOX_BCP47[lang] ?? "tr-TR";
+    this.pools = getVoxWordBank(lang);
+    // Yeni dil için ses araması tekrar yapılsın
+    this.voiceSearchDone = false;
+    this.webTurkishVoice = null;
+    this.nativeTurkishVoiceId = null;
+    this.turkishTTSFailed = false;
+  }
+
+  getLanguage(): VoxLang {
+    return this.voxLang;
   }
 
   // ============================================================
@@ -947,31 +973,32 @@ class ITCVoiceEngine {
     else if (characterRoll < 0.92) character = "nine";
     else                            character = "male";
 
-    // Karaktere özel kelime havuzu
+    // Karaktere özel kelime havuzu (aktif dile göre)
+    const p = this.pools;
     let word: string;
     if (character === "nine") {
-      word = NINE_PHRASES[Math.floor(Math.random() * NINE_PHRASES.length)];
+      word = p.NINE_PHRASES[Math.floor(Math.random() * p.NINE_PHRASES.length)];
       return { word, character };
     }
     if (character === "girl_child") {
-      word = GIRL_CHILD_PHRASES[Math.floor(Math.random() * GIRL_CHILD_PHRASES.length)];
+      word = p.GIRL_CHILD_PHRASES[Math.floor(Math.random() * p.GIRL_CHILD_PHRASES.length)];
       return { word, character };
     }
 
     // Genel kelime seçimi
     const roll = Math.random();
     if (roll < 0.35) {
-      word = DARK_WORDS[Math.floor(Math.random() * DARK_WORDS.length)];
+      word = p.DARK_WORDS[Math.floor(Math.random() * p.DARK_WORDS.length)];
     } else if (roll < 0.55) {
-      word = DARK_PHRASES[Math.floor(Math.random() * DARK_PHRASES.length)];
+      word = p.DARK_PHRASES[Math.floor(Math.random() * p.DARK_PHRASES.length)];
     } else if (roll < 0.65) {
-      const ext = [...LONG_PHRASES, ...MANIPULATIVE_RESPONSES, ...DIALOG_PHRASES, ...WHISPER_PHRASES, ...HORROR_STORY_WORDS, ...CURSES, ...HOME_OBJECT_PHRASES];
+      const ext = [...p.LONG_PHRASES, ...p.MANIPULATIVE_RESPONSES, ...p.DIALOG_PHRASES, ...p.WHISPER_PHRASES, ...p.HORROR_STORY_WORDS, ...p.CURSES, ...p.HOME_OBJECT_PHRASES];
       word = ext[Math.floor(Math.random() * ext.length)];
     } else if (roll < 0.80) {
-      const cultural = [...MYTHOLOGY_WORDS, ...FOLK_BELIEFS, ...DREAM_WORDS, ...RESEARCH_JARGON];
+      const cultural = [...p.MYTHOLOGY_WORDS, ...p.FOLK_BELIEFS, ...p.DREAM_WORDS, ...p.RESEARCH_JARGON];
       word = cultural[Math.floor(Math.random() * cultural.length)];
     } else {
-      const other = [...SPIRIT_NAMES, ...NUMBERS, ...HISTORICAL_WORDS, ...NATURE_WORDS, ...EMOTION_WORDS, ...BODY_WORDS, ...PLACE_WORDS, ...TIME_WORDS, ...ACTION_WORDS];
+      const other = [...p.SPIRIT_NAMES, ...p.NUMBERS, ...p.HISTORICAL_WORDS, ...p.NATURE_WORDS, ...p.EMOTION_WORDS, ...p.BODY_WORDS, ...p.PLACE_WORDS, ...p.TIME_WORDS, ...p.ACTION_WORDS];
       word = other[Math.floor(Math.random() * other.length)];
     }
 
@@ -998,27 +1025,28 @@ class ITCVoiceEngine {
   private triggerPhantomEvent(): void {
     if (this.isSpeaking) return;
     const roll = Math.random();
+    const p = this.pools;
     let character: VoiceCharacter;
     let wordPool: string[];
 
     if (roll < 0.30) {
       character = "muffled_male";
-      wordPool = PHANTOM_PHRASES;
+      wordPool = p.PHANTOM_PHRASES;
     } else if (roll < 0.55) {
       character = "muffled_female";
-      wordPool = PHANTOM_PHRASES;
+      wordPool = p.PHANTOM_PHRASES;
     } else if (roll < 0.68) {
       character = "whisper_male";
-      wordPool = [...WHISPER_PHRASES, ...PHANTOM_PHRASES, ...HOME_OBJECT_PHRASES];
+      wordPool = [...p.WHISPER_PHRASES, ...p.PHANTOM_PHRASES, ...p.HOME_OBJECT_PHRASES];
     } else if (roll < 0.80) {
       character = "whisper_female";
-      wordPool = [...WHISPER_PHRASES, ...PHANTOM_PHRASES, ...HOME_OBJECT_PHRASES];
+      wordPool = [...p.WHISPER_PHRASES, ...p.PHANTOM_PHRASES, ...p.HOME_OBJECT_PHRASES];
     } else if (roll < 0.90) {
       character = "nine";
-      wordPool = NINE_PHRASES;
+      wordPool = p.NINE_PHRASES;
     } else {
       character = "girl_child";
-      wordPool = GIRL_CHILD_PHRASES;
+      wordPool = p.GIRL_CHILD_PHRASES;
     }
 
     const word = wordPool[Math.floor(Math.random() * wordPool.length)];
@@ -1091,7 +1119,9 @@ class ITCVoiceEngine {
           { ...voiceParams, pitch, rate },
           this.webTurkishVoice,
           this.nativeTurkishVoiceId,
-          this.isWebPlatform
+          this.isWebPlatform,
+          this.voiceBcp47,
+          this.voxLang
         );
       }
 
@@ -1123,7 +1153,7 @@ class ITCVoiceEngine {
     try {
       // Sunucu TTS endpoint'inden Türkçe mp3 çek (ElevenLabs)
       const apiBase = this.getApiBaseUrl();
-      const url = `${apiBase}/api/tts?text=${encodeURIComponent(word)}&character=${encodeURIComponent(this._currentCharacter ?? "male")}`;
+      const url = `${apiBase}/api/tts?text=${encodeURIComponent(word)}&character=${encodeURIComponent(this._currentCharacter ?? "male")}&language=${encodeURIComponent(this.voxLang)}`;
       
       const response = await fetch(url);
       if (!response.ok) {
@@ -1228,7 +1258,7 @@ class ITCVoiceEngine {
           onStopped: () => { this.isSpeaking = false; },
         };
         if (useTurkish) {
-          opts.language = "tr-TR";
+          opts.language = this.voiceBcp47;
           if (this.nativeTurkishVoiceId) opts.voice = this.nativeTurkishVoiceId;
         }
         Speech.speak(word, opts);

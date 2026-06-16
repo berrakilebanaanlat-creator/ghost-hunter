@@ -81,6 +81,7 @@
     "startScan": "Start scanning",
     "recording": "Recording",
     "sensitivity": "Sensitivity",
+    "language": "VOX Language",
     "whiteNoise": "White Noise",
     "signalStrength": "Signal Strength",
     "activity": "Activity",

@@ -65,9 +65,12 @@ async function fetchElevenLabs(text: string, voiceId: string, apiKey: string): P
   }
 }
 
-async function fetchGoogleTTS(text: string): Promise<Buffer | null> {
+const GOOGLE_TL: Record<string, string> = { tr: "tr", en: "en", de: "de" };
+
+async function fetchGoogleTTS(text: string, language: string = "tr"): Promise<Buffer | null> {
   try {
-    const url = `https://translate.google.com/translate_tts?ie=UTF-8&q=${encodeURIComponent(text)}&tl=tr&client=tw-ob&ttsspeed=0.6`;
+    const tl = GOOGLE_TL[language] ?? "tr";
+    const url = `https://translate.google.com/translate_tts?ie=UTF-8&q=${encodeURIComponent(text)}&tl=${tl}&client=tw-ob&ttsspeed=0.6`;
     const res = await fetch(url, {
       headers: {
         "User-Agent": "Mozilla/5.0 (Linux; Android 10) AppleWebKit/537.36 Chrome/120.0.0.0 Mobile Safari/537.36",
@@ -86,6 +89,8 @@ async function fetchGoogleTTS(text: string): Promise<Buffer | null> {
 router.get("/tts", async (req, res) => {
   const text = (req.query["text"] as string | undefined)?.trim();
   const character = (req.query["character"] as string | undefined) ?? "male";
+  const langParam = (req.query["language"] as string | undefined) ?? "tr";
+  const language = GOOGLE_TL[langParam] ? langParam : "tr";
 
   if (!text) {
     res.status(400).json({ error: "text gerekli" });
@@ -94,7 +99,7 @@ router.get("/tts", async (req, res) => {
 
   const apiKey = process.env["ELEVENLABS_API_KEY"];
   const voiceId = VOICE_MAP[character] ?? DEFAULT_VOICE;
-  const cacheKey = `${apiKey ? voiceId : "gtts"}:${text}`;
+  const cacheKey = `${apiKey ? voiceId : "gtts"}:${language}:${text}`;
 
   // Önbellekten döndür
   if (cache.has(cacheKey)) {
@@ -115,7 +120,7 @@ router.get("/tts", async (req, res) => {
 
   // 2. Yedek: Google Translate TTS
   if (!buffer) {
-    buffer = await fetchGoogleTTS(text);
+    buffer = await fetchGoogleTTS(text, language);
     if (buffer) source = "google";
   }
 

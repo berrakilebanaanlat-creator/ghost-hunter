@@ -24,6 +24,7 @@ export interface AppSettings {
   voxDistortion: number; // 0-100
   voxAutoSpeak: boolean;
   voxVoiceCharacter: string;
+  voxLanguage: "tr" | "en" | "de"; // VOX konuşma/kelime dili (TR varsayılan)
 
   // EMF Ayarları
   emfSensitivity: number; // 1-10
@@ -71,6 +72,7 @@ export const DEFAULT_SETTINGS: AppSettings = {
   voxDistortion: 20,
   voxAutoSpeak: true,
   voxVoiceCharacter: "random",
+  voxLanguage: "tr",
 
   // EMF
   emfSensitivity: 5,
@@ -192,7 +194,7 @@ export class SettingsManager {
     category: "vox" | "emf" | "sls" | "radar" | "evp" | "general" | "notifications"
   ): Promise<void> {
     const prefixMap: Record<string, string[]> = {
-      vox: ["voxSensitivity", "voxWhiteNoiseMode", "voxReverb", "voxEcho", "voxDistortion", "voxAutoSpeak", "voxVoiceCharacter"],
+      vox: ["voxSensitivity", "voxWhiteNoiseMode", "voxReverb", "voxEcho", "voxDistortion", "voxAutoSpeak", "voxVoiceCharacter", "voxLanguage"],
       emf: ["emfSensitivity", "emfAlertThreshold", "emfSoundAlert", "emfVibrationAlert"],
       sls: ["slsCamera", "slsSensitivity", "slsAutoCapture", "slsShowGrid", "slsShowPointCloud", "slsDefaultMode"],
       radar: ["radarRange", "radarSensitivity", "radarSoundAlert"],

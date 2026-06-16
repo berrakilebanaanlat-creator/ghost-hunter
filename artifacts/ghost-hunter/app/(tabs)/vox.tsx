@@ -11,6 +11,8 @@ import {
   type MicrophoneState,
   type WhiteNoiseMode,
 } from "@/lib/itc-voice-engine";
+import type { VoxLang } from "@/lib/vox-word-banks";
+import { SettingsManager } from "@/lib/settings-manager";
 import { getScreenRecorder, type RecordingState } from "@/lib/screen-recorder";
 import { t } from "@/lib/i18n";
 import { addRecording } from "@/lib/recording-history";
@@ -68,6 +70,14 @@ const NOISE_MODE_KEYS: Record<WhiteNoiseMode, string> = {
 
 const NOISE_MODES: WhiteNoiseMode[] = ["off", "slow", "fast", "continuous"];
 
+// VOX dilleri (TR varsayılan)
+const VOX_LANGS: VoxLang[] = ["tr", "en", "de"];
+const VOX_LANG_LABELS: Record<VoxLang, string> = {
+  tr: "TÜRKÇE",
+  en: "ENGLISH",
+  de: "DEUTSCH",
+};
+
 export default function VoxScreen() {
   const { isVoxPurchased } = useAds();
 
@@ -82,6 +92,7 @@ export default function VoxScreen() {
   const [pulsePhase, setPulsePhase] = useState(0);
   const [showSettings, setShowSettings] = useState(false);
   const [ttsWarning, setTtsWarning] = useState(false);
+  const [voxLanguage, setVoxLanguageState] = useState<VoxLang>("tr");
 
   // Mikrofon durumu
   const [micState, setMicState] = useState<MicrophoneState>({
@@ -180,6 +191,30 @@ export default function VoxScreen() {
     };
   }, [isActive]);
 
+  // VOX dilini yükle ve motora uygula (TR varsayılan)
+  useEffect(() => {
+    let active = true;
+    (async () => {
+      try {
+        const lang = await SettingsManager.getSetting("voxLanguage");
+        if (!active) return;
+        setVoxLanguageState(lang);
+        try { getITCEngine().setLanguage(lang); } catch { /* */ }
+      } catch { /* */ }
+    })();
+    return () => { active = false; };
+  }, []);
+
+  // VOX dilini değiştir
+  const changeVoxLanguage = useCallback((lang: VoxLang) => {
+    setVoxLanguageState(lang);
+    try { getITCEngine().setLanguage(lang); } catch { /* */ }
+    void SettingsManager.setSetting("voxLanguage", lang);
+    if (Platform.OS !== "web") {
+      try { Haptics.selectionAsync(); } catch { /* */ }
+    }
+  }, []);
+
   // Kelime callback
   const handleWordSpoken = useCallback((word: string, character: VoiceCharacter) => {
     setCurrentWord(word);
@@ -272,6 +307,7 @@ export default function VoxScreen() {
           engine.setEchoLevel(echoLevel);
           engine.setDistortionLevel(distortionLevel);
           engine.setSensitivity(sensitivity);
+          engine.setLanguage(voxLanguage);
         } catch { /* */ }
         await engine.start(handleWordSpoken);
         setIsActive(true);
@@ -280,7 +316,7 @@ export default function VoxScreen() {
       console.warn("[VOX] toggleActive hatası:", e);
       setIsActive(false);
     }
-  }, [isActive, handleWordSpoken, whiteNoiseMode, whiteNoiseVol, reverbLevel, echoLevel, distortionLevel, sensitivity]);
+  }, [isActive, handleWordSpoken, whiteNoiseMode, whiteNoiseVol, reverbLevel, echoLevel, distortionLevel, sensitivity, voxLanguage]);
 
   // Mikrofon aç/kapa
   const toggleMicrophone = useCallback(async () => {
@@ -571,6 +607,34 @@ export default function VoxScreen() {
         {/* Ayarlar Paneli (GhostTube VOX tarzı) */}
         {showSettings && (
           <View style={styles.settingsPanel}>
+            <Text style={styles.settingsSectionTitle}>{t("vox.language").toUpperCase()}</Text>
+
+            {/* VOX Dili (TR / EN / DE) */}
+            <View style={styles.levelBarRow}>
+              <Text style={styles.levelLabel}>{t("vox.language")}</Text>
+              <View style={styles.noiseModeRow}>
+                {VOX_LANGS.map((lang) => (
+                  <Pressable
+                    key={lang}
+                    onPress={() => changeVoxLanguage(lang)}
+                    style={({ pressed }) => [
+                      styles.noiseModeBtn,
+                      voxLanguage === lang && { backgroundColor: "#9B4FDE20", borderColor: "#9B4FDE60" },
+                      pressed && { opacity: 0.7 },
+                    ]}
+                  >
+                    <Text style={[
+                      styles.noiseModeBtnText,
+                      voxLanguage === lang && { color: "#9B4FDE" },
+                    ]}>
+                      {VOX_LANG_LABELS[lang]}
+                    </Text>
+                  </Pressable>
+                ))}
+              </View>
+            </View>
+
+            <View style={styles.settingsDivider} />
             <Text style={styles.settingsSectionTitle}>{t("vox.whiteNoise").toUpperCase()}</Text>
 
             {/* White Noise Modu */}
