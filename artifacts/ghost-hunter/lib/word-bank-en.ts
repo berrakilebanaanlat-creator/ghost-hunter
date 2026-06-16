@@ -395,7 +395,7 @@ export const ACTION_WORDS: string[] = [
   "watch", "spy on", "lie in wait", "attack", "defend", "protect",
   "take shelter", "bar", "trap", "beg", "collar", "wish",
   "ask", "request", "curse", "curse", "cast a spell", "do ritual",
-  "have a session", "confess", "告白", "accept", "deny", "reject",
+  "have a session", "confess", "admit", "accept", "deny", "reject",
   "forgive", "forgive", "punish", "give reward", "stay", "help",
   "lookout", "task", "login", "exit", "face it", "is dissolving",
   "locked", "free", "hiding", "don't laugh", "call out", "follow-up",

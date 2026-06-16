@@ -395,7 +395,7 @@ export const ACTION_WORDS: string[] = [
   "schau", "ausspionieren", "auf der Lauer liegen", "Angriff", "verteidigen", "schützen",
   "nimm Schutz", "Bar", "Falle", "betteln", "Kragen", "Wunsch",
   "fragen", "Anfrage", "Fluch", "Fluch", "einen Zauber wirken", "Ritual durchführen",
-  "eine Sitzung haben", "gestehen", "告白", "akzeptiere", "leugnen", "ablehnen",
+  "eine Sitzung haben", "gestehen", "beichten", "akzeptiere", "leugnen", "ablehnen",
   "verzeihen", "verzeihen", "bestrafen", "Belohnung geben", "bleiben", "Hilfe",
   "Aussichtspunkt", "Aufgabe", "Anmelden", "Ausgang", "Seien Sie ehrlich", "löst sich auf",
   "gesperrt", "kostenlos", "verstecken", "lache nicht", "Rufen Sie an", "Nachverfolgung",
