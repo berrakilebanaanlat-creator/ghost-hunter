@@ -2,3 +2,4 @@ downloads/GhostHunter-1.0.28-PlayStore-DOGRU-IMZA.aab filter=lfs diff=lfs merge=
 downloads/GhostHunter-1.0.28-PlayStore.zip filter=lfs diff=lfs merge=lfs -text
 downloads/GhostHunter-1.0.28-D9EF.aab filter=lfs diff=lfs merge=lfs -text
 downloads/GhostHunter-1.0.29-10029.aab filter=lfs diff=lfs merge=lfs -text
+downloads/GhostHunter-1.0.31-10031.aab filter=lfs diff=lfs merge=lfs -text
