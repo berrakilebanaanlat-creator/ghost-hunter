@@ -34,6 +34,25 @@ function addToCache(key: string, buf: Buffer): void {
   cache.set(key, buf);
 }
 
+export const GOOGLE_TL: Record<string, string> = { tr: "tr", en: "en", de: "de" };
+
+/**
+ * Coerce a raw language param to a supported language code.
+ * Falls back to "tr" for missing or unrecognised values.
+ */
+export function coerceLanguage(lang: string | undefined): string {
+  return GOOGLE_TL[lang ?? ""] ? (lang as string) : "tr";
+}
+
+/**
+ * Build the in-memory cache key for a TTS request.
+ * The key includes the language so the same text in different
+ * languages is always stored and served separately.
+ */
+export function buildCacheKey(voiceId: string, language: string, text: string): string {
+  return `${voiceId}:${language}:${text}`;
+}
+
 async function fetchElevenLabs(text: string, voiceId: string, apiKey: string): Promise<Buffer | null> {
   try {
     const res = await fetch(
@@ -65,8 +84,6 @@ async function fetchElevenLabs(text: string, voiceId: string, apiKey: string): P
   }
 }
 
-const GOOGLE_TL: Record<string, string> = { tr: "tr", en: "en", de: "de" };
-
 async function fetchGoogleTTS(text: string, language: string = "tr"): Promise<Buffer | null> {
   try {
     const tl = GOOGLE_TL[language] ?? "tr";
@@ -89,8 +106,8 @@ async function fetchGoogleTTS(text: string, language: string = "tr"): Promise<Bu
 router.get("/tts", async (req, res) => {
   const text = (req.query["text"] as string | undefined)?.trim();
   const character = (req.query["character"] as string | undefined) ?? "male";
-  const langParam = (req.query["language"] as string | undefined) ?? "tr";
-  const language = GOOGLE_TL[langParam] ? langParam : "tr";
+  const langParam = req.query["language"] as string | undefined;
+  const language = coerceLanguage(langParam);
 
   if (!text) {
     res.status(400).json({ error: "text gerekli" });
@@ -99,7 +116,7 @@ router.get("/tts", async (req, res) => {
 
   const apiKey = process.env["ELEVENLABS_API_KEY"];
   const voiceId = VOICE_MAP[character] ?? DEFAULT_VOICE;
-  const cacheKey = `${apiKey ? voiceId : "gtts"}:${language}:${text}`;
+  const cacheKey = buildCacheKey(apiKey ? voiceId : "gtts", language, text);
 
   // Önbellekten döndür
   if (cache.has(cacheKey)) {

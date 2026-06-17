@@ -5,9 +5,9 @@
     "tsBuildInfoFile": ".tsbuildinfo",
     "outDir": "dist",
     "rootDir": "src",
-    "types": ["node"]
+    "types": ["node", "vitest/globals"]
   },
-  "include": ["src"],
+  "include": ["src", "vitest.config.ts"],
   "references": [
     {
       "path": "../../lib/db"
