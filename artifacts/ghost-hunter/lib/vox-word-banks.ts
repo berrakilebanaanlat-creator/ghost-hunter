@@ -82,3 +82,16 @@ export const VOX_BCP47: Record<VoxLang, string> = {
 export function getVoxWordBank(lang: VoxLang = "tr"): VoxWordBank {
   return BANKS[lang] ?? BANKS.tr;
 }
+
+const VALID_VOX_LANGS: ReadonlySet<string> = new Set<VoxLang>(["tr", "en", "de"]);
+
+/**
+ * Coerces an arbitrary value loaded from persisted storage into a valid VoxLang.
+ * Falls back to "tr" for any unexpected or missing value.
+ */
+export function coerceVoxLang(value: unknown): VoxLang {
+  if (typeof value === "string" && VALID_VOX_LANGS.has(value)) {
+    return value as VoxLang;
+  }
+  return "tr";
+}

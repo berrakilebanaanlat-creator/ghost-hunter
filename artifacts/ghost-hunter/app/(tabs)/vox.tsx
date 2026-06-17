@@ -11,7 +11,7 @@ import {
   type MicrophoneState,
   type WhiteNoiseMode,
 } from "@/lib/itc-voice-engine";
-import type { VoxLang } from "@/lib/vox-word-banks";
+import { coerceVoxLang, type VoxLang } from "@/lib/vox-word-banks";
 import { SettingsManager } from "@/lib/settings-manager";
 import { getScreenRecorder, type RecordingState } from "@/lib/screen-recorder";
 import { t } from "@/lib/i18n";
@@ -196,8 +196,9 @@ export default function VoxScreen() {
     let active = true;
     (async () => {
       try {
-        const lang = await SettingsManager.getSetting("voxLanguage");
+        const raw = await SettingsManager.getSetting("voxLanguage");
         if (!active) return;
+        const lang = coerceVoxLang(raw);
         setVoxLanguageState(lang);
         try { getITCEngine().setLanguage(lang); } catch { /* */ }
       } catch { /* */ }
