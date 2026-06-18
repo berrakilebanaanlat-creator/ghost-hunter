@@ -507,6 +507,14 @@ async function verifySubscriptionWithStore(): Promise<void> {
 // ============================================================
 
 async function purchaseVoxWithIAP(iap: any, productId: string): Promise<PurchaseResult> {
+  // ============================================================
+  // KONTROL 1: Ürün kimliği boş mu?
+  // ============================================================
+  if (!productId) {
+    console.warn('[IAP] productId boş — satın alma başlatılamaz');
+    return { ok: false, errorMessage: 'Ürün tanımlanamadı. Lütfen uygulamayı yeniden başlatıp tekrar deneyin.' };
+  }
+
   try {
     // Bağlantı kur
     await iap.initConnection();
@@ -548,7 +556,7 @@ async function purchaseVoxWithIAP(iap: any, productId: string): Promise<Purchase
 
     if (!products || products.length === 0) {
       console.warn('[IAP] VOX abonelik ürünü bulunamadı:', productId);
-      return { ok: false, errorMessage: 'product-not-found' };
+      return { ok: false, errorMessage: 'Ürün bulunamadı. İnternet bağlantınızı kontrol edip tekrar deneyin.' };
     }
 
     const product = products[0];
@@ -574,13 +582,15 @@ async function purchaseVoxWithIAP(iap: any, productId: string): Promise<Purchase
       } : {}),
     };
 
-    // Yükseltme/değiştirme: eski abonelik token'ı + değiştirme modu
+    // ============================================================
+    // KONTROL 2: Abonelik yükseltme — IMMEDIATE_WITH_TIME_PRORATION
+    // expo-iap karşılığı: replacementMode: 'with-time-proration'
+    // Kalan süre yeni plana orantılı aktarılır (Google Billing 8.1.0+)
+    // ============================================================
     if (oldPurchaseToken && oldProductId) {
       googleRequest.purchaseToken = oldPurchaseToken;
-      // Item-seviyesi değiştirme parametresi (Billing 8.1.0+)
       googleRequest.subscriptionProductReplacementParams = {
         oldProductId,
-        // 'with-time-proration': kalan süre yeni plana orantılı aktarılır
         replacementMode: 'with-time-proration',
       };
       console.log('[IAP] Abonelik yükseltme/değiştirme:', oldProductId, '→', productId);
@@ -616,18 +626,39 @@ async function purchaseVoxWithIAP(iap: any, productId: string): Promise<Purchase
       return { ok: true };
     }
     // purchaseResult boş — satın alma tamamlanmadı
-    return { ok: false, errorMessage: 'no-purchase-result' };
+    return { ok: false, errorMessage: 'Satın alma tamamlanamadı. Lütfen tekrar deneyin.' };
   } catch (error: any) {
-    // Kullanıcı iptal ettiyse hata mesajı gösterme
-    if (error?.code === 'user-cancelled' || error?.code === 'E_USER_CANCELLED') {
+    const code: string = error?.code ?? '';
+
+    // ============================================================
+    // KONTROL 3: Hata koduna göre Türkçe kullanıcı mesajı
+    // ============================================================
+
+    // Kullanıcı iptal ettiyse sessizce çık (mesaj gösterme)
+    if (code === 'user-cancelled' || code === 'E_USER_CANCELLED') {
       console.log('[IAP] Kullanıcı satın almayı iptal etti');
       return { ok: false, cancelled: true };
     }
-    console.warn('[IAP] Abonelik satın alma hatası:', error);
-    return {
-      ok: false,
-      errorMessage: error?.code ? `${error.code}` : String(error?.message ?? error),
-    };
+
+    let turkishMessage: string;
+    if (code === 'E_ALREADY_OWNED') {
+      turkishMessage = 'Bu aboneliğe zaten sahipsiniz. Satın almalarınızı geri yüklemek için "Geri Yükle" butonunu kullanın.';
+    } else if (code === 'E_ITEM_UNAVAILABLE') {
+      turkishMessage = 'Ürün şu an kullanılamıyor. Lütfen daha sonra tekrar deneyin.';
+    } else if (code === 'E_NETWORK_ERROR') {
+      turkishMessage = 'İnternet bağlantısı hatası. Bağlantınızı kontrol edip tekrar deneyin.';
+    } else if (code === 'E_SERVICE_ERROR') {
+      turkishMessage = 'Google Play hizmeti geçici olarak kullanılamıyor. Lütfen biraz bekleyip tekrar deneyin.';
+    } else if (code === 'payment-pending' || code === 'E_PAYMENT_PENDING') {
+      turkishMessage = 'Ödemeniz onay bekliyor. Tamamlandığında aboneliğiniz otomatik aktif olacak.';
+    } else if (code === 'E_BILLING_RESPONSE_JSON_PARSE_ERROR') {
+      turkishMessage = 'Google Play\'den beklenmedik bir yanıt alındı. Lütfen tekrar deneyin.';
+    } else {
+      turkishMessage = 'Satın alma işlemi tamamlanamadı. Lütfen tekrar deneyin.';
+    }
+
+    console.warn('[IAP] Abonelik satın alma hatası — kod:', code, 'mesaj:', error?.message);
+    return { ok: false, errorMessage: turkishMessage };
   }
 }
 
