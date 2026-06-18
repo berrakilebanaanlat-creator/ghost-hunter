@@ -35,6 +35,9 @@ export default function PremiumScreen() {
   }, [isVoxPurchased]);
 
   const handlePurchaseVox = async () => {
+    console.log("[PURCHASE] package:", selectedPlan);
+    console.log("[PURCHASE] product:", JSON.stringify(voxPrices));
+    console.log("[PURCHASE] userSubscriptionStatus:", JSON.stringify(voxSubscription));
     // Fiyatlar henüz yüklenmediyse internet uyarısı ver
     if (!voxPrices) {
       Alert.alert(
@@ -145,6 +148,9 @@ export default function PremiumScreen() {
 
   // Aylık aboneyi yıllığa yükselt (Google Play değiştirme akışı)
   const handleUpgradeToYearly = async () => {
+    console.log("[UPGRADE] package: yearly");
+    console.log("[UPGRADE] product:", JSON.stringify(voxPrices));
+    console.log("[UPGRADE] userSubscriptionStatus:", JSON.stringify(voxSubscription));
     // Anında disabled — çift tıklamayı önle
     setLoading(true);
     if (Platform.OS !== "web") {
