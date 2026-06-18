@@ -507,25 +507,20 @@ async function verifySubscriptionWithStore(): Promise<void> {
 // ============================================================
 
 async function purchaseVoxWithIAP(iap: any, productId: string): Promise<PurchaseResult> {
-  // ============================================================
-  // KONTROL 1: Ürün kimliği boş mu?
-  // ============================================================
+  console.log('[IAP-FLOW] Satın alma başlatıldı:', productId);
+
+  // Ürün kimliği boş kontrolü
   if (!productId) {
-    console.warn('[IAP] productId boş — satın alma başlatılamaz');
+    CrashReporter.recordError(new Error('IAP: productId boş — satın alma başlatılamaz'), 'iap_empty_product_id');
     return { ok: false, errorMessage: 'Ürün tanımlanamadı. Lütfen uygulamayı yeniden başlatıp tekrar deneyin.' };
   }
 
   try {
-    // Bağlantı kur
     await iap.initConnection();
 
     // ============================================================
-    // KRİTİK: ABONELİK YÜKSELTME / DEĞİŞTİRME (aylık → yıllık)
-    // Kullanıcı zaten farklı bir VOX aboneliğine sahipse, Google Play
-    // yeni satın alma için eski aboneliğin purchaseToken'ını VE bir
-    // replacementMode'u ZORUNLU ister. Bunlar olmadan Google Play
-    // "zaten bu ürüne sahipsiniz" (E_ALREADY_OWNED) hatası döner ve
-    // satın alma sessizce başarısız olur — buton "tepkisiz" görünür.
+    // ABONELİK YÜKSELTME TESPİTİ (aylık → yıllık)
+    // oldPurchaseToken olmadan Google Play E_ALREADY_OWNED döner
     // ============================================================
     let oldPurchaseToken: string | undefined;
     let oldProductId: string | undefined;
@@ -535,7 +530,6 @@ async function purchaseVoxWithIAP(iap: any, productId: string): Promise<Purchase
         if (existingPurchases && existingPurchases.length > 0) {
           for (const p of existingPurchases) {
             const pid = p?.productId;
-            // Farklı bir VOX aboneliği bulunduysa onu değiştir
             if ((pid === 'vox_monthly' || pid === 'vox_yearly') && pid !== productId) {
               oldPurchaseToken = p?.purchaseToken ?? p?.purchaseTokenAndroid;
               oldProductId = pid;
@@ -543,102 +537,91 @@ async function purchaseVoxWithIAP(iap: any, productId: string): Promise<Purchase
             }
           }
         }
-      } catch (e) {
-        console.warn('[IAP] Mevcut abonelik tespiti başarısız:', e);
+      } catch (e: any) {
+        // [IAP-SILENT] Mevcut abonelik tespiti başarısız — sessizce devam
+        console.warn('[IAP-SILENT] getAvailablePurchases hatası:', e?.code, e?.message);
+        CrashReporter.recordError(
+          e instanceof Error ? e : new Error(String(e?.message ?? e)),
+          'iap_get_available_purchases_error'
+        );
       }
     }
 
-    // Abonelik ürünlerini getir (yeni API: fetchProducts)
-    const products = await iap.fetchProducts({
-      skus: [productId],
-      type: 'subs',
-    });
+    const products = await iap.fetchProducts({ skus: [productId], type: 'subs' });
 
     if (!products || products.length === 0) {
-      console.warn('[IAP] VOX abonelik ürünü bulunamadı:', productId);
+      console.warn('[IAP-SILENT] Ürün bulunamadı:', productId);
+      CrashReporter.recordError(new Error(`IAP: fetchProducts boş döndü — ${productId}`), 'iap_product_not_found');
       return { ok: false, errorMessage: 'Ürün bulunamadı. İnternet bağlantınızı kontrol edip tekrar deneyin.' };
     }
 
     const product = products[0];
 
-    // Android için offerToken al
     let offerToken: string | undefined;
     if (Platform.OS === 'android') {
-      // Yeni API: subscriptionOffers
       if (product.subscriptionOffers && product.subscriptionOffers.length > 0) {
         offerToken = product.subscriptionOffers[0].offerTokenAndroid;
-      }
-      // Fallback: eski API subscriptionOfferDetailsAndroid
-      else if (product.subscriptionOfferDetailsAndroid && product.subscriptionOfferDetailsAndroid.length > 0) {
+      } else if (product.subscriptionOfferDetailsAndroid && product.subscriptionOfferDetailsAndroid.length > 0) {
         offerToken = product.subscriptionOfferDetailsAndroid[0].offerToken;
       }
     }
 
-    // Google Play satın alma isteği gövdesi
     const googleRequest: any = {
       skus: [productId],
-      ...(offerToken ? {
-        subscriptionOffers: [{ sku: productId, offerToken }],
-      } : {}),
+      ...(offerToken ? { subscriptionOffers: [{ sku: productId, offerToken }] } : {}),
     };
 
-    // ============================================================
-    // KONTROL 2: Abonelik yükseltme — IMMEDIATE_WITH_TIME_PRORATION
+    // Abonelik yükseltme: IMMEDIATE_WITH_TIME_PRORATION
     // expo-iap karşılığı: replacementMode: 'with-time-proration'
-    // Kalan süre yeni plana orantılı aktarılır (Google Billing 8.1.0+)
-    // ============================================================
     if (oldPurchaseToken && oldProductId) {
       googleRequest.purchaseToken = oldPurchaseToken;
       googleRequest.subscriptionProductReplacementParams = {
         oldProductId,
         replacementMode: 'with-time-proration',
       };
-      console.log('[IAP] Abonelik yükseltme/değiştirme:', oldProductId, '→', productId);
+      console.log('[IAP-FLOW] Abonelik yükseltme:', oldProductId, '→', productId);
     }
 
-    // Satın alma isteği (yeni API: requestPurchase with type: 'subs')
-    // NOT: finishTransaction burada YAPILMAZ — purchaseUpdatedListener'da yapılır
-    // Bu sayede uygulama arka plana geçse bile acknowledge garantilenir
     const purchaseResult = await iap.requestPurchase({
-      request: {
-        apple: { sku: productId },
-        google: googleRequest,
-      },
+      request: { apple: { sku: productId }, google: googleRequest },
       type: 'subs',
     });
 
     if (purchaseResult) {
-      // purchaseUpdatedListener tetiklenecek ve orada finishTransaction yapılacak
-      // Ama güvenlik için burada da finishTransaction yapalım (çift kontrol)
+      // finishTransaction — çift güvenlik (asıl işlem purchaseUpdatedListener'da)
       try {
-        const isAcknowledged = purchaseResult.isAcknowledgedAndroid === true;
-        if (!isAcknowledged) {
-          await iap.finishTransaction({
-            purchase: purchaseResult,
-            isConsumable: false,
-          });
-          console.log('[IAP] ✅ finishTransaction başarılı (purchaseVoxWithIAP):', productId);
+        if (!purchaseResult.isAcknowledgedAndroid) {
+          await iap.finishTransaction({ purchase: purchaseResult, isConsumable: false });
+          console.log('[IAP-FLOW] ✅ finishTransaction başarılı:', productId);
         }
-      } catch (finishError) {
-        // Listener zaten yapacak, burada hata olursa sorun değil
-        console.warn('[IAP] finishTransaction hatası (listener halleder):', finishError);
+      } catch (finishError: any) {
+        // [IAP-SILENT] Listener zaten halleder — sessizce logla
+        console.warn('[IAP-SILENT] finishTransaction hatası:', finishError?.code, finishError?.message);
+        CrashReporter.recordError(
+          finishError instanceof Error ? finishError : new Error(String(finishError?.message ?? finishError)),
+          'iap_finish_transaction_error'
+        );
       }
       return { ok: true };
     }
-    // purchaseResult boş — satın alma tamamlanmadı
+
     return { ok: false, errorMessage: 'Satın alma tamamlanamadı. Lütfen tekrar deneyin.' };
+
   } catch (error: any) {
     const code: string = error?.code ?? '';
 
-    // ============================================================
-    // KONTROL 3: Hata koduna göre Türkçe kullanıcı mesajı
-    // ============================================================
-
-    // Kullanıcı iptal ettiyse sessizce çık (mesaj gösterme)
+    // Kullanıcı iptal — sessizce çık, hata gösterme
     if (code === 'user-cancelled' || code === 'E_USER_CANCELLED') {
-      console.log('[IAP] Kullanıcı satın almayı iptal etti');
+      console.log('[IAP-FLOW] Kullanıcı satın almayı iptal etti');
       return { ok: false, cancelled: true };
     }
+
+    // [IAP-SILENT] Tüm hatalar CrashReporter'a iletilir, uygulama donmaz
+    console.warn('[IAP-SILENT] Satın alma hatası — kod:', code, 'mesaj:', error?.message);
+    CrashReporter.recordError(
+      error instanceof Error ? error : new Error(`IAP Error: ${code} — ${error?.message ?? String(error)}`),
+      'iap_purchase_error'
+    );
 
     let turkishMessage: string;
     if (code === 'E_ALREADY_OWNED') {
@@ -657,7 +640,6 @@ async function purchaseVoxWithIAP(iap: any, productId: string): Promise<Purchase
       turkishMessage = 'Satın alma işlemi tamamlanamadı. Lütfen tekrar deneyin.';
     }
 
-    console.warn('[IAP] Abonelik satın alma hatası — kod:', code, 'mesaj:', error?.message);
     return { ok: false, errorMessage: turkishMessage };
   }
 }
