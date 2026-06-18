@@ -2,7 +2,7 @@
   "expo": {
     "name": "Antik Ghost App",
     "slug": "paranormal-hunter",
-    "version": "1.0.32",
+    "version": "1.0.33",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
     "scheme": "manusparnormalhunter",
@@ -13,7 +13,7 @@
       "bundleIdentifier": "com.berrakilebanaanlat.paranormalhunter"
     },
     "android": {
-      "versionCode": 10032,
+      "versionCode": 10033,
       "package": "com.berrakilebanaanlat.paranormalhunter",
       "googleServicesFile": "./google-services.json",
       "adaptiveIcon": {

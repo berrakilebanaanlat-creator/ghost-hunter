@@ -51,6 +51,8 @@ interface AdContextType {
   voxSubscription: VoxSubscription | null;
   /** Google Play Billing'den gelen yerelleştirilmiş fiyatlar */
   voxPrices: VoxPrices | null;
+  /** Fiyatlar henüz yüklenmedi mi (ilk yükleme) */
+  isPricesLoading: boolean;
   /** VOX abonelik satın al (aylık veya yıllık) */
   purchaseVoxSubscription: (period: 'monthly' | 'yearly') => Promise<PurchaseResult>;
   /** Eski tek seferlik VOX satın al (geriye uyumluluk) */
@@ -68,6 +70,7 @@ export function AdProvider({ children }: { children: React.ReactNode }) {
   const [isVoxPurchased, setIsVoxPurchased] = useState(false);
   const [voxSubscription, setVoxSubscription] = useState<VoxSubscription | null>(null);
   const [voxPrices, setVoxPrices] = useState<VoxPrices | null>(null);
+  const [isPricesLoading, setIsPricesLoading] = useState(true);
   const purchaseListenerRef = useRef<{ remove: () => void } | null>(null);
   const purchaseErrorListenerRef = useRef<{ remove: () => void } | null>(null);
 
@@ -93,6 +96,9 @@ export function AdProvider({ children }: { children: React.ReactNode }) {
       // Google Play'den yerelleştirilmiş fiyatları çek (cache fallback ile)
       loadVoxPricesWithCache().then((prices) => {
         if (prices) setVoxPrices(prices);
+        setIsPricesLoading(false);
+      }).catch(() => {
+        setIsPricesLoading(false);
       });
       // ANR FIX: AdMob başlatmasını 3 saniye geciktir
       // Cold start sırasında UI thread'i bloklamamak için
@@ -347,6 +353,36 @@ export function AdProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const handlePurchaseVoxSubscription = useCallback(async (period: 'monthly' | 'yearly'): Promise<PurchaseResult> => {
+    // ============================================================
+    // DEV MOCK — __DEV__ modunda mock sonuç ayarlanmışsa kullan
+    // ============================================================
+    if (__DEV__) {
+      try {
+        const { consumeMockPurchaseOutcome } = require('./mock-subscription');
+        const mockOutcome = await consumeMockPurchaseOutcome();
+        if (mockOutcome) {
+          // Gerçek satın alma gecikmesini simüle et
+          await new Promise(resolve => setTimeout(resolve, 1200));
+          switch (mockOutcome) {
+            case 'success_monthly':
+              await PremiumManager.purchaseVoxSubscription('monthly');
+              await checkStatuses();
+              return { ok: true };
+            case 'success_yearly':
+              await PremiumManager.purchaseVoxSubscription('yearly');
+              await checkStatuses();
+              return { ok: true };
+            case 'error':
+              return { ok: false, errorMessage: 'mock-error' };
+            case 'cancelled':
+              return { ok: false, cancelled: true };
+          }
+        }
+      } catch {
+        // mock modülü yüklenemezse sessizce gerçek akışa geç
+      }
+    }
+
     const productId = period === 'monthly' ? 'vox_monthly' : 'vox_yearly';
     
     if (Platform.OS !== 'web') {
@@ -407,6 +443,7 @@ export function AdProvider({ children }: { children: React.ReactNode }) {
         isVoxPurchased,
         voxSubscription,
         voxPrices,
+        isPricesLoading,
         purchaseVoxSubscription: handlePurchaseVoxSubscription,
         purchaseVox: handlePurchaseVox,
         restorePurchases: handleRestorePurchases,

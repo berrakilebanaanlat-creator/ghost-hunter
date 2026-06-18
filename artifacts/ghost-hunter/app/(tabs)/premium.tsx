@@ -10,13 +10,17 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import * as Haptics from "expo-haptics";
 import { t } from "@/lib/i18n";
 import { refreshBillingStatus } from "@/lib/billing-sync";
+import { DevSubscriptionPanel } from "@/components/dev-subscription-panel";
 
 type PlanPeriod = "monthly" | "yearly";
 
 export default function PremiumScreen() {
-  const { isVoxPurchased, purchaseVoxSubscription, restorePurchases, refreshPremiumStatus, voxSubscription, voxPrices } = useAds();
+  const { isVoxPurchased, purchaseVoxSubscription, restorePurchases, refreshPremiumStatus, voxSubscription, voxPrices, isPricesLoading } = useAds();
   const [selectedPlan, setSelectedPlan] = useState<PlanPeriod>("yearly");
   const [loading, setLoading] = useState(false);
+  const [awaitingConfirmation, setAwaitingConfirmation] = useState(false);
+  // DEV: Fiyat yükleme durumunu test için override et (__DEV__ only)
+  const [devPricesLoadingOverride, setDevPricesLoadingOverride] = useState(false);
   const [restoring, setRestoring] = useState(false);
   const [syncing, setSyncing] = useState(false);
   const [restoreSuccess, setRestoreSuccess] = useState(false);
@@ -31,22 +35,42 @@ export default function PremiumScreen() {
   }, [isVoxPurchased]);
 
   const handlePurchaseVox = async () => {
+    // Fiyatlar henüz yüklenmediyse internet uyarısı ver
+    if (!voxPrices) {
+      Alert.alert(
+        t("common.error"),
+        "İnternet bağlantınızı kontrol edin ve tekrar deneyin."
+      );
+      return;
+    }
+    // Anında disabled — çift tıklamayı önle
+    setLoading(true);
     if (Platform.OS !== "web") {
       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
     }
-    setLoading(true);
     try {
       const result = await purchaseVoxSubscription(selectedPlan);
       if (result.ok) {
+        setAwaitingConfirmation(true);
         if (Platform.OS !== "web") {
           Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
         }
+        // Google Play onayı genellikle anında gelir; 5 sn sonra temizle
+        setTimeout(() => setAwaitingConfirmation(false), 5000);
       } else if (!result.cancelled) {
         if (Platform.OS !== "web") {
           Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
         }
-        Alert.alert(t("common.error"), t("premium.purchaseError"));
+        Alert.alert(
+          t("common.error"),
+          "İşlem tamamlanamadı, lütfen tekrar deneyin."
+        );
       }
+    } catch {
+      Alert.alert(
+        t("common.error"),
+        "İşlem tamamlanamadı, lütfen tekrar deneyin."
+      );
     } finally {
       setLoading(false);
     }
@@ -121,22 +145,37 @@ export default function PremiumScreen() {
 
   // Aylık aboneyi yıllığa yükselt (Google Play değiştirme akışı)
   const handleUpgradeToYearly = async () => {
+    // Anında disabled — çift tıklamayı önle
+    setLoading(true);
     if (Platform.OS !== "web") {
       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
     }
-    setLoading(true);
     try {
+      // Yükseltme öncesi mevcut satın almaları arka planda geri yükle
+      // Bu, Google Play'in "zaten sahipsiniz" hatasını önler
+      restorePurchases().catch(() => {/* sessizce devam et */});
+
       const result = await purchaseVoxSubscription("yearly");
       if (result.ok) {
+        setAwaitingConfirmation(true);
         if (Platform.OS !== "web") {
           Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
         }
+        setTimeout(() => setAwaitingConfirmation(false), 5000);
       } else if (!result.cancelled) {
         if (Platform.OS !== "web") {
           Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
         }
-        Alert.alert(t("common.error"), t("premium.purchaseError"));
+        Alert.alert(
+          t("common.error"),
+          "Yıllık plana geçiş tamamlanamadı, lütfen tekrar deneyin."
+        );
       }
+    } catch {
+      Alert.alert(
+        t("common.error"),
+        "Yıllık plana geçiş tamamlanamadı, lütfen tekrar deneyin."
+      );
     } finally {
       setLoading(false);
     }
@@ -293,23 +332,27 @@ export default function PremiumScreen() {
                 {/* Satın al butonu */}
                 <Pressable
                   onPress={handlePurchaseVox}
-                  disabled={loading}
+                  disabled={loading || isPricesLoading || devPricesLoadingOverride}
                   style={({ pressed }) => [
                     styles.purchaseBtn,
                     {
                       backgroundColor: "#9B4FDE15",
                       borderColor: "#9B4FDE30",
                       transform: [{ scale: pressed ? 0.97 : 1 }],
-                      opacity: pressed ? 0.9 : loading ? 0.5 : 1,
+                      opacity: pressed ? 0.9 : (loading || isPricesLoading || devPricesLoadingOverride) ? 0.5 : 1,
                     },
                   ]}
                 >
                   <Text style={[styles.purchaseBtnText, { color: "#9B4FDE" }]}>
-                    {loading
-                      ? t("common.loading")
-                      : selectedPlan === "yearly"
-                        ? `${t("premium.subscribe")} — ${voxPrices?.yearlyPrice || "…"}${t("paywall.perYear")}`
-                        : `${t("premium.subscribe")} — ${voxPrices?.monthlyPrice || "…"}${t("paywall.perMonth")}`}
+                    {(isPricesLoading || devPricesLoadingOverride)
+                      ? "Fiyatlar yükleniyor..."
+                      : awaitingConfirmation
+                        ? "Onay bekleniyor..."
+                        : loading
+                          ? "İşleniyor..."
+                          : selectedPlan === "yearly"
+                            ? `${t("premium.subscribe")} — ${voxPrices?.yearlyPrice || "…"}${t("paywall.perYear")}`
+                            : `${t("premium.subscribe")} — ${voxPrices?.monthlyPrice || "…"}${t("paywall.perMonth")}`}
                   </Text>
                 </Pressable>
               </>
@@ -331,22 +374,26 @@ export default function PremiumScreen() {
                 {voxSubscription.period === "monthly" && (
                   <Pressable
                     onPress={handleUpgradeToYearly}
-                    disabled={loading}
+                    disabled={loading || isPricesLoading || devPricesLoadingOverride}
                     style={({ pressed }) => [
                       styles.upgradeBtn,
                       {
                         transform: [{ scale: pressed ? 0.97 : 1 }],
-                        opacity: pressed ? 0.9 : loading ? 0.5 : 1,
+                        opacity: pressed ? 0.9 : (loading || isPricesLoading || devPricesLoadingOverride) ? 0.5 : 1,
                       },
                     ]}
                   >
                     <View style={styles.upgradeBtnRow}>
                       <Text style={styles.upgradeBtnText}>
-                        {loading
-                          ? t("common.loading")
-                          : `${t("premium.yearly").toUpperCase()} — ${voxPrices?.yearlyPrice || "…"}${t("paywall.perYear")}`}
+                        {(isPricesLoading || devPricesLoadingOverride)
+                          ? "Fiyatlar yükleniyor..."
+                          : awaitingConfirmation
+                            ? "Onay bekleniyor..."
+                            : loading
+                              ? "İşleniyor..."
+                              : `${t("premium.yearly").toUpperCase()} — ${voxPrices?.yearlyPrice || "…"}${t("paywall.perYear")}`}
                       </Text>
-                      {!loading && (
+                      {!loading && !isPricesLoading && !devPricesLoadingOverride && !awaitingConfirmation && (
                         <View style={styles.upgradeSaveBadge}>
                           <Text style={styles.upgradeSaveBadgeText}>{t("premium.save58")}</Text>
                         </View>
@@ -483,6 +530,18 @@ export default function PremiumScreen() {
               <Text style={styles.infoText}>{t("premium.restore")}</Text>
             </View>
           </View>
+
+          {/* ============================================================ */}
+          {/* DEV TEST PANELİ — Sadece geliştirme modunda görünür       */}
+          {/* ============================================================ */}
+          {__DEV__ && (
+            <DevSubscriptionPanel
+              isVoxPurchased={isVoxPurchased}
+              isPricesLoading={isPricesLoading || devPricesLoadingOverride}
+              onRefresh={refreshPremiumStatus}
+              onOverridePricesLoading={setDevPricesLoadingOverride}
+            />
+          )}
 
           <View style={{ height: 16 }} />
         </View>

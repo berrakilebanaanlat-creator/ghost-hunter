@@ -1,0 +1,19 @@
+1. "Ölü Buton" ve Abonelik Mantığı Hatası İçin
+​Bu komut, butonun neden basılmaz hale geldiğini ve state (durum) yönetimini düzeltmeyi hedefler:
+​"Uygulamamda 'Premium' ekranındaki yıllık/aylık abonelik butonları bazen 'ölü' kalıyor (basılamıyor). Şu adımları uygula:
+​Butonların disabled durumunu, abonelik verisinin yüklenme durumu (isLoaded veya isFetching) ile bağla.
+​Eğer isFetching true ise butonu loading (yükleniyor) moduna al ve 'İşleniyor...' yazısı göster.
+​Kullanıcı butona bastığında, işlem bitmeden tekrar basılmasını önlemek için anında disabled durumuna çek.
+​Abonelik durumu null veya undefined gelirse, hata yerine kullanıcıya 'İnternet bağlantınızı kontrol edin' uyarısını gösteren bir Alert mekanizması kur."
+​2. Yıllık Aboneliğe Geçiş Hataları İçin
+​Geçiş sırasında oluşan (aylıktan yıllığa) mantık hatalarını düzeltmek için:
+​"Aylık abonelikten yıllık aboneliğe geçiş sırasında bazı telefonlarda 'Satın alma hatası' alıyorum. Şunu düzelt:
+​Mevcut purchase fonksiyonunda, yeni satın alma işlemini tetiklemeden önce restorePurchases (satın alma geçmişini geri yükle) metodunu arka planda çalıştır.
+​purchase fonksiyonunun tamamını try...catch bloğu içine al. catch bloğunda yakalanan hatayı console.error ile bırakma; hatayı kullanıcıya Türkçe, anlaşılır bir metinle (örn: 'İşlem tamamlanamadı, lütfen tekrar deneyin') göster.
+​Google Play faturasının doğrulanması aşamasında, sunucudan onay gelene kadar UI'ı 'Onay bekleniyor...' durumunda tut."
+​3. Crashlytics Hataları İçin (Kritik)
+​Crashlytics'te gördüğünüz NullPointerException ve ExceptionsManagerModule hatalarını yok etmek için:
+​"Uygulamada şu an NullPointerException ve ExceptionsManagerModule hataları alıyorum. Şu düzenlemeyi yap:
+​Abonelik bilgilerini render eden tüm bileşenlerde, if (!subscriptionData) return null; gibi 'guard clause' (koruyucu ifade) yapıları kullan.
+​LanguageUtils.transformCountryISO fonksiyonunu bir try-catch içine al, çünkü null bir değer alıyor olabilir.
+​SesKaydedici.kaydet fonksiyonuna, kaydedilecek dosya yolu veya parametre boşsa işlemi durduran bir kontrol ekle. Bu, IllegalStateException hatasını önleyecektir."

@@ -194,6 +194,12 @@ export async function stopRecording(): Promise<string | null> {
       );
     } catch { /* */ }
 
+    // Boş URI guard — IllegalStateException'a yol açan null/boş dosya yolu kontrolü
+    if (!uri || uri.trim() === '') {
+      recorderState = 'idle';
+      return null;
+    }
+
     recorderState = 'idle';
     return uri;
   } catch {

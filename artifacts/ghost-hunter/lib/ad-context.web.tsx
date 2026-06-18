@@ -3,7 +3,8 @@
  * Web'de reklamlar gösterilmez, VOX satın alma AsyncStorage ile simüle edilir
  */
 import React, { createContext, useContext, useEffect, useState, useCallback } from 'react';
-import { PremiumManager } from './premium-manager';
+import { PremiumManager, type VoxSubscription } from './premium-manager';
+import type { VoxPrices, PurchaseResult } from './ad-context';
 
 interface AdContextType {
   showInterstitial: () => Promise<void>;
@@ -11,6 +12,10 @@ interface AdContextType {
   showRewarded: () => Promise<boolean>;
   isPremium: boolean;
   isVoxPurchased: boolean;
+  voxSubscription: VoxSubscription | null;
+  voxPrices: VoxPrices | null;
+  isPricesLoading: boolean;
+  purchaseVoxSubscription: (period: 'monthly' | 'yearly') => Promise<PurchaseResult>;
   purchaseVox: () => Promise<boolean>;
   restorePurchases: () => Promise<void>;
   refreshPremiumStatus: () => Promise<void>;
@@ -21,6 +26,7 @@ const AdContext = createContext<AdContextType | undefined>(undefined);
 export function AdProvider({ children }: { children: React.ReactNode }) {
   const [isPremium, setIsPremium] = useState(false);
   const [isVoxPurchased, setIsVoxPurchased] = useState(false);
+  const [voxSubscription, setVoxSubscription] = useState<VoxSubscription | null>(null);
 
   useEffect(() => {
     checkStatuses();
@@ -31,6 +37,8 @@ export function AdProvider({ children }: { children: React.ReactNode }) {
     setIsPremium(premium);
     const vox = await PremiumManager.isVoxPurchased();
     setIsVoxPurchased(vox);
+    const sub = await PremiumManager.getVoxSubscription();
+    setVoxSubscription(sub);
   };
 
   const refreshPremiumStatus = useCallback(async () => {
@@ -42,8 +50,13 @@ export function AdProvider({ children }: { children: React.ReactNode }) {
   const handleScreenTransition = useCallback(async () => {}, []);
   const handleShowRewarded = useCallback(async (): Promise<boolean> => false, []);
 
+  const handlePurchaseVoxSubscription = useCallback(async (period: 'monthly' | 'yearly'): Promise<PurchaseResult> => {
+    await PremiumManager.purchaseVoxSubscription(period);
+    await checkStatuses();
+    return { ok: true };
+  }, []);
+
   const handlePurchaseVox = useCallback(async (): Promise<boolean> => {
-    // Web'de test amaçlı - doğrudan AsyncStorage ile kaydet
     await PremiumManager.purchaseVox();
     setIsVoxPurchased(true);
     return true;
@@ -61,6 +74,10 @@ export function AdProvider({ children }: { children: React.ReactNode }) {
         showRewarded: handleShowRewarded,
         isPremium,
         isVoxPurchased,
+        voxSubscription,
+        voxPrices: null,
+        isPricesLoading: false,
+        purchaseVoxSubscription: handlePurchaseVoxSubscription,
         purchaseVox: handlePurchaseVox,
         restorePurchases: handleRestorePurchases,
         refreshPremiumStatus,
