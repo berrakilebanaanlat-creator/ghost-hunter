@@ -506,11 +506,23 @@ async function verifySubscriptionWithStore(): Promise<void> {
 // IAP YARDIMCI FONKSİYONLARI (expo-iap v3.4.10+ API)
 // ============================================================
 
+// Modül seviyesi bayrak — paralel / çift çağrıyı önler
+// IllegalStateException: "Already resumed" hatasını engeller
+let isIapProcessing = false;
+
 async function purchaseVoxWithIAP(iap: any, productId: string): Promise<PurchaseResult> {
   console.log('[IAP-FLOW] Satın alma başlatıldı:', productId);
 
+  // Çift tıklama / paralel çağrı koruması
+  if (isIapProcessing) {
+    console.warn('[IAP-FLOW] Zaten devam eden bir işlem var — engellendi');
+    return { ok: false, errorMessage: 'Başka bir işlem devam ediyor, lütfen bekleyin...' };
+  }
+  isIapProcessing = true;
+
   // Ürün kimliği boş kontrolü
   if (!productId) {
+    isIapProcessing = false;
     CrashReporter.recordError(new Error('IAP: productId boş — satın alma başlatılamaz'), 'iap_empty_product_id');
     return { ok: false, errorMessage: 'Ürün tanımlanamadı. Lütfen uygulamayı yeniden başlatıp tekrar deneyin.' };
   }
@@ -519,8 +531,10 @@ async function purchaseVoxWithIAP(iap: any, productId: string): Promise<Purchase
     await iap.initConnection();
 
     // ============================================================
-    // ABONELİK YÜKSELTME TESPİTİ (aylık → yıllık)
-    // oldPurchaseToken olmadan Google Play E_ALREADY_OWNED döner
+    // MEVCUT SATIN ALMALAR — iki amaç:
+    // 1) Abonelik yükseltme tespiti (aylık → yıllık): oldPurchaseToken gerekir
+    // 2) Bekleyen (pending/unacknowledged) işlem temizleme: requestPurchase öncesi
+    //    temizlenmezse Google Play IllegalStateException: Already resumed atar
     // ============================================================
     let oldPurchaseToken: string | undefined;
     let oldProductId: string | undefined;
@@ -530,10 +544,26 @@ async function purchaseVoxWithIAP(iap: any, productId: string): Promise<Purchase
         if (existingPurchases && existingPurchases.length > 0) {
           for (const p of existingPurchases) {
             const pid = p?.productId;
-            if ((pid === 'vox_monthly' || pid === 'vox_yearly') && pid !== productId) {
+            if (pid !== 'vox_monthly' && pid !== 'vox_yearly') continue;
+
+            const isPurchased = p?.purchaseState === 1 || p?.purchaseState === 'purchased';
+            const isAcknowledged = p?.isAcknowledgedAndroid === true;
+
+            // Bekleyen işlemi temizle (aynı ürün dahil)
+            if (isPurchased && !isAcknowledged) {
+              console.log('[IAP-FLOW] Bekleyen işlem temizleniyor:', pid);
+              try {
+                await iap.finishTransaction({ purchase: p, isConsumable: false });
+                console.log('[IAP-FLOW] ✅ Bekleyen işlem temizlendi:', pid);
+              } catch (cleanupErr: any) {
+                console.warn('[IAP-SILENT] Pending temizleme hatası:', cleanupErr?.code, cleanupErr?.message);
+              }
+            }
+
+            // Yükseltme için farklı ürünün token'ını sakla
+            if (pid !== productId) {
               oldPurchaseToken = p?.purchaseToken ?? p?.purchaseTokenAndroid;
               oldProductId = pid;
-              break;
             }
           }
         }
@@ -641,6 +671,9 @@ async function purchaseVoxWithIAP(iap: any, productId: string): Promise<Purchase
     }
 
     return { ok: false, errorMessage: turkishMessage };
+  } finally {
+    // Her koşulda bayrağı sıfırla — sonraki satın alma girişimini engelleme
+    isIapProcessing = false;
   }
 }
 
