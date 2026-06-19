@@ -36,9 +36,10 @@ _Describe the high-level user-facing capabilities of this app once they exist._
 
 - **Kullanıcı:** 40 yaşında, kısıtlı bütçeyle gelir elde etmeye çalışan bir kadın. Türkçe konuşuluyor.
 - **Cihazlar:** Samsung Android telefon, Windows bilgisayar. Evde kızının iPhone'u var ama kendine ait Apple cihazı/hesabı yok.
-- **Apple Developer Program üyeliği yok** — iOS / App Store adımları için önce $99/yıl üyelik gerekiyor. Bütçe kısıtlı olduğu için baskı yapma, sadece seçenekleri sun.
-- **Öncelik:** Android (Play Store) — elimdeki tek kanalı burada. iOS gelecekte düşünülebilir.
-- **İletişim dili:** Türkçe, sade ve net.
+- **Apple Developer Program üyeliği VAR** — $99/yıl ödedi, iOS yayını artık mümkün.
+- **TEKNİK BİLGİ YOK** — Her adımı sıfırdan, sade Türkçeyle açıkla. "Bunu biliyor musun?" diye sorma. Direkt ne yapması gerektiğini söyle. Ekran görüntüsü tarif et, linki ver, tıklayacağı butonu yaz.
+- **Sabır sınırı:** Aynı soruları tekrar tekrar sormak onu yoruyor. Bir kez anlat, kaydet, bir daha sorma.
+- **İletişim:** Türkçe, çok kısa, madde madde. Teknik jargon yok.
 
 ## Gotchas
 
