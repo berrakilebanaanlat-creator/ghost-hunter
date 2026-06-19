@@ -1278,9 +1278,10 @@ class ITCVoiceEngine {
 
   private getRandomDelay(): number {
     // GhostTube VOX tarzı: minimum 20sn, maximum 50sn rastgele bekleme
-    const minDelay = 20000;
-    const maxDelay = 50000;
-    return minDelay + Math.random() * (maxDelay - minDelay);
+    // Her çağrıda yeniden hesaplanır — loop içinde sabit kalmaz
+    const min = 20000;
+    const max = 50000;
+    return Math.floor(Math.random() * (max - min + 1)) + min;
   }
 
   private scheduleNextWord(): void {
@@ -1327,7 +1328,7 @@ class ITCVoiceEngine {
       console.warn("[ITC] Audio context hatası:", e);
     }
 
-    // İlk kelime (20-40 saniye sonra - GhostTube VOX tarzı bekleme)
+    // İlk kelime (20-50 saniye sonra - getRandomDelay ile tutarlı aralık)
     this.speakTimeout = setTimeout(() => {
       if (!this.isActive) return;
       try {
@@ -1338,7 +1339,7 @@ class ITCVoiceEngine {
         console.warn("[ITC] İlk kelime hatası:", e);
         this.scheduleNextWord();
       }
-    }, 20000 + Math.random() * 20000);
+    }, this.getRandomDelay());
 
     // Phantom event scheduler (boğuk/fısıltı/nine/kız çocuk — bağımsız zamanlayıcı)
     // İlk phantom 60-120 saniye sonra, sonrakiler 100-300 saniye arası
