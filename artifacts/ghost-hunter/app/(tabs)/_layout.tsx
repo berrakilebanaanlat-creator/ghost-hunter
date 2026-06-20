@@ -106,6 +106,15 @@ export default function TabLayout() {
         }}
       />
       <Tabs.Screen
+        name="frequency-scanner"
+        options={{
+          title: "FREKANS",
+          tabBarIcon: ({ color }) => (
+            <IconSymbol size={22} name="radio.fill" color={color} />
+          ),
+        }}
+      />
+      <Tabs.Screen
         name="premium"
         options={{
           title: "PREMIUM",

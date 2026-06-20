@@ -56,6 +56,7 @@ const MAPPING = {
   "folder.fill": "folder",
   "dot.radiowaves.left.and.right": "wifi-tethering",
   "clock.arrow.circlepath": "history",
+  "radio.fill": "radio",
 } as IconMapping;
 
 /**
