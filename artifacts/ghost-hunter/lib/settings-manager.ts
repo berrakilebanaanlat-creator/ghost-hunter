@@ -24,7 +24,7 @@ export interface AppSettings {
   voxDistortion: number; // 0-100
   voxAutoSpeak: boolean;
   voxVoiceCharacter: string;
-  voxLanguage: "tr" | "en" | "de"; // VOX konuşma/kelime dili (TR varsayılan)
+  voxLanguage: "tr" | "en" | "de" | "fr" | "es"; // VOX konuşma/kelime dili (TR varsayılan)
 
   // EMF Ayarları
   emfSensitivity: number; // 1-10

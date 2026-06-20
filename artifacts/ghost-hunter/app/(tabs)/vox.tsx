@@ -71,11 +71,13 @@ const NOISE_MODE_KEYS: Record<WhiteNoiseMode, string> = {
 const NOISE_MODES: WhiteNoiseMode[] = ["off", "slow", "fast", "continuous"];
 
 // VOX dilleri (TR varsayılan)
-const VOX_LANGS: VoxLang[] = ["tr", "en", "de"];
+const VOX_LANGS: VoxLang[] = ["tr", "en", "de", "fr", "es"];
 const VOX_LANG_LABELS: Record<VoxLang, string> = {
   tr: "TÜRKÇE",
   en: "ENGLISH",
   de: "DEUTSCH",
+  fr: "FRANÇAIS",
+  es: "ESPAÑOL",
 };
 
 export default function VoxScreen() {

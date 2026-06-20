@@ -5,8 +5,10 @@
 import * as TR from "./word-bank";
 import * as EN from "./word-bank-en";
 import * as DE from "./word-bank-de";
+import * as FR from "./word-bank-fr";
+import * as ES from "./word-bank-es";
 
-export type VoxLang = "tr" | "en" | "de";
+export type VoxLang = "tr" | "en" | "de" | "fr" | "es";
 
 export interface VoxWordBank {
   DARK_WORDS: string[];
@@ -36,7 +38,7 @@ export interface VoxWordBank {
   HOME_OBJECT_PHRASES: string[];
 }
 
-function bankFrom(m: typeof TR): VoxWordBank {
+function bankFrom(m: VoxWordBank): VoxWordBank {
   return {
     DARK_WORDS: m.DARK_WORDS,
     DARK_PHRASES: m.DARK_PHRASES,
@@ -70,6 +72,8 @@ const BANKS: Record<VoxLang, VoxWordBank> = {
   tr: bankFrom(TR),
   en: bankFrom(EN),
   de: bankFrom(DE),
+  fr: bankFrom(FR),
+  es: bankFrom(ES),
 };
 
 // BCP-47 tags for native TTS / voice lookup per VOX language.
@@ -77,13 +81,15 @@ export const VOX_BCP47: Record<VoxLang, string> = {
   tr: "tr-TR",
   en: "en-US",
   de: "de-DE",
+  fr: "fr-FR",
+  es: "es-ES",
 };
 
 export function getVoxWordBank(lang: VoxLang = "tr"): VoxWordBank {
   return BANKS[lang] ?? BANKS.tr;
 }
 
-const VALID_VOX_LANGS: ReadonlySet<string> = new Set<VoxLang>(["tr", "en", "de"]);
+const VALID_VOX_LANGS: ReadonlySet<string> = new Set<VoxLang>(["tr", "en", "de", "fr", "es"]);
 
 /**
  * Coerces an arbitrary value loaded from persisted storage into a valid VoxLang.
