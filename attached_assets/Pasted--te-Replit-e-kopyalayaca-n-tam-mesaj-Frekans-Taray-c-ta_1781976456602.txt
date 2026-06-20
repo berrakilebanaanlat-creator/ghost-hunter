@@ -1,0 +1,71 @@
+İşte Replit'e kopyalayacağın tam mesaj:
+
+---
+
+**Frekans Tarayıcı tamamen yeniden yazıldı. Mevcut versiyonu sil, bunu koy. Ses sistemi tamamen değişti.**
+
+## Sorun: Eski versiyon neden kötüydü
+1. Ses kesintili — arada sessizlik var, radyo hissi yok
+2. Kelimeler ya çok net ya hiç yok — paranormal etkisi sıfır
+3. Frekans geçiş sesi yok — tarama hissi eksik
+
+## Yeni Ses Mimarisi (3 Katman)
+
+### Katman 1: Kesintisiz Beyaz Gürültü
+- `static_loop.mp3` sürekli loop çalar (düşük volüm, rahatsız etmez)
+- Kullanıcı gürültü seviyesini ayarlayabilir (ekrandaki slider)
+- Tarama boyunca ASLA kesilmez
+
+### Katman 2: Frekans Geçiş Sesi (Sweep)
+- `sweep_transition.mp3` — frekans uçtan uca döndüğünde "vışş" sesi
+- Her 3 frekans dönüşünde bir çalar
+- Gerçek radyo tarama hissi verir
+
+### Katman 3: Kelime Harmanı (3 Netlik Seviyesi)
+- **%40 Belirsiz** (3-12sn arası): Çok kısık, çok hızlı, yarım kesilmiş — "bur...", "ge...", "şş"
+- **%35 Yarı-anlaşılır** (10-28sn arası): Fısıltı tarzı — "burada", "gölge", "seni...gör"
+- **%25 Net** (25-45sn arası): Açık ve ürkütücü — "seni görüyorum", "arkana bak"
+
+### Ek: Arka Plan Mırıltıları
+- Ana tespitlerden bağımsız olarak 4-12sn arası çok kısık mırıltılar
+- Volume: 0.15-0.25 — bilinçaltında duyulur, rahatsız etmez
+- Sürekli "bir şeyler var" hissi yaratır
+
+## Gerekli Ses Dosyaları
+
+`assets/sounds/` klasörüne 2 dosya lazım:
+1. **`static_loop.mp3`** — 10-30sn uzunluk, beyaz gürültü/radyo cızırtısı, loop olacak
+2. **`sweep_transition.mp3`** — 1-2sn uzunluk, frekans geçiş sesi (radyo çevirme "vışş")
+
+Eğer bu dosyalar yoksa, Pixabay'dan "radio static" ve "radio sweep" arayıp indir.
+
+## Kurulum
+
+```bash
+pnpm add expo-speech
+```
+
+## Tam Kod
+
+`app/(tabs)/frequency-scanner.tsx` dosyasını tamamen sil ve aşağıdaki ile değiştir:
+
+*(Ekteki frequency-scanner-v3.tsx dosyasının tamamını buraya yapıştır)*
+
+## Tab bar düzeltmesi
+
+`_layout.tsx`'te:
+```tsx
+title: "Frekans",  // Kısa tut, "Frekans Tarayıcı" sığmaz
+```
+
+## Önemli Notlar
+
+- `expo-speech` cihazın yerleşik TTS motorunu kullanır — internet gerekmez
+- Belirsiz kelimeler pitch=0.2, rate=2.0, volume=0.25 ile söylenir — neredeyse anlaşılmaz
+- Net kelimeler pitch=0.3, rate=0.4, volume=0.85 ile söylenir — açık ve ürkütücü
+- Gürültü seviye kontrolü kullanıcıya bırakıldı (ekranda slider var)
+- Tarama butonu "TARA" yazıyor (kısa, sığar), durdurunca "DURDUR"
+
+---
+
+Ekteki `.tsx` dosyasını doğrudan kullanabilirsin. Replit'e mesajla birlikte dosyayı da yapıştır.

@@ -1,6 +1,26 @@
 /**
  * Frekans Tarayıcı (Frequency Scanner) - Antik Ghost Hunter
  * v3.0 - Ses Deneyimi Tamamen Yeniden Tasarlandı
+ *
+ * SES SİSTEMİ:
+ * 1. Kesintisiz beyaz gürültü (static_loop.mp3 - sürekli loop, düşük volüm)
+ * 2. Frekans geçiş sesi (sweep_transition.mp3 - frekans değişirken "vışş")
+ * 3. Kelime harmanı:
+ *    - %40 belirsiz kelimeler (çok düşük pitch, hızlı, yarım kesilmiş)
+ *    - %35 yarı-anlaşılır kelimeler (orta pitch, fısıltı tarzı)
+ *    - %25 net kelimeler (normal pitch, yavaş, açık)
+ *
+ * TARAMA AKIŞI:
+ * - Beyaz gürültü sürekli akar (rahatsız etmeyen tonda)
+ * - Frekans değiştikçe sweep sesi gelir
+ * - 8-45sn rastgele aralıklarla kelimeler belirir
+ * - Kelimeler gürültünün içinden çıkıyormuş gibi hissedilir
+ *
+ * Gerekli ses dosyaları (assets/sounds/):
+ *   - static_loop.mp3 (beyaz gürültü - loop, 10-30sn uzunluk)
+ *   - sweep_transition.mp3 (frekans geçiş sesi - 1-2sn)
+ *
+ * Bağımlılık: expo-speech (pnpm add expo-speech)
  */
 
 import React, { useState, useEffect, useRef, useCallback } from "react";
@@ -37,7 +57,9 @@ interface Detection {
 }
 
 // ─── KELİME BANKASI ─────────────────────────────────────────────────────────
+// 3 katman: belirsiz (hızlı geçen, yarım), yarı-anlaşılır (fısıltı), net (açık)
 
+// Belirsiz kelimeler - çok kısa, yarım kesilecek, anlaşılması zor
 const UNCLEAR_WORDS: string[] = [
   "bur...", "ge...", "ka...", "ar...", "gö...",
   "se...", "du...", "yar...", "so...", "ne...",
@@ -47,6 +69,7 @@ const UNCLEAR_WORDS: string[] = [
   "b-bak", "g-gel", "k-kim", "d-dur", "s-sus",
 ];
 
+// Yarı-anlaşılır kelimeler - fısıltı, belirsiz ama ipucu veren
 const SEMI_WORDS: string[] = [
   "burada", "arkanda", "dinle", "sessiz", "soğuk",
   "karanlık", "gölge", "kapı", "ayna", "rüzgar",
@@ -56,6 +79,7 @@ const SEMI_WORDS: string[] = [
   "kim...sin", "ne...isti", "nere...de", "za...man",
 ];
 
+// Net kelimeler - açık ve anlaşılır, ürkütücü
 const CLEAR_WORDS: string[] = [
   "buradayım", "seni görüyorum", "arkana bak",
   "yardım et", "gitme", "beni duy",
@@ -75,36 +99,39 @@ const BANDS = {
   FM: { min: 87.5, max: 108.0, unit: "MHz", step: 0.1 },
 };
 
+// Rastgele aralıklar (ms) - 8sn ile 45sn arası
 const DETECTION_INTERVALS = {
-  unclear: [3000, 5000, 7000, 8000, 10000, 12000],
-  semi:    [10000, 15000, 18000, 22000, 25000, 28000],
-  clear:   [25000, 30000, 35000, 38000, 42000, 45000],
+  unclear: [3000, 5000, 7000, 8000, 10000, 12000],        // Belirsiz: daha sık
+  semi: [10000, 15000, 18000, 22000, 25000, 28000],       // Yarı: orta sıklık
+  clear: [25000, 30000, 35000, 38000, 42000, 45000],      // Net: nadir
 };
 
+// TTS ses profilleri - kelime netliğine göre
 const VOICE_PROFILES = {
   unclear: [
-    { pitch: 0.2, rate: 2.0, volume: 0.3 },
-    { pitch: 1.8, rate: 1.8, volume: 0.25 },
-    { pitch: 0.3, rate: 1.5, volume: 0.35 },
-    { pitch: 1.5, rate: 2.0, volume: 0.2 },
+    { pitch: 0.2, rate: 2.0, volume: 0.3 },  // Çok hızlı, derin, kısık
+    { pitch: 1.8, rate: 1.8, volume: 0.25 },  // Tiz, hızlı, kısık
+    { pitch: 0.3, rate: 1.5, volume: 0.35 },  // Derin, hızlıca
+    { pitch: 1.5, rate: 2.0, volume: 0.2 },   // Tiz, çok hızlı, çok kısık
   ],
   semi: [
-    { pitch: 0.4, rate: 0.6, volume: 0.55 },
-    { pitch: 0.6, rate: 0.7, volume: 0.5 },
-    { pitch: 1.3, rate: 0.5, volume: 0.45 },
-    { pitch: 0.5, rate: 0.8, volume: 0.6 },
+    { pitch: 0.4, rate: 0.6, volume: 0.55 },  // Derin fısıltı
+    { pitch: 0.6, rate: 0.7, volume: 0.5 },   // Orta fısıltı
+    { pitch: 1.3, rate: 0.5, volume: 0.45 },  // Tiz fısıltı, yavaş
+    { pitch: 0.5, rate: 0.8, volume: 0.6 },   // Derin, orta hız
   ],
   clear: [
-    { pitch: 0.3, rate: 0.4, volume: 0.85 },
-    { pitch: 0.7, rate: 0.5, volume: 0.8 },
-    { pitch: 1.0, rate: 0.6, volume: 0.75 },
-    { pitch: 0.5, rate: 0.3, volume: 0.9 },
+    { pitch: 0.3, rate: 0.4, volume: 0.85 },  // Çok derin, yavaş, net
+    { pitch: 0.7, rate: 0.5, volume: 0.8 },   // Orta derin, yavaş
+    { pitch: 1.0, rate: 0.6, volume: 0.75 },  // Normal, yavaşça
+    { pitch: 0.5, rate: 0.3, volume: 0.9 },   // Derin, çok yavaş (en ürkütücü)
   ],
 };
 
 // ─── COMPONENT ───────────────────────────────────────────────────────────────
 
 export default function FrequencyScanner() {
+  // State
   const [band, setBand] = useState<Band>("FM");
   const [frequency, setFrequency] = useState<number>(BANDS.FM.min);
   const [scanState, setScanState] = useState<ScanState>("idle");
@@ -113,24 +140,31 @@ export default function FrequencyScanner() {
   const [currentWord, setCurrentWord] = useState<string>("");
   const [currentClarity, setCurrentClarity] = useState<WordClarity>("unclear");
   const [elapsedTime, setElapsedTime] = useState<number>(0);
-  const [noiseLevel, setNoiseLevel] = useState<number>(0.3);
+  const [noiseLevel, setNoiseLevel] = useState<number>(0.3); // Beyaz gürültü seviyesi
 
+  // Refs
   const scanIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const timerIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const detectionTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const unclearTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const isScanningRef = useRef(false);
 
+  // Animations
   const pulseAnim = useRef(new Animated.Value(1)).current;
   const glowAnim = useRef(new Animated.Value(0)).current;
   const noiseAnim = useRef(new Animated.Value(0.3)).current;
   const wordFadeAnim = useRef(new Animated.Value(0)).current;
   const sweepAnim = useRef(new Animated.Value(0)).current;
 
-  const staticPlayer = useAudioPlayer(require("@/assets/sounds/static_loop.mp3"));
-  const sweepPlayer = useAudioPlayer(require("@/assets/sounds/sweep_transition.mp3"));
+  // Audio players
+  const staticPlayer = useAudioPlayer(
+    require("@/assets/sounds/static_loop.mp3")
+  );
+  const sweepPlayer = useAudioPlayer(
+    require("@/assets/sounds/sweep_transition.mp3")
+  );
 
-  // ─── SETUP ──────────────────────────────────────────────────────────────────
+  // ─── AUDIO SETUP ────────────────────────────────────────────────────────────
 
   useEffect(() => {
     setAudioModeAsync({ playsInSilentModeIOS: true });
@@ -147,15 +181,34 @@ export default function FrequencyScanner() {
     if (scanState === "scanning" || scanState === "detected") {
       Animated.loop(
         Animated.sequence([
-          Animated.timing(pulseAnim, { toValue: 1.015, duration: 1500, easing: Easing.inOut(Easing.ease), useNativeDriver: true }),
-          Animated.timing(pulseAnim, { toValue: 1, duration: 1500, easing: Easing.inOut(Easing.ease), useNativeDriver: true }),
+          Animated.timing(pulseAnim, {
+            toValue: 1.015,
+            duration: 1500,
+            easing: Easing.inOut(Easing.ease),
+            useNativeDriver: true,
+          }),
+          Animated.timing(pulseAnim, {
+            toValue: 1,
+            duration: 1500,
+            easing: Easing.inOut(Easing.ease),
+            useNativeDriver: true,
+          }),
         ])
       ).start();
 
+      // Gürültü titreşimi - sürekli
       Animated.loop(
         Animated.sequence([
-          Animated.timing(noiseAnim, { toValue: 0.5 + Math.random() * 0.3, duration: 60 + Math.random() * 120, useNativeDriver: true }),
-          Animated.timing(noiseAnim, { toValue: 0.2 + Math.random() * 0.2, duration: 60 + Math.random() * 120, useNativeDriver: true }),
+          Animated.timing(noiseAnim, {
+            toValue: 0.5 + Math.random() * 0.3,
+            duration: 60 + Math.random() * 120,
+            useNativeDriver: true,
+          }),
+          Animated.timing(noiseAnim, {
+            toValue: 0.2 + Math.random() * 0.2,
+            duration: 60 + Math.random() * 120,
+            useNativeDriver: true,
+          }),
         ])
       ).start();
     } else {
@@ -164,7 +217,7 @@ export default function FrequencyScanner() {
     }
   }, [scanState]);
 
-  // ─── SWEEP SOUND ────────────────────────────────────────────────────────────
+  // ─── SWEEP SOUND (Frekans geçiş sesi) ─────────────────────────────────────
 
   const playSweep = useCallback(() => {
     try {
@@ -173,13 +226,22 @@ export default function FrequencyScanner() {
       sweepPlayer.play();
     } catch (e) {}
 
+    // Sweep animasyonu
     Animated.sequence([
-      Animated.timing(sweepAnim, { toValue: 1, duration: 150, useNativeDriver: true }),
-      Animated.timing(sweepAnim, { toValue: 0, duration: 400, useNativeDriver: true }),
+      Animated.timing(sweepAnim, {
+        toValue: 1,
+        duration: 150,
+        useNativeDriver: true,
+      }),
+      Animated.timing(sweepAnim, {
+        toValue: 0,
+        duration: 400,
+        useNativeDriver: true,
+      }),
     ]).start();
   }, []);
 
-  // ─── SPEECH ─────────────────────────────────────────────────────────────────
+  // ─── SPEECH (TTS) - Kelime netliğine göre farklı ses ──────────────────────
 
   const speakWord = useCallback((word: string, clarity: WordClarity) => {
     const profiles = VOICE_PROFILES[clarity];
@@ -191,8 +253,13 @@ export default function FrequencyScanner() {
       rate: profile.rate,
       volume: profile.volume,
       onDone: () => {
+        // Net kelimeler yavaş kaybolur, belirsizler hızlı
         const fadeDuration = clarity === "clear" ? 3000 : clarity === "semi" ? 1500 : 500;
-        Animated.timing(wordFadeAnim, { toValue: 0, duration: fadeDuration, useNativeDriver: true }).start(() => {
+        Animated.timing(wordFadeAnim, {
+          toValue: 0,
+          duration: fadeDuration,
+          useNativeDriver: true,
+        }).start(() => {
           setCurrentWord("");
         });
       },
@@ -201,6 +268,7 @@ export default function FrequencyScanner() {
     setCurrentWord(word);
     setCurrentClarity(clarity);
 
+    // Fade in hızı netliğe göre
     const fadeInDuration = clarity === "clear" ? 400 : clarity === "semi" ? 250 : 100;
     Animated.timing(wordFadeAnim, {
       toValue: clarity === "clear" ? 1 : clarity === "semi" ? 0.7 : 0.4,
@@ -209,17 +277,19 @@ export default function FrequencyScanner() {
     }).start();
   }, []);
 
-  // ─── DETECTION ──────────────────────────────────────────────────────────────
+  // ─── DETECTION LOGIC ────────────────────────────────────────────────────────
 
   const pickClarity = useCallback((): WordClarity => {
     const rand = Math.random();
-    if (rand < 0.40) return "unclear";
-    if (rand < 0.75) return "semi";
-    return "clear";
+    if (rand < 0.40) return "unclear";    // %40 belirsiz
+    if (rand < 0.75) return "semi";       // %35 yarı-anlaşılır
+    return "clear";                        // %25 net
   }, []);
 
   const getWordForClarity = useCallback((clarity: WordClarity): string => {
-    const bank = clarity === "clear" ? CLEAR_WORDS : clarity === "semi" ? SEMI_WORDS : UNCLEAR_WORDS;
+    const bank = clarity === "clear" ? CLEAR_WORDS
+      : clarity === "semi" ? SEMI_WORDS
+      : UNCLEAR_WORDS;
     return bank[Math.floor(Math.random() * bank.length)];
   }, []);
 
@@ -228,26 +298,16 @@ export default function FrequencyScanner() {
     return intervals[Math.floor(Math.random() * intervals.length)];
   }, []);
 
-  const scheduleNextDetection = useCallback(() => {
-    if (detectionTimeoutRef.current) clearTimeout(detectionTimeoutRef.current);
-    const clarity = pickClarity();
-    const interval = getIntervalForClarity(clarity);
-    detectionTimeoutRef.current = setTimeout(() => {
-      triggerDetection();
-    }, interval);
-  }, [pickClarity, getIntervalForClarity]);
-
   const triggerDetection = useCallback(() => {
     if (!isScanningRef.current) return;
 
     const clarity = pickClarity();
     const word = getWordForClarity(clarity);
-    const strength = clarity === "clear"
-      ? 60 + Math.floor(Math.random() * 40)
-      : clarity === "semi"
-        ? 30 + Math.floor(Math.random() * 40)
-        : 10 + Math.floor(Math.random() * 25);
+    const strength = clarity === "clear" ? 60 + Math.floor(Math.random() * 40)
+      : clarity === "semi" ? 30 + Math.floor(Math.random() * 40)
+      : 10 + Math.floor(Math.random() * 25);
 
+    // Frekansı kilitle
     const paranormalFreq = band === "FM"
       ? +(87.5 + Math.random() * 20.5).toFixed(1)
       : Math.round(530 + Math.random() * 1170);
@@ -255,28 +315,52 @@ export default function FrequencyScanner() {
     setFrequency(paranormalFreq);
     setSignalStrength(strength);
 
-    if (clarity === "clear") setScanState("detected");
+    // Sadece net kelimeler "detected" state'ine geçer
+    if (clarity === "clear") {
+      setScanState("detected");
+    }
 
+    // Haptic - netliğe göre
     if (Platform.OS !== "web") {
       if (clarity === "clear") {
         Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
       } else if (clarity === "semi") {
         Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
       }
+      // unclear: haptic yok
     }
 
+    // Kelimeyi seslendir
     speakWord(word, clarity);
 
+    // Glow - sadece semi ve clear
     if (clarity !== "unclear") {
       const glowIntensity = clarity === "clear" ? 1 : 0.4;
       Animated.sequence([
-        Animated.timing(glowAnim, { toValue: glowIntensity, duration: 200, useNativeDriver: true }),
-        Animated.timing(glowAnim, { toValue: glowIntensity * 0.3, duration: 400, useNativeDriver: true }),
-        Animated.timing(glowAnim, { toValue: glowIntensity * 0.6, duration: 200, useNativeDriver: true }),
-        Animated.timing(glowAnim, { toValue: 0, duration: clarity === "clear" ? 2500 : 1000, useNativeDriver: true }),
+        Animated.timing(glowAnim, {
+          toValue: glowIntensity,
+          duration: 200,
+          useNativeDriver: true,
+        }),
+        Animated.timing(glowAnim, {
+          toValue: glowIntensity * 0.3,
+          duration: 400,
+          useNativeDriver: true,
+        }),
+        Animated.timing(glowAnim, {
+          toValue: glowIntensity * 0.6,
+          duration: 200,
+          useNativeDriver: true,
+        }),
+        Animated.timing(glowAnim, {
+          toValue: 0,
+          duration: clarity === "clear" ? 2500 : 1000,
+          useNativeDriver: true,
+        }),
       ]).start();
     }
 
+    // Geçmişe ekle (sadece semi ve clear)
     if (clarity !== "unclear") {
       const detection: Detection = {
         id: Date.now().toString(),
@@ -290,6 +374,7 @@ export default function FrequencyScanner() {
       setDetections((prev) => [detection, ...prev].slice(0, 8));
     }
 
+    // Sonraki tespiti zamanla
     const recoveryTime = clarity === "clear" ? 5000 : clarity === "semi" ? 2000 : 800;
     setTimeout(() => {
       if (isScanningRef.current) {
@@ -298,27 +383,43 @@ export default function FrequencyScanner() {
         scheduleNextDetection();
       }
     }, recoveryTime);
-  }, [band, speakWord, pickClarity, getWordForClarity, scheduleNextDetection]);
+  }, [band, speakWord, pickClarity, getWordForClarity]);
 
-  // ─── BACKGROUND MURMUR ──────────────────────────────────────────────────────
+  const scheduleNextDetection = useCallback(() => {
+    if (detectionTimeoutRef.current) {
+      clearTimeout(detectionTimeoutRef.current);
+    }
+    const clarity = pickClarity();
+    const interval = getIntervalForClarity(clarity);
+
+    detectionTimeoutRef.current = setTimeout(() => {
+      triggerDetection();
+    }, interval);
+  }, [pickClarity, getIntervalForClarity, triggerDetection]);
+
+  // ─── Belirsiz arka plan mırıltıları (ek katman) ────────────────────────────
 
   const scheduleBackgroundMurmur = useCallback(() => {
     if (!isScanningRef.current) return;
-    const murmurInterval = 4000 + Math.random() * 8000;
+
+    const murmurInterval = 4000 + Math.random() * 8000; // 4-12sn arası
     unclearTimeoutRef.current = setTimeout(() => {
       if (!isScanningRef.current) return;
+
+      // Çok kısık, çok hızlı bir mırıltı - ana tespitlerden bağımsız
       const murmurWord = UNCLEAR_WORDS[Math.floor(Math.random() * UNCLEAR_WORDS.length)];
       Speech.speak(murmurWord, {
         language: "tr-TR",
         pitch: 0.2 + Math.random() * 0.3,
         rate: 1.5 + Math.random() * 1.0,
-        volume: 0.15 + Math.random() * 0.1,
+        volume: 0.15 + Math.random() * 0.1, // Çok kısık
       });
-      scheduleBackgroundMurmur();
+
+      scheduleBackgroundMurmur(); // Tekrarla
     }, murmurInterval);
   }, []);
 
-  // ─── SCAN CONTROL ───────────────────────────────────────────────────────────
+  // ─── SCAN CONTROL ──────────────────────────────────────────────────────────
 
   const startScan = useCallback(() => {
     isScanningRef.current = true;
@@ -328,6 +429,7 @@ export default function FrequencyScanner() {
     setCurrentWord("");
     setDetections([]);
 
+    // Kesintisiz beyaz gürültü başlat
     try {
       staticPlayer.loop = true;
       staticPlayer.volume = noiseLevel;
@@ -338,6 +440,7 @@ export default function FrequencyScanner() {
       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
     }
 
+    // Frekans tarama animasyonu + sweep sesleri
     const bandConfig = BANDS[band];
     let dir = 1;
     let sweepCounter = 0;
@@ -348,7 +451,7 @@ export default function FrequencyScanner() {
         if (next >= bandConfig.max) {
           dir = -1;
           sweepCounter++;
-          if (sweepCounter % 3 === 0) playSweep();
+          if (sweepCounter % 3 === 0) playSweep(); // Her 3 dönüşte sweep
           return bandConfig.max;
         }
         if (next <= bandConfig.min) {
@@ -361,19 +464,22 @@ export default function FrequencyScanner() {
       });
     }, 150);
 
+    // Süre sayacı
     timerIntervalRef.current = setInterval(() => {
       setElapsedTime((prev) => prev + 1);
     }, 1000);
 
+    // İlk tespit zamanla (5-15sn sonra)
     const firstDelay = 5000 + Math.random() * 10000;
     detectionTimeoutRef.current = setTimeout(() => {
       triggerDetection();
     }, firstDelay);
 
+    // Arka plan mırıltıları başlat (3sn sonra)
     setTimeout(() => {
       scheduleBackgroundMurmur();
     }, 3000);
-  }, [band, noiseLevel, playSweep, triggerDetection, scheduleBackgroundMurmur]);
+  }, [band, noiseLevel, scheduleNextDetection, playSweep, scheduleBackgroundMurmur]);
 
   const stopScan = useCallback(() => {
     isScanningRef.current = false;
@@ -381,10 +487,12 @@ export default function FrequencyScanner() {
     setSignalStrength(0);
     setCurrentWord("");
 
+    // Sesleri durdur
     try { staticPlayer.pause(); } catch (e) {}
     try { sweepPlayer.pause(); } catch (e) {}
     Speech.stop();
 
+    // Tüm interval/timeout'ları temizle
     if (scanIntervalRef.current) { clearInterval(scanIntervalRef.current); scanIntervalRef.current = null; }
     if (timerIntervalRef.current) { clearInterval(timerIntervalRef.current); timerIntervalRef.current = null; }
     if (detectionTimeoutRef.current) { clearTimeout(detectionTimeoutRef.current); detectionTimeoutRef.current = null; }
@@ -395,6 +503,7 @@ export default function FrequencyScanner() {
     }
   }, []);
 
+  // Cleanup
   useEffect(() => {
     return () => {
       isScanningRef.current = false;
@@ -408,7 +517,7 @@ export default function FrequencyScanner() {
     };
   }, []);
 
-  // ─── CONTROLS ───────────────────────────────────────────────────────────────
+  // ─── NOISE LEVEL CONTROL ───────────────────────────────────────────────────
 
   const adjustNoise = (direction: 1 | -1) => {
     setNoiseLevel((prev) => {
@@ -423,6 +532,8 @@ export default function FrequencyScanner() {
     }
   };
 
+  // ─── MANUAL FREQUENCY ──────────────────────────────────────────────────────
+
   const adjustFrequency = (direction: 1 | -1) => {
     if (scanState !== "idle") return;
     const bandConfig = BANDS[band];
@@ -435,6 +546,8 @@ export default function FrequencyScanner() {
     }
   };
 
+  // ─── BAND SWITCH ───────────────────────────────────────────────────────────
+
   const switchBand = (newBand: Band) => {
     if (scanState !== "idle") return;
     setBand(newBand);
@@ -446,8 +559,9 @@ export default function FrequencyScanner() {
 
   // ─── HELPERS ────────────────────────────────────────────────────────────────
 
-  const formatFreq = (freq: number, b: Band) =>
-    b === "AM" ? `${Math.round(freq)}` : freq.toFixed(1);
+  const formatFreq = (freq: number, b: Band) => {
+    return b === "AM" ? `${Math.round(freq)}` : freq.toFixed(1);
+  };
 
   const formatTime = (seconds: number) => {
     const m = Math.floor(seconds / 60);
@@ -487,16 +601,18 @@ export default function FrequencyScanner() {
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
       >
-        {/* HEADER */}
+        {/* ─── HEADER ─────────────────────────────────────── */}
         <View style={styles.header}>
           <Text style={styles.title}>FREKANS TARAYICI</Text>
           <View style={styles.headerRow}>
             <Text style={styles.subtitle}>Paranormal Sinyal Avcısı</Text>
-            {isActive && <Text style={styles.timer}>{formatTime(elapsedTime)}</Text>}
+            {isActive && (
+              <Text style={styles.timer}>{formatTime(elapsedTime)}</Text>
+            )}
           </View>
         </View>
 
-        {/* BAND SELECTOR */}
+        {/* ─── BAND SELECTOR ──────────────────────────────── */}
         <View style={styles.bandRow}>
           {(["AM", "FM"] as Band[]).map((b) => (
             <Pressable
@@ -508,13 +624,17 @@ export default function FrequencyScanner() {
                 pressed && { opacity: 0.7 },
               ]}
             >
-              <Text style={[styles.bandLabel, band === b && styles.bandLabelActive]}>{b}</Text>
-              <Text style={styles.bandInfo}>{BANDS[b].min}–{BANDS[b].max} {BANDS[b].unit}</Text>
+              <Text style={[styles.bandLabel, band === b && styles.bandLabelActive]}>
+                {b}
+              </Text>
+              <Text style={styles.bandInfo}>
+                {BANDS[b].min}–{BANDS[b].max} {BANDS[b].unit}
+              </Text>
             </Pressable>
           ))}
         </View>
 
-        {/* FREQUENCY DISPLAY */}
+        {/* ─── FREQUENCY DISPLAY ──────────────────────────── */}
         <Animated.View
           style={[
             styles.freqCard,
@@ -523,7 +643,9 @@ export default function FrequencyScanner() {
           ]}
         >
           <Animated.View style={[styles.glowOverlay, { opacity: glowAnim }]} />
+
           <Text style={styles.freqBandLabel}>{band} BANT</Text>
+
           <Text
             style={[styles.freqValue, isDetected && styles.freqValueDetected]}
             numberOfLines={1}
@@ -531,8 +653,10 @@ export default function FrequencyScanner() {
           >
             {formatFreq(frequency, band)}
           </Text>
+
           <Text style={styles.freqUnit}>{bandConfig.unit}</Text>
 
+          {/* Sinyal gücü */}
           {signalStrength > 0 && (
             <View style={styles.strengthRow}>
               <View style={styles.strengthBarBg}>
@@ -542,9 +666,10 @@ export default function FrequencyScanner() {
                     style={[
                       styles.strengthSegment,
                       {
-                        backgroundColor: i < Math.ceil(signalStrength / 10)
-                          ? getStrengthColor(signalStrength)
-                          : "#1A1A2E",
+                        backgroundColor:
+                          i < Math.ceil(signalStrength / 10)
+                            ? getStrengthColor(signalStrength)
+                            : "#1A1A2E",
                       },
                     ]}
                   />
@@ -556,11 +681,14 @@ export default function FrequencyScanner() {
             </View>
           )}
 
+          {/* Durum */}
           <View style={styles.statusRow}>
             <View
               style={[
                 styles.statusDot,
-                { backgroundColor: isDetected ? "#9B4FDE" : isActive ? "#00FF88" : "#333" },
+                {
+                  backgroundColor: isDetected ? "#9B4FDE" : isActive ? "#00FF88" : "#333",
+                },
               ]}
             />
             <Text style={[styles.statusText, isDetected && { color: "#9B4FDE" }]}>
@@ -569,11 +697,11 @@ export default function FrequencyScanner() {
           </View>
         </Animated.View>
 
-        {/* TESPİT EDİLEN KELİME */}
+        {/* ─── TESPİT EDİLEN KELİME ──────────────────────── */}
         <Animated.View style={[styles.wordContainer, { opacity: wordFadeAnim }]}>
           {currentWord !== "" && (
             <>
-              <Text style={[styles.wordText, { color: getClarityColor(currentClarity), textShadowColor: getClarityColor(currentClarity) }]}>
+              <Text style={[styles.wordText, { color: getClarityColor(currentClarity) }]}>
                 "{currentWord}"
               </Text>
               {currentClarity === "clear" && (
@@ -583,7 +711,7 @@ export default function FrequencyScanner() {
           )}
         </Animated.View>
 
-        {/* SPECTRUM */}
+        {/* ─── SPECTRUM ───────────────────────────────────── */}
         <Animated.View style={[styles.spectrum, { opacity: noiseAnim }]}>
           {Array.from({ length: 28 }).map((_, i) => {
             const h = isActive ? 2 + Math.random() * (isDetected ? 24 : 12) : 2;
@@ -603,7 +731,7 @@ export default function FrequencyScanner() {
           })}
         </Animated.View>
 
-        {/* NOISE LEVEL */}
+        {/* ─── NOISE LEVEL ────────────────────────────────── */}
         <View style={styles.noiseLevelRow}>
           <Text style={styles.noiseLevelLabel}>Gürültü</Text>
           <Pressable
@@ -613,7 +741,9 @@ export default function FrequencyScanner() {
             <Text style={styles.noiseBtnText}>−</Text>
           </Pressable>
           <View style={styles.noiseLevelBar}>
-            <View style={[styles.noiseLevelFill, { width: `${(noiseLevel / 0.6) * 100}%` }]} />
+            <View
+              style={[styles.noiseLevelFill, { width: `${(noiseLevel / 0.6) * 100}%` }]}
+            />
           </View>
           <Pressable
             onPress={() => adjustNoise(1)}
@@ -623,12 +753,16 @@ export default function FrequencyScanner() {
           </Pressable>
         </View>
 
-        {/* CONTROLS */}
+        {/* ─── CONTROLS ───────────────────────────────────── */}
         <View style={styles.controlRow}>
           <Pressable
             onPress={() => adjustFrequency(-1)}
             disabled={isActive}
-            style={({ pressed }) => [styles.arrowBtn, pressed && { opacity: 0.5 }, isActive && { opacity: 0.2 }]}
+            style={({ pressed }) => [
+              styles.arrowBtn,
+              pressed && { opacity: 0.5 },
+              isActive && { opacity: 0.2 },
+            ]}
           >
             <Text style={styles.arrowText}>−</Text>
           </Pressable>
@@ -644,7 +778,10 @@ export default function FrequencyScanner() {
             <Text style={[styles.mainBtnIcon, isActive && styles.mainBtnIconActive]}>
               {isActive ? "■" : "▶"}
             </Text>
-            <Text style={[styles.mainBtnLabel, isActive && styles.mainBtnLabelActive]} numberOfLines={1}>
+            <Text
+              style={[styles.mainBtnLabel, isActive && styles.mainBtnLabelActive]}
+              numberOfLines={1}
+            >
               {isActive ? "DURDUR" : "TARA"}
             </Text>
           </Pressable>
@@ -652,13 +789,17 @@ export default function FrequencyScanner() {
           <Pressable
             onPress={() => adjustFrequency(1)}
             disabled={isActive}
-            style={({ pressed }) => [styles.arrowBtn, pressed && { opacity: 0.5 }, isActive && { opacity: 0.2 }]}
+            style={({ pressed }) => [
+              styles.arrowBtn,
+              pressed && { opacity: 0.5 },
+              isActive && { opacity: 0.2 },
+            ]}
           >
             <Text style={styles.arrowText}>+</Text>
           </Pressable>
         </View>
 
-        {/* DETECTION HISTORY */}
+        {/* ─── DETECTION HISTORY ──────────────────────────── */}
         {detections.length > 0 && (
           <View style={styles.historyCard}>
             <Text style={styles.historyTitle}>Yakalanan Sinyaller</Text>
@@ -712,12 +853,10 @@ const styles = StyleSheet.create({
   freqValue: { fontSize: 44, fontWeight: "200", color: "#00FF88", fontVariant: ["tabular-nums"], marginVertical: 2 },
   freqValueDetected: { color: "#9B4FDE" },
   freqUnit: { fontSize: 12, color: "#00FF88", opacity: 0.5 },
-
   strengthRow: { flexDirection: "row", alignItems: "center", marginTop: 10, gap: 8 },
   strengthBarBg: { flexDirection: "row", gap: 2 },
   strengthSegment: { width: 11, height: 7, borderRadius: 2 },
   strengthText: { fontSize: 11, fontWeight: "700", fontVariant: ["tabular-nums"] },
-
   statusRow: { flexDirection: "row", alignItems: "center", marginTop: 8 },
   statusDot: { width: 6, height: 6, borderRadius: 3, marginRight: 6 },
   statusText: { fontSize: 10, color: "#6A6A7A" },
