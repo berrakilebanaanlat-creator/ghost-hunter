@@ -1,6 +1,21 @@
 /**
  * Frekans Tarayıcı (Frequency Scanner) - Antik Ghost Hunter
  * v2.0 - Tamamen yeniden yazıldı
+ *
+ * Özellikler:
+ * - AM (530-1700 kHz) ve FM (87.5-108 MHz) bant seçimi
+ * - 10-50sn rastgele aralıklarla Türkçe kelime seslendirme (expo-speech)
+ * - Arka plan cızırtı sesi (static_loop.mp3)
+ * - Sinyal tespit anında kelime + ses efekti
+ * - Ekrana sığan kompakt UI (buton metin taşması düzeltildi)
+ * - ScrollView ile tüm içerik görünür
+ *
+ * Gerekli ses dosyaları (assets/sounds/):
+ *   - static_loop.mp3 (arka plan cızırtı - loop)
+ *
+ * Bağımlılık: expo-speech (pnpm add expo-speech)
+ *
+ * Dosya: app/(tabs)/frequency-scanner.tsx
  */
 
 import React, { useState, useEffect, useRef, useCallback } from "react";
@@ -34,9 +49,10 @@ interface Detection {
   timestamp: number;
 }
 
-// ─── TÜRKÇE KELİME BANKASI ──────────────────────────────────────────────────
-
+// ─── TÜRKÇE KELİME BANKASI (Frekans Tarayıcı için) ─────────────────────────
+// Paranormal/ürkütücü kelimeler - radyo frekansından geliyormuş gibi
 const SPIRIT_WORDS: string[] = [
+  // Kısa, ürkütücü kelimeler
   "buradayım", "gel", "gitme", "dur", "bak", "arkanda",
   "görüyorum", "duyuyorum", "yardım", "karanlık", "soğuk",
   "kim", "neden", "nerede", "sessiz", "dinle",
@@ -47,11 +63,14 @@ const SPIRIT_WORDS: string[] = [
   "gece", "ay", "sis", "rüzgar", "fırtına",
   "geçmiş", "zaman", "sonsuza", "dek", "bekle",
   "tehlike", "kaç", "saklan", "dikkat", "sus",
+  // Daha uzun, anlaşılması zor olanlar (fısıltı efekti)
   "seni...izliyorum", "burası...soğuk", "yalnız...değilsin",
   "duy...beni", "gel...yanıma", "kork...ma",
   "uyan", "hatırla", "affet", "özledim",
   "kapan...dı", "açıl...dı", "geliyor", "gidiyor",
+  // Tek heceli, radyo parazitinden çıkmış gibi
   "ah", "of", "şş", "hey", "hah",
+  "tık", "çat", "vız", "hış", "pat",
 ];
 
 // ─── CONSTANTS ───────────────────────────────────────────────────────────────
@@ -63,48 +82,55 @@ const BANDS = {
   FM: { min: 87.5, max: 108.0, unit: "MHz", step: 0.1 },
 };
 
+// Rastgele aralıklar (ms) - 10sn ile 50sn arası
 const DETECTION_INTERVALS = [
   10000, 12000, 15000, 18000, 22000, 25000, 28000,
   30000, 35000, 38000, 40000, 42000, 45000, 48000, 50000,
 ];
 
+// TTS ses ayarları - farklı "ruh" sesleri
 const VOICE_PROFILES = [
-  { pitch: 0.3, rate: 0.4 },
-  { pitch: 0.5, rate: 0.6 },
-  { pitch: 0.7, rate: 0.8 },
-  { pitch: 1.2, rate: 1.3 },
-  { pitch: 1.5, rate: 0.5 },
-  { pitch: 0.4, rate: 1.0 },
-  { pitch: 0.8, rate: 0.3 },
-  { pitch: 1.0, rate: 0.7 },
+  { pitch: 0.3, rate: 0.4 },   // Çok derin, yavaş
+  { pitch: 0.5, rate: 0.6 },   // Derin
+  { pitch: 0.7, rate: 0.8 },   // Normal-derin
+  { pitch: 1.2, rate: 1.3 },   // Hızlı, tiz
+  { pitch: 1.5, rate: 0.5 },   // Çok tiz, yavaş (ürkütücü)
+  { pitch: 0.4, rate: 1.0 },   // Derin, normal hız
+  { pitch: 0.8, rate: 0.3 },   // Çok yavaş fısıltı
+  { pitch: 1.0, rate: 0.7 },   // Normal pitch, yavaş
 ];
 
 // ─── COMPONENT ───────────────────────────────────────────────────────────────
 
 export default function FrequencyScanner() {
+  // State
   const [band, setBand] = useState<Band>("FM");
   const [frequency, setFrequency] = useState<number>(BANDS.FM.min);
   const [scanState, setScanState] = useState<ScanState>("idle");
   const [signalStrength, setSignalStrength] = useState<number>(0);
   const [detections, setDetections] = useState<Detection[]>([]);
   const [currentWord, setCurrentWord] = useState<string>("");
+  const [scanDirection, setScanDirection] = useState<1 | -1>(1);
   const [elapsedTime, setElapsedTime] = useState<number>(0);
 
+  // Refs
   const scanIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const timerIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const detectionTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const isScanningRef = useRef(false);
 
+  // Animations
   const pulseAnim = useRef(new Animated.Value(1)).current;
   const glowAnim = useRef(new Animated.Value(0)).current;
   const noiseAnim = useRef(new Animated.Value(0.3)).current;
   const wordFadeAnim = useRef(new Animated.Value(0)).current;
 
+  // Audio - arka plan cızırtı
   const staticPlayer = useAudioPlayer(
     require("@/assets/sounds/static_loop.mp3")
   );
 
-  // ─── SETUP ──────────────────────────────────────────────────────────────────
+  // ─── AUDIO SETUP ────────────────────────────────────────────────────────────
 
   useEffect(() => {
     setAudioModeAsync({ playsInSilentModeIOS: true });
@@ -118,17 +144,37 @@ export default function FrequencyScanner() {
 
   useEffect(() => {
     if (scanState === "scanning" || scanState === "detected") {
+      // Pulse
       Animated.loop(
         Animated.sequence([
-          Animated.timing(pulseAnim, { toValue: 1.02, duration: 1200, easing: Easing.inOut(Easing.ease), useNativeDriver: true }),
-          Animated.timing(pulseAnim, { toValue: 1, duration: 1200, easing: Easing.inOut(Easing.ease), useNativeDriver: true }),
+          Animated.timing(pulseAnim, {
+            toValue: 1.02,
+            duration: 1200,
+            easing: Easing.inOut(Easing.ease),
+            useNativeDriver: true,
+          }),
+          Animated.timing(pulseAnim, {
+            toValue: 1,
+            duration: 1200,
+            easing: Easing.inOut(Easing.ease),
+            useNativeDriver: true,
+          }),
         ])
       ).start();
 
+      // Noise flicker
       Animated.loop(
         Animated.sequence([
-          Animated.timing(noiseAnim, { toValue: 0.7, duration: 80 + Math.random() * 150, useNativeDriver: true }),
-          Animated.timing(noiseAnim, { toValue: 0.25, duration: 80 + Math.random() * 150, useNativeDriver: true }),
+          Animated.timing(noiseAnim, {
+            toValue: 0.7,
+            duration: 80 + Math.random() * 150,
+            useNativeDriver: true,
+          }),
+          Animated.timing(noiseAnim, {
+            toValue: 0.25,
+            duration: 80 + Math.random() * 150,
+            useNativeDriver: true,
+          }),
         ])
       ).start();
     } else {
@@ -137,46 +183,51 @@ export default function FrequencyScanner() {
     }
   }, [scanState]);
 
-  // ─── SPEECH ─────────────────────────────────────────────────────────────────
+  // ─── SPEECH (TTS) - Türkçe kelime seslendirme ─────────────────────────────
 
   const speakWord = useCallback((word: string) => {
     const profile = VOICE_PROFILES[Math.floor(Math.random() * VOICE_PROFILES.length)];
+
     Speech.speak(word, {
       language: "tr-TR",
       pitch: profile.pitch,
       rate: profile.rate,
       volume: 0.8 + Math.random() * 0.2,
       onDone: () => {
-        Animated.timing(wordFadeAnim, { toValue: 0, duration: 2000, useNativeDriver: true }).start(() => {
+        // Kelime bittikten sonra fade out
+        Animated.timing(wordFadeAnim, {
+          toValue: 0,
+          duration: 2000,
+          useNativeDriver: true,
+        }).start(() => {
           setCurrentWord("");
         });
       },
     });
 
+    // Kelime göründüğünde fade in
     setCurrentWord(word);
-    Animated.timing(wordFadeAnim, { toValue: 1, duration: 300, useNativeDriver: true }).start();
+    Animated.timing(wordFadeAnim, {
+      toValue: 1,
+      duration: 300,
+      useNativeDriver: true,
+    }).start();
   }, []);
 
-  // ─── DETECTION ──────────────────────────────────────────────────────────────
+  // ─── DETECTION LOGIC ────────────────────────────────────────────────────────
 
   const getRandomInterval = useCallback(() => {
     return DETECTION_INTERVALS[Math.floor(Math.random() * DETECTION_INTERVALS.length)];
   }, []);
 
-  const scheduleNextDetection = useCallback(() => {
-    if (detectionTimeoutRef.current) clearTimeout(detectionTimeoutRef.current);
-    const interval = getRandomInterval();
-    detectionTimeoutRef.current = setTimeout(() => {
-      triggerDetection();
-    }, interval);
-  }, [getRandomInterval]);
-
   const triggerDetection = useCallback(() => {
     if (!isScanningRef.current) return;
 
+    // Rastgele kelime seç
     const word = SPIRIT_WORDS[Math.floor(Math.random() * SPIRIT_WORDS.length)];
-    const strength = 35 + Math.floor(Math.random() * 65);
+    const strength = 35 + Math.floor(Math.random() * 65); // 35-100
 
+    // Frekansı bir "paranormal" değere kilitle
     const paranormalFreq = band === "FM"
       ? +(87.5 + Math.random() * 20.5).toFixed(1)
       : Math.round(530 + Math.random() * 1170);
@@ -185,19 +236,39 @@ export default function FrequencyScanner() {
     setSignalStrength(strength);
     setScanState("detected");
 
+    // Haptic
     if (Platform.OS !== "web") {
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
     }
 
+    // Kelimeyi seslendir
     speakWord(word);
 
+    // Glow animation
     Animated.sequence([
-      Animated.timing(glowAnim, { toValue: 1, duration: 200, useNativeDriver: true }),
-      Animated.timing(glowAnim, { toValue: 0.4, duration: 300, useNativeDriver: true }),
-      Animated.timing(glowAnim, { toValue: 0.8, duration: 200, useNativeDriver: true }),
-      Animated.timing(glowAnim, { toValue: 0, duration: 2000, useNativeDriver: true }),
+      Animated.timing(glowAnim, {
+        toValue: 1,
+        duration: 200,
+        useNativeDriver: true,
+      }),
+      Animated.timing(glowAnim, {
+        toValue: 0.4,
+        duration: 300,
+        useNativeDriver: true,
+      }),
+      Animated.timing(glowAnim, {
+        toValue: 0.8,
+        duration: 200,
+        useNativeDriver: true,
+      }),
+      Animated.timing(glowAnim, {
+        toValue: 0,
+        duration: 2000,
+        useNativeDriver: true,
+      }),
     ]).start();
 
+    // Geçmişe ekle
     const detection: Detection = {
       id: Date.now().toString(),
       word,
@@ -208,6 +279,7 @@ export default function FrequencyScanner() {
     };
     setDetections((prev) => [detection, ...prev].slice(0, 6));
 
+    // 4sn sonra taramaya devam
     setTimeout(() => {
       if (isScanningRef.current) {
         setScanState("scanning");
@@ -215,9 +287,19 @@ export default function FrequencyScanner() {
         scheduleNextDetection();
       }
     }, 4000);
-  }, [band, speakWord, scheduleNextDetection]);
+  }, [band, speakWord]);
 
-  // ─── SCAN CONTROL ───────────────────────────────────────────────────────────
+  const scheduleNextDetection = useCallback(() => {
+    if (detectionTimeoutRef.current) {
+      clearTimeout(detectionTimeoutRef.current);
+    }
+    const interval = getRandomInterval();
+    detectionTimeoutRef.current = setTimeout(() => {
+      triggerDetection();
+    }, interval);
+  }, [getRandomInterval, triggerDetection]);
+
+  // ─── SCAN CONTROL ──────────────────────────────────────────────────────────
 
   const startScan = useCallback(() => {
     isScanningRef.current = true;
@@ -226,6 +308,7 @@ export default function FrequencyScanner() {
     setElapsedTime(0);
     setCurrentWord("");
 
+    // Arka plan cızırtı
     try {
       staticPlayer.loop = true;
       staticPlayer.volume = 0.25;
@@ -236,6 +319,7 @@ export default function FrequencyScanner() {
       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
     }
 
+    // Frekans tarama animasyonu
     const bandConfig = BANDS[band];
     let dir = 1;
     scanIntervalRef.current = setInterval(() => {
@@ -248,10 +332,12 @@ export default function FrequencyScanner() {
       });
     }, 120);
 
+    // Süre sayacı
     timerIntervalRef.current = setInterval(() => {
       setElapsedTime((prev) => prev + 1);
     }, 1000);
 
+    // İlk tespit zamanla
     scheduleNextDetection();
   }, [band, scheduleNextDetection]);
 
@@ -261,9 +347,11 @@ export default function FrequencyScanner() {
     setSignalStrength(0);
     setCurrentWord("");
 
+    // Sesleri durdur
     try { staticPlayer.pause(); } catch (e) {}
     Speech.stop();
 
+    // Interval'leri temizle
     if (scanIntervalRef.current) { clearInterval(scanIntervalRef.current); scanIntervalRef.current = null; }
     if (timerIntervalRef.current) { clearInterval(timerIntervalRef.current); timerIntervalRef.current = null; }
     if (detectionTimeoutRef.current) { clearTimeout(detectionTimeoutRef.current); detectionTimeoutRef.current = null; }
@@ -273,6 +361,7 @@ export default function FrequencyScanner() {
     }
   }, []);
 
+  // Cleanup
   useEffect(() => {
     return () => {
       isScanningRef.current = false;
@@ -284,7 +373,7 @@ export default function FrequencyScanner() {
     };
   }, []);
 
-  // ─── MANUAL FREQUENCY ───────────────────────────────────────────────────────
+  // ─── MANUAL FREQUENCY ──────────────────────────────────────────────────────
 
   const adjustFrequency = (direction: 1 | -1) => {
     if (scanState !== "idle") return;
@@ -298,6 +387,8 @@ export default function FrequencyScanner() {
     }
   };
 
+  // ─── BAND SWITCH ───────────────────────────────────────────────────────────
+
   const switchBand = (newBand: Band) => {
     if (scanState !== "idle") return;
     setBand(newBand);
@@ -309,8 +400,9 @@ export default function FrequencyScanner() {
 
   // ─── HELPERS ────────────────────────────────────────────────────────────────
 
-  const formatFreq = (freq: number, b: Band) =>
-    b === "AM" ? `${Math.round(freq)}` : freq.toFixed(1);
+  const formatFreq = (freq: number, b: Band) => {
+    return b === "AM" ? `${Math.round(freq)}` : freq.toFixed(1);
+  };
 
   const formatTime = (seconds: number) => {
     const m = Math.floor(seconds / 60);
@@ -338,7 +430,7 @@ export default function FrequencyScanner() {
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
       >
-        {/* HEADER */}
+        {/* ─── HEADER ─────────────────────────────────────── */}
         <View style={styles.header}>
           <Text style={styles.title}>FREKANS TARAYICI</Text>
           <View style={styles.headerRow}>
@@ -349,7 +441,7 @@ export default function FrequencyScanner() {
           </View>
         </View>
 
-        {/* BAND SELECTOR */}
+        {/* ─── BAND SELECTOR ──────────────────────────────── */}
         <View style={styles.bandRow}>
           {(["AM", "FM"] as Band[]).map((b) => (
             <Pressable
@@ -371,7 +463,7 @@ export default function FrequencyScanner() {
           ))}
         </View>
 
-        {/* FREQUENCY DISPLAY */}
+        {/* ─── FREQUENCY DISPLAY ──────────────────────────── */}
         <Animated.View
           style={[
             styles.freqCard,
@@ -379,9 +471,14 @@ export default function FrequencyScanner() {
             isDetected && styles.freqCardDetected,
           ]}
         >
-          <Animated.View style={[styles.glowOverlay, { opacity: glowAnim }]} />
+          {/* Glow overlay */}
+          <Animated.View
+            style={[styles.glowOverlay, { opacity: glowAnim }]}
+          />
 
-          <Text style={styles.freqBandLabel}>{band} BANT</Text>
+          <Text style={styles.freqBandLabel}>
+            {band} BANT
+          </Text>
 
           <Text
             style={[styles.freqValue, isDetected && styles.freqValueDetected]}
@@ -393,6 +490,7 @@ export default function FrequencyScanner() {
 
           <Text style={styles.freqUnit}>{bandConfig.unit}</Text>
 
+          {/* Sinyal gücü */}
           {signalStrength > 0 && (
             <View style={styles.strengthRow}>
               <View style={styles.strengthBarBg}>
@@ -417,11 +515,14 @@ export default function FrequencyScanner() {
             </View>
           )}
 
+          {/* Durum */}
           <View style={styles.statusRow}>
             <View
               style={[
                 styles.statusDot,
-                { backgroundColor: isDetected ? "#9B4FDE" : isActive ? "#00FF88" : "#333" },
+                {
+                  backgroundColor: isDetected ? "#9B4FDE" : isActive ? "#00FF88" : "#333",
+                },
               ]}
             />
             <Text style={[styles.statusText, isDetected && { color: "#9B4FDE" }]}>
@@ -430,14 +531,14 @@ export default function FrequencyScanner() {
           </View>
         </Animated.View>
 
-        {/* TESPİT EDİLEN KELİME */}
+        {/* ─── TESPİT EDİLEN KELİME ──────────────────────── */}
         <Animated.View style={[styles.wordContainer, { opacity: wordFadeAnim }]}>
           {currentWord !== "" && (
             <Text style={styles.wordText}>"{currentWord}"</Text>
           )}
         </Animated.View>
 
-        {/* SPECTRUM */}
+        {/* ─── SPECTRUM ───────────────────────────────────── */}
         <Animated.View style={[styles.spectrum, { opacity: noiseAnim }]}>
           {Array.from({ length: 24 }).map((_, i) => {
             const h = isActive ? 3 + Math.random() * (isDetected ? 28 : 14) : 3;
@@ -448,7 +549,9 @@ export default function FrequencyScanner() {
                   styles.specBar,
                   {
                     height: h,
-                    backgroundColor: isDetected ? "#9B4FDE" : "#00FF88",
+                    backgroundColor: isDetected
+                      ? "#9B4FDE"
+                      : "#00FF88",
                     opacity: isDetected ? 0.6 + Math.random() * 0.4 : 0.3 + Math.random() * 0.4,
                   },
                 ]}
@@ -457,7 +560,7 @@ export default function FrequencyScanner() {
           })}
         </Animated.View>
 
-        {/* CONTROLS */}
+        {/* ─── CONTROLS ───────────────────────────────────── */}
         <View style={styles.controlRow}>
           <Pressable
             onPress={() => adjustFrequency(-1)}
@@ -479,7 +582,9 @@ export default function FrequencyScanner() {
               pressed && { transform: [{ scale: 0.96 }] },
             ]}
           >
-            <Text style={[styles.mainBtnIcon, isActive && styles.mainBtnIconActive]}>
+            <Text
+              style={[styles.mainBtnIcon, isActive && styles.mainBtnIconActive]}
+            >
               {isActive ? "■" : "▶"}
             </Text>
             <Text
@@ -503,7 +608,7 @@ export default function FrequencyScanner() {
           </Pressable>
         </View>
 
-        {/* DETECTION HISTORY */}
+        {/* ─── DETECTION HISTORY ──────────────────────────── */}
         {detections.length > 0 && (
           <View style={styles.historyCard}>
             <Text style={styles.historyTitle}>Yakalanan Sinyaller</Text>
@@ -523,6 +628,7 @@ export default function FrequencyScanner() {
           </View>
         )}
 
+        {/* Alt boşluk (tab bar için) */}
         <View style={{ height: 100 }} />
       </ScrollView>
     </ScreenContainer>
@@ -532,61 +638,287 @@ export default function FrequencyScanner() {
 // ─── STYLES ──────────────────────────────────────────────────────────────────
 
 const styles = StyleSheet.create({
-  scrollView: { flex: 1, backgroundColor: "#060609" },
-  scrollContent: { paddingHorizontal: 16, paddingTop: 8 },
+  scrollView: {
+    flex: 1,
+    backgroundColor: "#060609",
+  },
+  scrollContent: {
+    paddingHorizontal: 16,
+    paddingTop: 8,
+  },
 
-  header: { marginBottom: 12 },
-  title: { fontSize: 16, fontWeight: "800", color: "#00FF88", letterSpacing: 2, textAlign: "center" },
-  headerRow: { flexDirection: "row", justifyContent: "center", alignItems: "center", marginTop: 2, gap: 12 },
-  subtitle: { fontSize: 10, color: "#4A4A5A", letterSpacing: 1 },
-  timer: { fontSize: 11, color: "#00FF88", fontVariant: ["tabular-nums"], fontWeight: "600" },
+  // Header
+  header: {
+    marginBottom: 12,
+  },
+  title: {
+    fontSize: 16,
+    fontWeight: "800",
+    color: "#00FF88",
+    letterSpacing: 2,
+    textAlign: "center",
+  },
+  headerRow: {
+    flexDirection: "row",
+    justifyContent: "center",
+    alignItems: "center",
+    marginTop: 2,
+    gap: 12,
+  },
+  subtitle: {
+    fontSize: 10,
+    color: "#4A4A5A",
+    letterSpacing: 1,
+  },
+  timer: {
+    fontSize: 11,
+    color: "#00FF88",
+    fontVariant: ["tabular-nums"],
+    fontWeight: "600",
+  },
 
-  bandRow: { flexDirection: "row", gap: 10, marginBottom: 14 },
-  bandBtn: { flex: 1, paddingVertical: 10, borderRadius: 8, borderWidth: 1, borderColor: "#1A1A2E", backgroundColor: "#0A0A12", alignItems: "center" },
-  bandBtnActive: { borderColor: "#00FF88", backgroundColor: "#001A0D" },
-  bandLabel: { fontSize: 16, fontWeight: "700", color: "#4A4A5A" },
-  bandLabelActive: { color: "#00FF88" },
-  bandInfo: { fontSize: 9, color: "#3A3A4A", marginTop: 1 },
+  // Band selector
+  bandRow: {
+    flexDirection: "row",
+    gap: 10,
+    marginBottom: 14,
+  },
+  bandBtn: {
+    flex: 1,
+    paddingVertical: 10,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: "#1A1A2E",
+    backgroundColor: "#0A0A12",
+    alignItems: "center",
+  },
+  bandBtnActive: {
+    borderColor: "#00FF88",
+    backgroundColor: "#001A0D",
+  },
+  bandLabel: {
+    fontSize: 16,
+    fontWeight: "700",
+    color: "#4A4A5A",
+  },
+  bandLabelActive: {
+    color: "#00FF88",
+  },
+  bandInfo: {
+    fontSize: 9,
+    color: "#3A3A4A",
+    marginTop: 1,
+  },
 
-  freqCard: { backgroundColor: "#0A0A12", borderRadius: 14, borderWidth: 1.5, borderColor: "#00FF88", paddingVertical: 20, paddingHorizontal: 16, alignItems: "center", marginBottom: 8, overflow: "hidden" },
-  freqCardDetected: { borderColor: "#9B4FDE", backgroundColor: "#0D0A14" },
-  glowOverlay: { ...StyleSheet.absoluteFillObject, backgroundColor: "#9B4FDE" },
-  freqBandLabel: { fontSize: 10, color: "#4A4A5A", letterSpacing: 2 },
-  freqValue: { fontSize: 48, fontWeight: "200", color: "#00FF88", fontVariant: ["tabular-nums"], marginVertical: 2 },
-  freqValueDetected: { color: "#9B4FDE" },
-  freqUnit: { fontSize: 13, color: "#00FF88", opacity: 0.5 },
+  // Frequency card
+  freqCard: {
+    backgroundColor: "#0A0A12",
+    borderRadius: 14,
+    borderWidth: 1.5,
+    borderColor: "#00FF88",
+    paddingVertical: 20,
+    paddingHorizontal: 16,
+    alignItems: "center",
+    marginBottom: 8,
+    overflow: "hidden",
+  },
+  freqCardDetected: {
+    borderColor: "#9B4FDE",
+    backgroundColor: "#0D0A14",
+  },
+  glowOverlay: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: "#9B4FDE",
+  },
+  freqBandLabel: {
+    fontSize: 10,
+    color: "#4A4A5A",
+    letterSpacing: 2,
+  },
+  freqValue: {
+    fontSize: 48,
+    fontWeight: "200",
+    color: "#00FF88",
+    fontVariant: ["tabular-nums"],
+    marginVertical: 2,
+  },
+  freqValueDetected: {
+    color: "#9B4FDE",
+  },
+  freqUnit: {
+    fontSize: 13,
+    color: "#00FF88",
+    opacity: 0.5,
+  },
+  strengthRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginTop: 12,
+    gap: 8,
+  },
+  strengthBarBg: {
+    flexDirection: "row",
+    gap: 2,
+  },
+  strengthSegment: {
+    width: 12,
+    height: 8,
+    borderRadius: 2,
+  },
+  strengthText: {
+    fontSize: 12,
+    fontWeight: "700",
+    fontVariant: ["tabular-nums"],
+  },
+  statusRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginTop: 10,
+  },
+  statusDot: {
+    width: 6,
+    height: 6,
+    borderRadius: 3,
+    marginRight: 6,
+  },
+  statusText: {
+    fontSize: 11,
+    color: "#6A6A7A",
+  },
 
-  strengthRow: { flexDirection: "row", alignItems: "center", marginTop: 12, gap: 8 },
-  strengthBarBg: { flexDirection: "row", gap: 2 },
-  strengthSegment: { width: 12, height: 8, borderRadius: 2 },
-  strengthText: { fontSize: 12, fontWeight: "700", fontVariant: ["tabular-nums"] },
+  // Word display
+  wordContainer: {
+    minHeight: 36,
+    justifyContent: "center",
+    alignItems: "center",
+    marginBottom: 4,
+  },
+  wordText: {
+    fontSize: 22,
+    fontWeight: "300",
+    color: "#9B4FDE",
+    fontStyle: "italic",
+    textShadowColor: "#9B4FDE",
+    textShadowOffset: { width: 0, height: 0 },
+    textShadowRadius: 10,
+  },
 
-  statusRow: { flexDirection: "row", alignItems: "center", marginTop: 10 },
-  statusDot: { width: 6, height: 6, borderRadius: 3, marginRight: 6 },
-  statusText: { fontSize: 11, color: "#6A6A7A" },
+  // Spectrum
+  spectrum: {
+    flexDirection: "row",
+    alignItems: "flex-end",
+    justifyContent: "center",
+    height: 32,
+    gap: 3,
+    marginBottom: 16,
+  },
+  specBar: {
+    width: (SCREEN_WIDTH - 80) / 24,
+    borderRadius: 1.5,
+    minHeight: 2,
+  },
 
-  wordContainer: { minHeight: 36, justifyContent: "center", alignItems: "center", marginBottom: 4 },
-  wordText: { fontSize: 22, fontWeight: "300", color: "#9B4FDE", fontStyle: "italic", textShadowColor: "#9B4FDE", textShadowOffset: { width: 0, height: 0 }, textShadowRadius: 10 },
+  // Controls
+  controlRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 24,
+    marginBottom: 20,
+  },
+  arrowBtn: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: "#0A0A12",
+    borderWidth: 1,
+    borderColor: "#1A1A2E",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  arrowText: {
+    fontSize: 22,
+    color: "#00FF88",
+    fontWeight: "300",
+  },
+  mainBtn: {
+    width: 100,
+    height: 100,
+    borderRadius: 50,
+    backgroundColor: "#001A0D",
+    borderWidth: 2,
+    borderColor: "#00FF88",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  mainBtnActive: {
+    backgroundColor: "#1A0020",
+    borderColor: "#9B4FDE",
+  },
+  mainBtnIcon: {
+    fontSize: 24,
+    color: "#00FF88",
+  },
+  mainBtnIconActive: {
+    color: "#FF4444",
+    fontSize: 18,
+  },
+  mainBtnLabel: {
+    fontSize: 11,
+    fontWeight: "700",
+    color: "#00FF88",
+    letterSpacing: 1,
+    marginTop: 4,
+  },
+  mainBtnLabelActive: {
+    color: "#FF4444",
+  },
 
-  spectrum: { flexDirection: "row", alignItems: "flex-end", justifyContent: "center", height: 32, gap: 3, marginBottom: 16 },
-  specBar: { width: (SCREEN_WIDTH - 80) / 24, borderRadius: 1.5, minHeight: 2 },
-
-  controlRow: { flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 24, marginBottom: 20 },
-  arrowBtn: { width: 44, height: 44, borderRadius: 22, backgroundColor: "#0A0A12", borderWidth: 1, borderColor: "#1A1A2E", alignItems: "center", justifyContent: "center" },
-  arrowText: { fontSize: 22, color: "#00FF88", fontWeight: "300" },
-  mainBtn: { width: 100, height: 100, borderRadius: 50, backgroundColor: "#001A0D", borderWidth: 2, borderColor: "#00FF88", alignItems: "center", justifyContent: "center" },
-  mainBtnActive: { backgroundColor: "#1A0020", borderColor: "#9B4FDE" },
-  mainBtnIcon: { fontSize: 24, color: "#00FF88" },
-  mainBtnIconActive: { color: "#FF4444", fontSize: 18 },
-  mainBtnLabel: { fontSize: 11, fontWeight: "700", color: "#00FF88", letterSpacing: 1, marginTop: 4 },
-  mainBtnLabelActive: { color: "#FF4444" },
-
-  historyCard: { backgroundColor: "#0A0A12", borderRadius: 10, padding: 12, borderWidth: 1, borderColor: "#1A1A2E" },
-  historyTitle: { fontSize: 11, color: "#4A4A5A", letterSpacing: 1, marginBottom: 8, fontWeight: "600" },
-  historyRow: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", paddingVertical: 7, borderBottomWidth: 0.5, borderBottomColor: "#1A1A2E" },
-  historyLeft: { flex: 1 },
-  historyWord: { fontSize: 13, color: "#CCCCDD", fontStyle: "italic" },
-  historyMeta: { fontSize: 9, color: "#4A4A5A", marginTop: 1, fontVariant: ["tabular-nums"] },
-  historyBadge: { paddingHorizontal: 6, paddingVertical: 2, borderRadius: 4 },
-  historyBadgeText: { fontSize: 9, fontWeight: "700", color: "#060609" },
+  // History
+  historyCard: {
+    backgroundColor: "#0A0A12",
+    borderRadius: 10,
+    padding: 12,
+    borderWidth: 1,
+    borderColor: "#1A1A2E",
+  },
+  historyTitle: {
+    fontSize: 11,
+    color: "#4A4A5A",
+    letterSpacing: 1,
+    marginBottom: 8,
+    fontWeight: "600",
+  },
+  historyRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    paddingVertical: 7,
+    borderBottomWidth: 0.5,
+    borderBottomColor: "#1A1A2E",
+  },
+  historyLeft: {
+    flex: 1,
+  },
+  historyWord: {
+    fontSize: 13,
+    color: "#CCCCDD",
+    fontStyle: "italic",
+  },
+  historyMeta: {
+    fontSize: 9,
+    color: "#4A4A5A",
+    marginTop: 1,
+    fontVariant: ["tabular-nums"],
+  },
+  historyBadge: {
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: 4,
+  },
+  historyBadgeText: {
+    fontSize: 9,
+    fontWeight: "700",
+    color: "#060609",
+  },
 });
