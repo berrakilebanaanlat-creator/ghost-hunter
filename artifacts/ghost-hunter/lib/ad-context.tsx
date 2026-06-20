@@ -13,7 +13,7 @@ import {
   clearAllRetryTimers,
   cleanupAllAds,
 } from './ad-manager';
-import { PremiumManager, type VoxSubscription } from './premium-manager';
+import { PremiumManager, type VoxSubscription, ScannerManager, type ScannerSubscription } from './premium-manager';
 import { CrashReporter } from './crash-reporter';
 
 /** Google Play Billing'den gelen yerelleştirilmiş fiyat bilgileri */
@@ -23,6 +23,13 @@ export interface VoxPrices {
   /** Yıllık fiyat (ör. "₺1.350,00") */
   yearlyPrice: string;
   /** Yıllık planın aylık karşılığı (ör. "₺112,50") */
+  yearlyPerMonth: string;
+}
+
+/** Google Play Billing'den gelen Scanner yerelleştirilmiş fiyat bilgileri */
+export interface ScannerPrices {
+  monthlyPrice: string;
+  yearlyPrice: string;
   yearlyPerMonth: string;
 }
 
@@ -57,6 +64,16 @@ interface AdContextType {
   purchaseVoxSubscription: (period: 'monthly' | 'yearly') => Promise<PurchaseResult>;
   /** Eski tek seferlik VOX satın al (geriye uyumluluk) */
   purchaseVox: () => Promise<boolean>;
+  /** Scanner satın alınmış mı */
+  isScannerPurchased: boolean;
+  /** Scanner abonelik bilgisi */
+  scannerSubscription: ScannerSubscription | null;
+  /** Scanner yerelleştirilmiş fiyatlar */
+  scannerPrices: ScannerPrices | null;
+  /** Scanner fiyatlar yükleniyor mu */
+  isScannerPricesLoading: boolean;
+  /** Scanner abonelik satın al (aylık veya yıllık) */
+  purchaseScannerSubscription: (period: 'monthly' | 'yearly') => Promise<PurchaseResult>;
   /** Satın almaları geri yükle */
   restorePurchases: () => Promise<void>;
   /** Premium durumunu yenile */
@@ -71,6 +88,10 @@ export function AdProvider({ children }: { children: React.ReactNode }) {
   const [voxSubscription, setVoxSubscription] = useState<VoxSubscription | null>(null);
   const [voxPrices, setVoxPrices] = useState<VoxPrices | null>(null);
   const [isPricesLoading, setIsPricesLoading] = useState(true);
+  const [isScannerPurchased, setIsScannerPurchased] = useState(false);
+  const [scannerSubscription, setScannerSubscription] = useState<ScannerSubscription | null>(null);
+  const [scannerPrices, setScannerPrices] = useState<ScannerPrices | null>(null);
+  const [isScannerPricesLoading, setIsScannerPricesLoading] = useState(true);
   const purchaseListenerRef = useRef<{ remove: () => void } | null>(null);
   const purchaseErrorListenerRef = useRef<{ remove: () => void } | null>(null);
 
@@ -99,6 +120,14 @@ export function AdProvider({ children }: { children: React.ReactNode }) {
         setIsPricesLoading(false);
       }).catch(() => {
         setIsPricesLoading(false);
+      });
+
+      // Scanner fiyatlarını da çek
+      loadScannerPricesWithCache().then((prices) => {
+        if (prices) setScannerPrices(prices);
+        setIsScannerPricesLoading(false);
+      }).catch(() => {
+        setIsScannerPricesLoading(false);
       });
       // ANR FIX: AdMob başlatmasını 3 saniye geciktir
       // Cold start sırasında UI thread'i bloklamamak için
@@ -200,17 +229,24 @@ export function AdProvider({ children }: { children: React.ReactNode }) {
               await PremiumManager.purchaseVoxSubscription('monthly');
             } else if (purchase.productId === 'vox_yearly') {
               await PremiumManager.purchaseVoxSubscription('yearly');
+            } else if (purchase.productId === 'scanner_monthly') {
+              await ScannerManager.purchaseScannerSubscription('monthly');
+            } else if (purchase.productId === 'scanner_yearly') {
+              await ScannerManager.purchaseScannerSubscription('yearly');
             }
 
             // UI durumunu güncelle
             await checkStatuses();
           } else if (isPurchased && isAcknowledged) {
             console.log('[IAP-LISTENER] Zaten acknowledge edilmiş:', purchase.productId);
-            // Yine de local state'i güncelle (restore durumu için)
             if (purchase.productId === 'vox_monthly') {
               await PremiumManager.purchaseVoxSubscription('monthly');
             } else if (purchase.productId === 'vox_yearly') {
               await PremiumManager.purchaseVoxSubscription('yearly');
+            } else if (purchase.productId === 'scanner_monthly') {
+              await ScannerManager.purchaseScannerSubscription('monthly');
+            } else if (purchase.productId === 'scanner_yearly') {
+              await ScannerManager.purchaseScannerSubscription('yearly');
             }
             await checkStatuses();
           }
@@ -256,10 +292,9 @@ export function AdProvider({ children }: { children: React.ReactNode }) {
 
       if (purchases && purchases.length > 0) {
         for (const purchase of purchases) {
-          // Sadece VOX ürünlerini kontrol et
-          if (purchase.productId !== 'vox_monthly' && purchase.productId !== 'vox_yearly') {
-            continue;
-          }
+          // Sadece VOX ve Scanner ürünlerini kontrol et
+          const isKnownProduct = ['vox_monthly', 'vox_yearly', 'scanner_monthly', 'scanner_yearly'].includes(purchase.productId);
+          if (!isKnownProduct) continue;
 
           const isPurchased = purchase.purchaseState === 1 || purchase.purchaseState === 'purchased';
           const isAcknowledged = purchase.isAcknowledgedAndroid === true;
@@ -279,6 +314,10 @@ export function AdProvider({ children }: { children: React.ReactNode }) {
                 await PremiumManager.purchaseVoxSubscription('monthly');
               } else if (purchase.productId === 'vox_yearly') {
                 await PremiumManager.purchaseVoxSubscription('yearly');
+              } else if (purchase.productId === 'scanner_monthly') {
+                await ScannerManager.purchaseScannerSubscription('monthly');
+              } else if (purchase.productId === 'scanner_yearly') {
+                await ScannerManager.purchaseScannerSubscription('yearly');
               }
             } catch (finishError: any) {
               console.error('[IAP-PENDING] finishTransaction hatası:', finishError);
@@ -293,6 +332,10 @@ export function AdProvider({ children }: { children: React.ReactNode }) {
               await PremiumManager.purchaseVoxSubscription('monthly');
             } else if (purchase.productId === 'vox_yearly') {
               await PremiumManager.purchaseVoxSubscription('yearly');
+            } else if (purchase.productId === 'scanner_monthly') {
+              await ScannerManager.purchaseScannerSubscription('monthly');
+            } else if (purchase.productId === 'scanner_yearly') {
+              await ScannerManager.purchaseScannerSubscription('yearly');
             }
           }
         }
@@ -312,6 +355,10 @@ export function AdProvider({ children }: { children: React.ReactNode }) {
     setIsVoxPurchased(vox);
     const sub = await PremiumManager.getVoxSubscription();
     setVoxSubscription(sub);
+    const scanner = await ScannerManager.isScannerPurchased();
+    setIsScannerPurchased(scanner);
+    const scannerSub = await ScannerManager.getScannerSubscription();
+    setScannerSubscription(scannerSub);
   };
 
   const refreshPremiumStatus = useCallback(async () => {
@@ -412,10 +459,33 @@ export function AdProvider({ children }: { children: React.ReactNode }) {
 
   /** Eski tek seferlik satın alma (geriye uyumluluk) */
   const handlePurchaseVox = useCallback(async (): Promise<boolean> => {
-    // Aylık abonelik olarak yönlendir
     const result = await handlePurchaseVoxSubscription('monthly');
     return result.ok;
   }, [handlePurchaseVoxSubscription]);
+
+  const handlePurchaseScannerSubscription = useCallback(async (period: 'monthly' | 'yearly'): Promise<PurchaseResult> => {
+    const productId = period === 'monthly' ? 'scanner_monthly' : 'scanner_yearly';
+
+    if (Platform.OS !== 'web') {
+      let iap: any;
+      try {
+        iap = require('expo-iap');
+      } catch {
+        await ScannerManager.purchaseScannerSubscription(period);
+        await checkStatuses();
+        return { ok: true };
+      }
+      const result = await purchaseVoxWithIAP(iap, productId);
+      if (result.ok) {
+        await ScannerManager.purchaseScannerSubscription(period);
+        await checkStatuses();
+      }
+      return result;
+    }
+    await ScannerManager.purchaseScannerSubscription(period);
+    await checkStatuses();
+    return { ok: true };
+  }, []);
 
   const handleRestorePurchases = useCallback(async () => {
     if (Platform.OS !== 'web') {
@@ -446,6 +516,11 @@ export function AdProvider({ children }: { children: React.ReactNode }) {
         isPricesLoading,
         purchaseVoxSubscription: handlePurchaseVoxSubscription,
         purchaseVox: handlePurchaseVox,
+        isScannerPurchased,
+        scannerSubscription,
+        scannerPrices,
+        isScannerPricesLoading,
+        purchaseScannerSubscription: handlePurchaseScannerSubscription,
         restorePurchases: handleRestorePurchases,
         refreshPremiumStatus,
       }}
@@ -473,27 +548,44 @@ async function verifySubscriptionWithStore(): Promise<void> {
     const iap = require('expo-iap');
     await iap.initConnection();
 
-    // Google Play'den aktif abonelikleri sorgula
-    const hasActive = await iap.hasActiveSubscriptions(['vox_monthly', 'vox_yearly']);
-
-    if (hasActive) {
-      // Aktif abonelik var - hangi plan olduğunu belirle
+    // VOX aboneliklerini doğrula
+    const voxActive = await iap.hasActiveSubscriptions(['vox_monthly', 'vox_yearly']);
+    if (voxActive) {
       const activeSubs = await iap.getActiveSubscriptions(['vox_monthly', 'vox_yearly']);
       if (activeSubs && activeSubs.length > 0) {
         const activeSub = activeSubs[0];
         const period = activeSub.productId === 'vox_yearly' ? 'yearly' : 'monthly';
-        // AsyncStorage'ı güncelle (aktif olarak işaretle)
         await PremiumManager.purchaseVoxSubscription(period);
-        console.log('[IAP-VERIFY] Abonelik aktif:', activeSub.productId);
+        console.log('[IAP-VERIFY] VOX abonelik aktif:', activeSub.productId);
       }
     } else {
-      // Google Play'de aktif abonelik YOK - iade edilmiş veya iptal edilmiş
-      // AsyncStorage'daki aboneliği sıfırla
       const currentSub = await PremiumManager.getVoxSubscription();
       if (currentSub && currentSub.isActive) {
-        console.log('[IAP-VERIFY] Abonelik Google Play\'de aktif değil - erişim kapatılıyor');
+        console.log('[IAP-VERIFY] VOX abonelik Google Play\'de aktif değil - erişim kapatılıyor');
         await PremiumManager.resetVoxPurchase();
       }
+    }
+
+    // Scanner aboneliklerini doğrula
+    try {
+      const scannerActive = await iap.hasActiveSubscriptions(['scanner_monthly', 'scanner_yearly']);
+      if (scannerActive) {
+        const activeSubs = await iap.getActiveSubscriptions(['scanner_monthly', 'scanner_yearly']);
+        if (activeSubs && activeSubs.length > 0) {
+          const activeSub = activeSubs[0];
+          const period = activeSub.productId === 'scanner_yearly' ? 'yearly' : 'monthly';
+          await ScannerManager.purchaseScannerSubscription(period);
+          console.log('[IAP-VERIFY] Scanner abonelik aktif:', activeSub.productId);
+        }
+      } else {
+        const currentScannerSub = await ScannerManager.getScannerSubscription();
+        if (currentScannerSub && currentScannerSub.isActive) {
+          console.log('[IAP-VERIFY] Scanner abonelik Google Play\'de aktif değil - erişim kapatılıyor');
+          await ScannerManager.resetScannerPurchase();
+        }
+      }
+    } catch {
+      // Scanner doğrulama hatası — mevcut durumu koru
     }
   } catch (error: any) {
     // Bağlantı hatası veya IAP kullanılamıyorsa (emulator/dev)
@@ -687,42 +779,49 @@ async function restorePurchasesWithIAP(iap: any): Promise<void> {
     
     if (purchases) {
       for (const purchase of purchases) {
-        if (purchase.productId === 'vox_monthly' || purchase.productId === 'vox_yearly') {
-          // Acknowledge edilmemiş satın almaları acknowledge et
-          const isAcknowledged = purchase.isAcknowledgedAndroid === true;
-          if (!isAcknowledged) {
-            try {
-              await iap.finishTransaction({
-                purchase: purchase,
-                isConsumable: false,
-              });
-              console.log('[IAP-RESTORE] ✅ Pending satın alma acknowledge edildi:', purchase.productId);
-            } catch (finishError) {
-              console.warn('[IAP-RESTORE] finishTransaction hatası:', finishError);
-            }
-          }
+        const isKnown = ['vox_monthly', 'vox_yearly', 'scanner_monthly', 'scanner_yearly'].includes(purchase.productId);
+        if (!isKnown) continue;
 
-          // Local state güncelle
-          if (purchase.productId === 'vox_monthly') {
-            await PremiumManager.purchaseVoxSubscription('monthly');
-          } else if (purchase.productId === 'vox_yearly') {
-            await PremiumManager.purchaseVoxSubscription('yearly');
+        // Acknowledge edilmemiş satın almaları acknowledge et
+        const isAcknowledged = purchase.isAcknowledgedAndroid === true;
+        if (!isAcknowledged) {
+          try {
+            await iap.finishTransaction({ purchase, isConsumable: false });
+            console.log('[IAP-RESTORE] ✅ Pending acknowledge edildi:', purchase.productId);
+          } catch (finishError) {
+            console.warn('[IAP-RESTORE] finishTransaction hatası:', finishError);
           }
+        }
+
+        // Local state güncelle
+        if (purchase.productId === 'vox_monthly') {
+          await PremiumManager.purchaseVoxSubscription('monthly');
+        } else if (purchase.productId === 'vox_yearly') {
+          await PremiumManager.purchaseVoxSubscription('yearly');
+        } else if (purchase.productId === 'scanner_monthly') {
+          await ScannerManager.purchaseScannerSubscription('monthly');
+        } else if (purchase.productId === 'scanner_yearly') {
+          await ScannerManager.purchaseScannerSubscription('yearly');
         }
       }
     }
 
-    // Aktif abonelikleri de kontrol et
+    // Aktif abonelikleri de kontrol et (VOX + Scanner)
     try {
-      const hasActive = await iap.hasActiveSubscriptions(['vox_monthly', 'vox_yearly']);
+      const allIds = ['vox_monthly', 'vox_yearly', 'scanner_monthly', 'scanner_yearly'];
+      const hasActive = await iap.hasActiveSubscriptions(allIds);
       if (hasActive) {
-        const activeSubs = await iap.getActiveSubscriptions(['vox_monthly', 'vox_yearly']);
+        const activeSubs = await iap.getActiveSubscriptions(allIds);
         if (activeSubs && activeSubs.length > 0) {
           for (const sub of activeSubs) {
             if (sub.productId === 'vox_monthly') {
               await PremiumManager.purchaseVoxSubscription('monthly');
             } else if (sub.productId === 'vox_yearly') {
               await PremiumManager.purchaseVoxSubscription('yearly');
+            } else if (sub.productId === 'scanner_monthly') {
+              await ScannerManager.purchaseScannerSubscription('monthly');
+            } else if (sub.productId === 'scanner_yearly') {
+              await ScannerManager.purchaseScannerSubscription('yearly');
             }
           }
         }
@@ -916,7 +1015,7 @@ async function fetchVoxPricesFromStore(): Promise<VoxPrices | null> {
       }
     }
 
-    console.log('[IAP-PRICES] Fiyatlar alındı:', { monthlyPrice, yearlyPrice, yearlyPerMonth });
+    console.log('[IAP-PRICES] VOX fiyatlar alındı:', { monthlyPrice, yearlyPrice, yearlyPerMonth });
 
     return {
       monthlyPrice: monthlyPrice || '',
@@ -924,7 +1023,122 @@ async function fetchVoxPricesFromStore(): Promise<VoxPrices | null> {
       yearlyPerMonth: yearlyPerMonth || '',
     };
   } catch (error) {
-    console.warn('[IAP-PRICES] Fiyat bilgileri alınamadı (dev/emulator):', error);
+    console.warn('[IAP-PRICES] VOX fiyat bilgileri alınamadı (dev/emulator):', error);
+    return null;
+  }
+}
+
+// ============================================================
+// SCANNER FİYAT CACHE (scanner_monthly, scanner_yearly)
+// ============================================================
+const SCANNER_PRICES_CACHE_KEY = '@scanner_prices_cache';
+const SCANNER_PRICES_CACHE_TIMESTAMP_KEY = '@scanner_prices_cache_ts';
+const SCANNER_PRICES_CACHE_TTL = 24 * 60 * 60 * 1000;
+
+async function cacheScannerPrices(prices: ScannerPrices): Promise<void> {
+  try {
+    await AsyncStorage.setItem(SCANNER_PRICES_CACHE_KEY, JSON.stringify(prices));
+    await AsyncStorage.setItem(SCANNER_PRICES_CACHE_TIMESTAMP_KEY, Date.now().toString());
+  } catch {}
+}
+
+async function getCachedScannerPrices(ignoreExpiry = false): Promise<ScannerPrices | null> {
+  try {
+    const cached = await AsyncStorage.getItem(SCANNER_PRICES_CACHE_KEY);
+    if (!cached) return null;
+    if (!ignoreExpiry) {
+      const ts = await AsyncStorage.getItem(SCANNER_PRICES_CACHE_TIMESTAMP_KEY);
+      if (ts && Date.now() - parseInt(ts, 10) > SCANNER_PRICES_CACHE_TTL) return null;
+    }
+    return JSON.parse(cached) as ScannerPrices;
+  } catch { return null; }
+}
+
+async function loadScannerPricesWithCache(): Promise<ScannerPrices | null> {
+  const freshPrices = await fetchScannerPricesFromStore();
+  if (freshPrices && (freshPrices.monthlyPrice || freshPrices.yearlyPrice)) {
+    await cacheScannerPrices(freshPrices);
+    return freshPrices;
+  }
+  const cachedPrices = await getCachedScannerPrices(true);
+  if (cachedPrices) return cachedPrices;
+  return null;
+}
+
+async function fetchScannerPricesFromStore(): Promise<ScannerPrices | null> {
+  try {
+    const iap = require('expo-iap');
+    await iap.initConnection();
+
+    const products = await iap.fetchProducts({
+      skus: ['scanner_monthly', 'scanner_yearly'],
+      type: 'subs',
+    });
+
+    if (!products || products.length === 0) return null;
+
+    let monthlyPrice = '';
+    let yearlyPrice = '';
+    let yearlyPriceNumeric = 0;
+
+    for (const product of products) {
+      let price = '';
+      let priceNumeric = 0;
+
+      if (product.subscriptionOffers && product.subscriptionOffers.length > 0) {
+        const offer = product.subscriptionOffers[0];
+        price = offer.displayPrice || '';
+        priceNumeric = offer.price || 0;
+        if (!price && offer.pricingPhasesAndroid?.pricingPhaseList?.length > 0) {
+          const phase = offer.pricingPhasesAndroid.pricingPhaseList[
+            offer.pricingPhasesAndroid.pricingPhaseList.length - 1
+          ];
+          price = phase.formattedPrice || '';
+          priceNumeric = parseInt(phase.priceAmountMicros || '0', 10) / 1000000;
+        }
+      } else if (product.subscriptionOfferDetailsAndroid?.length > 0) {
+        const offerDetail = product.subscriptionOfferDetailsAndroid[0];
+        if (offerDetail.pricingPhases?.pricingPhaseList?.length > 0) {
+          const phase = offerDetail.pricingPhases.pricingPhaseList[
+            offerDetail.pricingPhases.pricingPhaseList.length - 1
+          ];
+          price = phase.formattedPrice || '';
+          priceNumeric = parseInt(phase.priceAmountMicros || '0', 10) / 1000000;
+        }
+      }
+      if (!price && product.displayPrice) {
+        price = product.displayPrice;
+        priceNumeric = product.price || 0;
+      }
+
+      if (product.id === 'scanner_monthly') {
+        monthlyPrice = price;
+      } else if (product.id === 'scanner_yearly') {
+        yearlyPrice = price;
+        yearlyPriceNumeric = priceNumeric;
+      }
+    }
+
+    let yearlyPerMonth = '';
+    if (yearlyPriceNumeric > 0) {
+      const perMonth = yearlyPriceNumeric / 12;
+      const currencyMatch = yearlyPrice.match(/^([^\d]*)/);
+      const currencyPrefix = currencyMatch ? currencyMatch[1] : '';
+      const currencySuffix = yearlyPrice.match(/([^\d.,]*$)/)?.[0] || '';
+      if (yearlyPrice.includes(',')) {
+        yearlyPerMonth = currencyPrefix + perMonth.toFixed(2).replace('.', ',') + currencySuffix;
+      } else {
+        yearlyPerMonth = currencyPrefix + perMonth.toFixed(2) + currencySuffix;
+      }
+    }
+
+    return {
+      monthlyPrice: monthlyPrice || '',
+      yearlyPrice: yearlyPrice || '',
+      yearlyPerMonth: yearlyPerMonth || '',
+    };
+  } catch (error) {
+    console.warn('[IAP-PRICES] Scanner fiyat bilgileri alınamadı:', error);
     return null;
   }
 }

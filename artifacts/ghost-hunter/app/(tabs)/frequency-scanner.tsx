@@ -23,6 +23,8 @@ import {
 import { ScreenContainer } from "@/components/screen-container";
 import { useAudioPlayer, setAudioModeAsync } from "expo-audio";
 import * as Haptics from "expo-haptics";
+import { useAds } from "@/lib/ad-context";
+import { useRouter } from "expo-router";
 
 // ─── TYPES ───────────────────────────────────────────────────────────────────
 
@@ -58,6 +60,9 @@ const PARANORMAL_FREQUENCIES = {
 // ─── COMPONENT ───────────────────────────────────────────────────────────────
 
 export default function FrequencyScanner() {
+  const { isScannerPurchased } = useAds();
+  const router = useRouter();
+
   const [band, setBand] = useState<Band>("FM");
   const [frequency, setFrequency] = useState<number>(BANDS.FM.min);
   const [scanState, setScanState] = useState<ScanState>("idle");
@@ -318,6 +323,38 @@ export default function FrequencyScanner() {
   const bandConfig = BANDS[band];
   const isActive = scanState !== "idle";
   const isDetected = scanState === "detected";
+
+  if (!isScannerPurchased) {
+    return (
+      <ScreenContainer containerClassName="bg-[#060609]">
+        <View style={styles.paywallContainer}>
+          <View style={styles.paywallIcon}>
+            <Text style={styles.paywallIconText}>📡</Text>
+          </View>
+          <Text style={styles.paywallTitle}>FREKANS TARAYICI</Text>
+          <Text style={styles.paywallSubtitle}>Scanner aboneliği gerekiyor</Text>
+          <Text style={styles.paywallDesc}>
+            AM/FM bantlarını taramak, paranormal frekansları tespit etmek ve spektrum görselleştirmesi için Scanner aboneliğini aktifleştirin.
+          </Text>
+          <View style={styles.paywallFeatures}>
+            <Text style={styles.paywallFeature}>+ AM/FM bant taraması</Text>
+            <Text style={styles.paywallFeature}>+ Gerçek zamanlı spektrum</Text>
+            <Text style={styles.paywallFeature}>+ Dedektör geçmişi</Text>
+            <Text style={styles.paywallFeature}>+ Otomatik frekans tespiti</Text>
+          </View>
+          <Pressable
+            onPress={() => router.push("/(tabs)/premium")}
+            style={({ pressed }) => [
+              styles.paywallBtn,
+              pressed && { opacity: 0.85, transform: [{ scale: 0.97 }] },
+            ]}
+          >
+            <Text style={styles.paywallBtnText}>Scanner'ı Aç — Premium'a Git</Text>
+          </Pressable>
+        </View>
+      </ScreenContainer>
+    );
+  }
 
   return (
     <ScreenContainer containerClassName="bg-[#060609]">
@@ -695,6 +732,76 @@ const styles = StyleSheet.create({
     letterSpacing: 1,
     marginBottom: 10,
     fontWeight: "600",
+  },
+  paywallContainer: {
+    flex: 1,
+    alignItems: "center",
+    justifyContent: "center",
+    paddingHorizontal: 28,
+    gap: 16,
+  },
+  paywallIcon: {
+    width: 80,
+    height: 80,
+    borderRadius: 40,
+    backgroundColor: "#00D4FF10",
+    borderWidth: 1,
+    borderColor: "#00D4FF30",
+    alignItems: "center",
+    justifyContent: "center",
+    marginBottom: 4,
+  },
+  paywallIconText: {
+    fontSize: 36,
+  },
+  paywallTitle: {
+    fontSize: 18,
+    fontWeight: "800",
+    color: "#00D4FF",
+    letterSpacing: 4,
+    textAlign: "center",
+  },
+  paywallSubtitle: {
+    fontSize: 12,
+    color: "#5A5A70",
+    letterSpacing: 1,
+    textAlign: "center",
+  },
+  paywallDesc: {
+    fontSize: 12,
+    color: "#3A3A50",
+    textAlign: "center",
+    lineHeight: 20,
+  },
+  paywallFeatures: {
+    gap: 6,
+    width: "100%",
+    backgroundColor: "#0A0A12",
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: "#00D4FF20",
+    padding: 14,
+  },
+  paywallFeature: {
+    fontSize: 12,
+    color: "#00D4FF80",
+    letterSpacing: 0.5,
+  },
+  paywallBtn: {
+    backgroundColor: "#00D4FF15",
+    borderWidth: 1,
+    borderColor: "#00D4FF40",
+    borderRadius: 10,
+    paddingVertical: 14,
+    paddingHorizontal: 24,
+    width: "100%",
+    alignItems: "center",
+  },
+  paywallBtnText: {
+    fontSize: 14,
+    fontWeight: "700",
+    color: "#00D4FF",
+    letterSpacing: 1,
   },
   historyItem: {
     flexDirection: "row",

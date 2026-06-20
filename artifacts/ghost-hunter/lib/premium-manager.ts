@@ -272,6 +272,79 @@ export interface VoxSubscription {
 }
 
 // ============================================================
+// SCANNER ABONELİK (Aylık / Yıllık)
+// ============================================================
+
+export interface ScannerSubscription {
+  isActive: boolean;
+  period: 'monthly' | 'yearly';
+  purchasedAt: number;
+  expiresAt: number;
+  autoRenew: boolean;
+  productId: string;
+}
+
+const SCANNER_SUBSCRIPTION_KEY = '@antik_ghost_scanner_subscription';
+
+export class ScannerManager {
+  static async isScannerPurchased(): Promise<boolean> {
+    try {
+      const data = await AsyncStorage.getItem(SCANNER_SUBSCRIPTION_KEY);
+      if (data) {
+        const sub = JSON.parse(data) as ScannerSubscription;
+        if (sub.isActive && sub.expiresAt > Date.now()) return true;
+        if (sub.expiresAt <= Date.now()) return false;
+      }
+      return false;
+    } catch { return false; }
+  }
+
+  static async getScannerSubscription(): Promise<ScannerSubscription | null> {
+    try {
+      const data = await AsyncStorage.getItem(SCANNER_SUBSCRIPTION_KEY);
+      return data ? JSON.parse(data) as ScannerSubscription : null;
+    } catch { return null; }
+  }
+
+  static async purchaseScannerSubscription(period: 'monthly' | 'yearly'): Promise<void> {
+    try {
+      const now = Date.now();
+      const expiresAt = period === 'monthly'
+        ? now + 30 * 24 * 60 * 60 * 1000
+        : now + 365 * 24 * 60 * 60 * 1000;
+      const sub: ScannerSubscription = {
+        isActive: true,
+        period,
+        purchasedAt: now,
+        expiresAt,
+        autoRenew: true,
+        productId: period === 'monthly' ? 'scanner_monthly' : 'scanner_yearly',
+      };
+      await AsyncStorage.setItem(SCANNER_SUBSCRIPTION_KEY, JSON.stringify(sub));
+    } catch (error) {
+      console.error('Error saving scanner subscription:', error);
+    }
+  }
+
+  static async resetScannerPurchase(): Promise<void> {
+    try {
+      await AsyncStorage.removeItem(SCANNER_SUBSCRIPTION_KEY);
+    } catch (error) {
+      console.error('Error resetting scanner purchase:', error);
+    }
+  }
+
+  static async getScannerExpiryText(): Promise<string> {
+    const sub = await this.getScannerSubscription();
+    if (!sub) return '';
+    const daysLeft = Math.ceil((sub.expiresAt - Date.now()) / (24 * 60 * 60 * 1000));
+    if (daysLeft <= 0) return 'Süresi doldu';
+    if (daysLeft === 1) return '1 gün kaldı';
+    return `${daysLeft} gün kaldı`;
+  }
+}
+
+// ============================================================
 // ÖDÜLLÜ REKLAM GEÇİCİ ERİŞİM (10 Dakika)
 // ============================================================
 
