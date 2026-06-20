@@ -324,38 +324,6 @@ export default function FrequencyScanner() {
   const isActive = scanState !== "idle";
   const isDetected = scanState === "detected";
 
-  if (!isScannerPurchased) {
-    return (
-      <ScreenContainer containerClassName="bg-[#060609]">
-        <View style={styles.paywallContainer}>
-          <View style={styles.paywallIcon}>
-            <Text style={styles.paywallIconText}>📡</Text>
-          </View>
-          <Text style={styles.paywallTitle}>FREKANS TARAYICI</Text>
-          <Text style={styles.paywallSubtitle}>Scanner aboneliği gerekiyor</Text>
-          <Text style={styles.paywallDesc}>
-            AM/FM bantlarını taramak, paranormal frekansları tespit etmek ve spektrum görselleştirmesi için Scanner aboneliğini aktifleştirin.
-          </Text>
-          <View style={styles.paywallFeatures}>
-            <Text style={styles.paywallFeature}>+ AM/FM bant taraması</Text>
-            <Text style={styles.paywallFeature}>+ Gerçek zamanlı spektrum</Text>
-            <Text style={styles.paywallFeature}>+ Dedektör geçmişi</Text>
-            <Text style={styles.paywallFeature}>+ Otomatik frekans tespiti</Text>
-          </View>
-          <Pressable
-            onPress={() => router.push("/(tabs)/premium")}
-            style={({ pressed }) => [
-              styles.paywallBtn,
-              pressed && { opacity: 0.85, transform: [{ scale: 0.97 }] },
-            ]}
-          >
-            <Text style={styles.paywallBtnText}>Scanner'ı Aç — Premium'a Git</Text>
-          </Pressable>
-        </View>
-      </ScreenContainer>
-    );
-  }
-
   return (
     <ScreenContainer containerClassName="bg-[#060609]">
       <View style={styles.container}>
