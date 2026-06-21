@@ -11,6 +11,7 @@ import { useReviewPrompt } from "@/hooks/use-review-prompt";
 import "@/lib/_core/nativewind-pressable";
 import { ThemeProvider } from "@/lib/theme-provider";
 import { AdProvider } from "@/lib/ad-context";
+import { AppProvider } from "@/contexts/AppContext";
 import { WhatsNewModal } from "@/components/whats-new-modal";
 import { OnboardingOverlay } from "@/components/onboarding-overlay";
 import {
@@ -133,25 +134,29 @@ export default function RootLayout() {
 
   if (shouldOverrideSafeArea) {
     return (
-      <AdProvider>
-        <ThemeProvider>
-          <SafeAreaProvider initialMetrics={providerInitialMetrics}>
-            <SafeAreaFrameContext.Provider value={frame}>
-              <SafeAreaInsetsContext.Provider value={insets}>
-                {content}
-              </SafeAreaInsetsContext.Provider>
-            </SafeAreaFrameContext.Provider>
-          </SafeAreaProvider>
-        </ThemeProvider>
-      </AdProvider>
+      <AppProvider>
+        <AdProvider>
+          <ThemeProvider>
+            <SafeAreaProvider initialMetrics={providerInitialMetrics}>
+              <SafeAreaFrameContext.Provider value={frame}>
+                <SafeAreaInsetsContext.Provider value={insets}>
+                  {content}
+                </SafeAreaInsetsContext.Provider>
+              </SafeAreaFrameContext.Provider>
+            </SafeAreaProvider>
+          </ThemeProvider>
+        </AdProvider>
+      </AppProvider>
     );
   }
 
   return (
-    <AdProvider>
-      <ThemeProvider>
-        <SafeAreaProvider initialMetrics={providerInitialMetrics}>{content}</SafeAreaProvider>
-      </ThemeProvider>
-    </AdProvider>
+    <AppProvider>
+      <AdProvider>
+        <ThemeProvider>
+          <SafeAreaProvider initialMetrics={providerInitialMetrics}>{content}</SafeAreaProvider>
+        </ThemeProvider>
+      </AdProvider>
+    </AppProvider>
   );
 }
