@@ -571,6 +571,16 @@ export const HISTORICAL_WORDS: string[] = [
   "lidya", "likya", "karya", "ionia", "urartu",
   "selçuklu", "bizans", "roma", "yunan", "pers",
   "moğol", "hun", "göktürk", "karahanlı", "gazneli",
+  // v1.0.38+ Antalya bölgesi antik kelimeler — 30 adet
+  // Antik şehirler (Likya-Pamfilya-Pisidya)
+  "Perge", "Aspendos", "Termessos", "Olympos", "Phaselis",
+  "Arykanda", "Patara", "Letoon", "Pinara", "Tlos",
+  "Limyra", "Rhodiapolis", "Sidyma", "Selge", "Kekova",
+  // Antik bölgeler ve halklar
+  "Pamfilya", "Pisidya", "Kibyratis", "Solymos", "Antiphellos",
+  // Arkeoloji terimleri
+  "agora", "nekropolis", "heroon", "bouleuterion", "nymphaeum",
+  "propylon", "sarkofaj", "stadion", "palaestra", "stoa",
 ];
 
 // ============================================================
@@ -1104,6 +1114,13 @@ export const MYTHOLOGY_WORDS: string[] = [
   "sanduka", "türbe", "kümbez", "anıt mezar",
   "toplu mezar", "kayıp mezar", "isimsiz mezar",
   "gece mezarlığı", "terk edilmiş mezarlık",
+  // v1.0.38+ Antalya bölgesi mitoloji — 20 adet
+  // Likya kahramanları ve tanrıları
+  "Sarpedon", "Bellerophon", "Kimera", "Yanartaş", "Hekate",
+  "Kharôn", "Lethe", "Tartaros", "Erebos", "Elysion",
+  "Nemesis", "Hypnos", "Thanatos", "Tyche", "Sisifos",
+  // Antik yazı ve dil izleri
+  "Likçe", "Frikyalı", "Lidyalı", "demotik", "çivi-yazısı",
 ];
 
 // ============================================================
