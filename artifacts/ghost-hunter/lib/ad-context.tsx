@@ -693,14 +693,11 @@ async function purchaseVoxWithIAP(iap: any, productId: string): Promise<Purchase
       ...(offerToken ? { subscriptionOffers: [{ sku: productId, offerToken }] } : {}),
     };
 
-    // Abonelik yükseltme: IMMEDIATE_WITH_TIME_PRORATION
-    // expo-iap karşılığı: replacementMode: 'with-time-proration'
+    // Abonelik yükseltme: CHARGE_FULL_PRICE (replacementMode: 5)
+    // Hemen geçiş yapar, tam yıllık fiyat uygulanır
     if (oldPurchaseToken && oldProductId) {
       googleRequest.purchaseToken = oldPurchaseToken;
-      googleRequest.subscriptionProductReplacementParams = {
-        oldProductId,
-        replacementMode: 'with-time-proration',
-      };
+      googleRequest.replacementMode = 5; // CHARGE_FULL_PRICE
       console.log('[IAP-FLOW] Abonelik yükseltme:', oldProductId, '→', productId);
     }
 

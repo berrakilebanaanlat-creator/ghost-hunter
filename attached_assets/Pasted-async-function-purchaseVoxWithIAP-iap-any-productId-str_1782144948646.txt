@@ -1,0 +1,88 @@
+async function purchaseVoxWithIAP(iap: any, productId: string, isUpgrade: boolean = false): Promise<boolean> {
+  try {
+    await iap.initConnection();
+    
+    const products = await iap.fetchProducts({
+      skus: [productId],
+      type: 'subs',
+    });
+
+    if (!products || products.length === 0) {
+      console.warn('[IAP] Ürün bulunamadı:', productId);
+      return false;
+    }
+
+    const product = products[0];
+
+    // Android için offerToken al
+    let offerToken: string | undefined;
+    if (Platform.OS === 'android') {
+      if (product.subscriptionOffers && product.subscriptionOffers.length > 0) {
+        offerToken = product.subscriptionOffers[0].offerTokenAndroid;
+      } else if (product.subscriptionOfferDetailsAndroid && product.subscriptionOfferDetailsAndroid.length > 0) {
+        offerToken = product.subscriptionOfferDetailsAndroid[0].offerToken;
+      }
+    }
+
+    // ⚠️ KRİTİK: Upgrade durumunda mevcut aboneliğin purchaseToken'ını al
+    let currentPurchaseToken: string | undefined;
+    if (isUpgrade && Platform.OS === 'android') {
+      try {
+        const existingPurchases = await iap.getAvailablePurchases();
+        if (existingPurchases && existingPurchases.length > 0) {
+          const currentSub = existingPurchases.find(
+            (p: any) => (p.productId === 'vox_monthly' || p.productId === 'vox_yearly') &&
+              (p.purchaseState === 1 || p.purchaseState === 'purchased')
+          );
+          if (currentSub) {
+            currentPurchaseToken = currentSub.purchaseToken || currentSub.purchaseTokenAndroid;
+            console.log('[IAP] Upgrade: purchaseToken bulundu:', currentPurchaseToken ? 'evet' : 'hayır');
+          }
+        }
+      } catch (tokenError) {
+        console.warn('[IAP] Upgrade: purchaseToken alınamadı:', tokenError);
+      }
+    }
+
+    // ⚠️ KRİTİK: Upgrade ise purchaseToken ve replacementMode ZORUNLU
+    const purchaseResult = await iap.requestPurchase({
+      request: {
+        apple: { sku: productId },
+        google: {
+          skus: [productId],
+          ...(offerToken ? {
+            subscriptionOffers: [{ sku: productId, offerToken }],
+          } : {}),
+          // UPGRADE: Mevcut aboneliğin token'ı + replacement mode
+          ...(isUpgrade && currentPurchaseToken ? {
+            purchaseToken: currentPurchaseToken,
+            replacementMode: 5, // CHARGE_FULL_PRICE = hemen geçiş, tam yıllık fiyat
+          } : {}),
+        },
+      },
+      type: 'subs',
+    });
+
+    if (purchaseResult) {
+      try {
+        const isAcknowledged = purchaseResult.isAcknowledgedAndroid === true;
+        if (!isAcknowledged) {
+          await iap.finishTransaction({
+            purchase: purchaseResult,
+            isConsumable: false,
+          });
+        }
+      } catch (finishError) {
+        console.warn('[IAP] finishTransaction hatası:', finishError);
+      }
+      return true;
+    }
+    return false;
+  } catch (error: any) {
+    if (error?.code === 'user-cancelled' || error?.code === 'E_USER_CANCELLED') {
+      return false;
+    }
+    console.warn('[IAP] Satın alma hatası:', error);
+    return false;
+  }
+}
