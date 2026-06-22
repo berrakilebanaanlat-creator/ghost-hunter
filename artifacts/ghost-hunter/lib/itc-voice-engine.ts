@@ -700,6 +700,9 @@ class ITCVoiceEngine {
   // Aktif karakter (speakOnWeb'e geçirmek için)
   private _currentCharacter: VoiceCharacter = "male";
 
+  // Son kullanılan kelimeler — tekrar önleme (son 20)
+  private recentWords: string[] = [];
+
   // Mikrofon
   private microphoneEnabled: boolean = false;
   private micAnalyserNode: AnalyserNode | null = null;
@@ -1001,6 +1004,14 @@ class ITCVoiceEngine {
       const other = [...p.SPIRIT_NAMES, ...p.NUMBERS, ...p.HISTORICAL_WORDS, ...p.NATURE_WORDS, ...p.EMOTION_WORDS, ...p.BODY_WORDS, ...p.PLACE_WORDS, ...p.TIME_WORDS, ...p.ACTION_WORDS];
       word = other[Math.floor(Math.random() * other.length)];
     }
+
+    // Tekrar önleme — son 20 kelimeden biri geldiyse 2 kez daha dene
+    for (let retry = 0; retry < 2 && this.recentWords.includes(word); retry++) {
+      const pool = [...this.pools.DARK_WORDS, ...this.pools.DARK_PHRASES, ...this.pools.SPIRIT_NAMES, ...this.pools.PLACE_WORDS, ...this.pools.TIME_WORDS];
+      word = pool[Math.floor(Math.random() * pool.length)];
+    }
+    this.recentWords.push(word);
+    if (this.recentWords.length > 20) this.recentWords.shift();
 
     return { word, character };
   }

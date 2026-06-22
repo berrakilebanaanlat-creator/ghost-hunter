@@ -480,6 +480,12 @@ export const DARK_PHRASES: string[] = [
   "portal açılıyor", "geçit açık", "boyutlar arası bağlantı",
   "sinyal güçleniyor", "iletişim kuruluyor", "bağlantı var",
   "mesaj geliyor", "cevap veriyorum", "duyabiliyorum",
+  // v1.0.38+ Yeni ürpertici sözler — 10 adet
+  "gözlerin açık öldü", "kemikler hâlâ orada",
+  "sesi bir anda kesildi", "bağlanmış ruh çözülmüyor",
+  "toprak altında nefes alıyorum", "döneceğime söz verdim",
+  "son baktığında gülümsedim", "hiç kimse duymadı çığlığı",
+  "beyaz ve donmuş yattı", "parmak izi bıraktım",
 ];
 
 // ============================================================
@@ -510,6 +516,11 @@ export const SPIRIT_NAMES: string[] = [
   // Çocuk isimleri
   "Küçük Ali", "Küçük Ayşe", "Bebek", "Yavru", "Çocuk",
   "Oğlum", "Kızım", "Evladım", "Yavrucak", "Minik",
+  // v1.0.38+ Yeni isimler — 20 adet (erkek + kadın)
+  "Engin", "Cem", "Ferit", "Tayfun", "Serhan",
+  "Bülent", "Coşkun", "Uğur", "Yüksel", "Necdet",
+  "Selahattin", "Kadri", "İhsan", "Fuat", "Zühtü",
+  "Serpil", "Sevinç", "Gonca", "Ülkü", "Nurcan",
 ];
 
 // ============================================================
@@ -678,6 +689,10 @@ export const PLACE_WORDS: string[] = [
   "tavan-arası", "labirent", "gizli-oda", "baca", "şömine", "merdiven-altı",
   "giriş-katı", "sığınak", "kemerli-duvar", "sütun", "payanda", "kiriş",
   "kripta", "katakomb", "anıt", "boy-aynası",
+  // v1.0.38+ Yeni yer kelimeleri — 10 adet
+  "harabe köy", "kayıp rıhtım", "çan kulesi", "eski kışla",
+  "ıssız meydan", "terk edilmiş çiftlik", "taş ocağı",
+  "kör kuyu", "çökmüş köprü", "harabeye dönmüş ev",
 ];
 
 // ============================================================
@@ -704,6 +719,10 @@ export const TIME_WORDS: string[] = [
   "bahar", "yaz", "sonbahar", "kış", "mevsim",
   "pazartesi", "salı", "çarşamba", "perşembe", "cuma",
   "cumartesi", "pazar", "bayram", "kandil", "arife",
+  // v1.0.38+ Yeni zaman kelimeleri — 10 adet
+  "ilk ışık", "son gün", "kanlı cuma", "gece sonu",
+  "şafak öncesi", "yarım gece", "son nefes anı",
+  "öteki zaman", "dünya durduğunda", "karanlık saat",
 ];
 
 // ============================================================
