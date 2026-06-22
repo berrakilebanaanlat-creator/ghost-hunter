@@ -96,6 +96,14 @@
           "androidAppId": "ca-app-pub-2683215724092307~4306569029"
         }
       ],
+      [
+        "expo-notifications",
+        {
+          "icon": "./assets/images/icon.png",
+          "color": "#0A0A0F",
+          "sounds": []
+        }
+      ],
       "@react-native-firebase/app",
       "@react-native-firebase/crashlytics",
       [

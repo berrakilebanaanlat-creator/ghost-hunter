@@ -11,35 +11,49 @@ import {
 } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import * as Haptics from "expo-haptics";
-import * as Speech from "expo-speech";
 
-const ONBOARDING_KEY = "@onboarding_v1_seen";
+const ONBOARDING_KEY = "@onboarding_v2_seen";
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
+
+const VOX_DEMO_WORDS = [
+  { word: "Engin", char: "ERKEK" },
+  { word: "buraya gel", char: "FISIL." },
+  { word: "Termessos", char: "DERİN" },
+  { word: "gece sonu", char: "YAŞLI" },
+  { word: "Kharôn", char: "BOĞUK E." },
+  { word: "bağlanmış ruh", char: "KADIN" },
+  { word: "Tartaros", char: "DERİN" },
+  { word: "seni görüyorum", char: "FISIL." },
+];
 
 const SLIDES = [
   {
-    tag: "FREKANS 40.0 Hz",
+    tag: "SİSTEM — BAŞLATILIYOR",
     title: "PARANORMAL\nARAŞTIRMA\nSİSTEMİ",
-    body: "Bu uygulama, elektromanyetik anomalileri, ortam seslerini ve çevresel değişimleri algılamak için tasarlanmış profesyonel bir araçtır.",
-    note: "Kullanmadan önce sessiz ve sakin bir ortam sağlayın.",
+    body: "Elektromanyetik anomalileri, ortam seslerini ve çevresel değişimleri algılamak için tasarlanmış profesyonel araç seti.",
+    note: "Sessiz ve sakin bir ortamda kullanılması önerilir.",
+    type: "info" as const,
   },
   {
-    tag: "MODÜL — EMF & RADAR",
-    title: "ELEKTROMANYETİK\nALAN TARAMASI",
-    body: "EMF dedektörü manyetik alan dalgalanmalarını ölçer. Radar modülü yakındaki hareket ve enerji değişimlerini analiz eder.",
+    tag: "MODÜL — VOX ITC",
+    title: "VOX SES\nİLETİŞİM\nMOTORU",
+    body: "ITC (Instrumental Trans-Communication) yöntemiyle frekans bantları taranır. Tespit edilen ses örüntüleri gerçek zamanlı olarak işlenir ve seslendirilir.",
+    note: "Seans sırasında açık uçlu sorular sorun. Yanıt için en az 10 saniye bekleyin.",
+    type: "vox_demo" as const,
+  },
+  {
+    tag: "MODÜL — EMF & RADAR & EVP",
+    title: "ELEKTROMANYETİK\nTARAMA VE\nKAYIT",
+    body: "EMF dedektörü manyetik alan dalgalanmalarını ölçer. EVP modülü ortam sesini kaydeder. Radar yakındaki enerji değişimlerini analiz eder.",
     note: "Elektronik cihazlardan uzakta çalıştırıldığında hassasiyet artar.",
+    type: "info" as const,
   },
   {
-    tag: "MODÜL — VOX & EVP",
-    title: "SES İLETİŞİM\nPROTOKOLÜ",
-    body: "VOX motoru ITC yöntemini kullanarak ses frekanslarından anlamlı sesler süzer. EVP modülü ortam sesini kaydeder ve analiz eder.",
-    note: "Seans sırasında açık uçlu sorular sorun ve yanıt için bekleyin.",
-  },
-  {
-    tag: "MODÜL — SLS & KAYITLAR",
-    title: "GÖRÜNTÜ ALGILAMA\nVE ARŞİVLEME",
-    body: "SLS kamerası iskelet haritalaması yaparak görünmez varlıkları görselleştirir. Tüm bulgular Kanıt Duvarı'nda arşivlenir.",
+    tag: "MODÜL — SLS & KANIT DUVARI",
+    title: "GÖRÜNTÜ\nALGILAMA VE\nARŞİVLEME",
+    body: "SLS kamerası iskelet haritalaması yaparak görünmez varlıkları görselleştirir. Tüm bulgular zaman damgasıyla Kanıt Duvarı'nda saklanır.",
     note: "Her seansa başlamadan önce cihazınızı şarj edin.",
+    type: "info" as const,
   },
 ];
 
@@ -48,6 +62,12 @@ export function OnboardingOverlay() {
   const [currentSlide, setCurrentSlide] = useState(0);
   const fadeAnim = useRef(new Animated.Value(0)).current;
   const scanAnim = useRef(new Animated.Value(0)).current;
+
+  const [demoWordIndex, setDemoWordIndex] = useState(0);
+  const [demoVisible, setDemoVisible] = useState(false);
+  const demoIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const wordFadeAnim = useRef(new Animated.Value(0)).current;
+  const freqAnim = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
     AsyncStorage.getItem(ONBOARDING_KEY)
@@ -59,19 +79,6 @@ export function OnboardingOverlay() {
             duration: 800,
             useNativeDriver: true,
           }).start();
-
-          if (Platform.OS !== "web") {
-            setTimeout(() => {
-              try {
-                Speech.speak("Köklerine bağlan", {
-                  language: "tr-TR",
-                  pitch: 0.6,
-                  rate: 0.45,
-                  volume: 0.75,
-                });
-              } catch {}
-            }, 900);
-          }
         }
       })
       .catch(() => {});
@@ -87,6 +94,48 @@ export function OnboardingOverlay() {
     loop.start();
     return () => loop.stop();
   }, [scanAnim]);
+
+  useEffect(() => {
+    const loop = Animated.loop(
+      Animated.sequence([
+        Animated.timing(freqAnim, { toValue: 1, duration: 1800, useNativeDriver: true }),
+        Animated.timing(freqAnim, { toValue: 0, duration: 1800, useNativeDriver: true }),
+      ])
+    );
+    loop.start();
+    return () => loop.stop();
+  }, [freqAnim]);
+
+  useEffect(() => {
+    const slide = SLIDES[currentSlide];
+    if (slide?.type === "vox_demo") {
+      setDemoVisible(false);
+      setDemoWordIndex(0);
+
+      const startDemo = setTimeout(() => {
+        setDemoVisible(true);
+
+        const cycleWord = () => {
+          Animated.sequence([
+            Animated.timing(wordFadeAnim, { toValue: 0, duration: 150, useNativeDriver: true }),
+            Animated.timing(wordFadeAnim, { toValue: 1, duration: 400, useNativeDriver: true }),
+          ]).start();
+          setDemoWordIndex((prev) => (prev + 1) % VOX_DEMO_WORDS.length);
+        };
+
+        Animated.timing(wordFadeAnim, { toValue: 1, duration: 500, useNativeDriver: true }).start();
+        demoIntervalRef.current = setInterval(cycleWord, 2200);
+      }, 400);
+
+      return () => {
+        clearTimeout(startDemo);
+        if (demoIntervalRef.current) clearInterval(demoIntervalRef.current);
+      };
+    } else {
+      if (demoIntervalRef.current) clearInterval(demoIntervalRef.current);
+      setDemoVisible(false);
+    }
+  }, [currentSlide, wordFadeAnim]);
 
   const transitionToSlide = useCallback((nextIndex: number) => {
     Animated.timing(fadeAnim, {
@@ -104,6 +153,7 @@ export function OnboardingOverlay() {
   }, [fadeAnim]);
 
   const handleDismiss = useCallback(async () => {
+    if (demoIntervalRef.current) clearInterval(demoIntervalRef.current);
     Animated.timing(fadeAnim, {
       toValue: 0,
       duration: 400,
@@ -135,6 +185,8 @@ export function OnboardingOverlay() {
     outputRange: [-4, 300],
   });
 
+  const demoWord = VOX_DEMO_WORDS[demoWordIndex];
+
   return (
     <Modal
       transparent
@@ -145,15 +197,10 @@ export function OnboardingOverlay() {
     >
       <View style={styles.overlay}>
         <Animated.View style={[styles.card, { opacity: fadeAnim }]}>
-          {/* Tarama çizgisi */}
           <Animated.View
-            style={[
-              styles.scanLine,
-              { transform: [{ translateY: scanTranslate }] },
-            ]}
+            style={[styles.scanLine, { transform: [{ translateY: scanTranslate }] }]}
           />
 
-          {/* Üst meta çubuğu */}
           <View style={styles.metaRow}>
             <View style={styles.statusDot} />
             <Text style={styles.metaTag}>{slide.tag}</Text>
@@ -162,24 +209,69 @@ export function OnboardingOverlay() {
             </Text>
           </View>
 
-          {/* Yatay çizgi */}
           <View style={styles.divider} />
 
-          {/* Ana içerik */}
           <Animated.View style={{ opacity: fadeAnim }}>
             <Text style={styles.title}>{slide.title}</Text>
-
             <View style={styles.dividerThin} />
 
-            <Text style={styles.body}>{slide.body}</Text>
+            {slide.type === "vox_demo" ? (
+              <View style={styles.voxDemoContainer}>
+                <View style={styles.freqBar}>
+                  {Array.from({ length: 20 }).map((_, i) => (
+                    <Animated.View
+                      key={i}
+                      style={[
+                        styles.freqSegment,
+                        {
+                          opacity: freqAnim.interpolate({
+                            inputRange: [0, 1],
+                            outputRange: [
+                              0.08 + (i % 3) * 0.05,
+                              0.12 + (i % 5) * 0.08,
+                            ],
+                          }),
+                          height: 4 + (i % 4) * 3,
+                        },
+                      ]}
+                    />
+                  ))}
+                </View>
 
-            <View style={styles.noteRow}>
+                <View style={styles.voxWordBox}>
+                  {demoVisible ? (
+                    <Animated.View style={{ opacity: wordFadeAnim, alignItems: "center" }}>
+                      <Text style={styles.voxCharLabel}>{demoWord.char}</Text>
+                      <Text style={styles.voxWord}>{demoWord.word}</Text>
+                      <View style={styles.voxWordUnderline} />
+                    </Animated.View>
+                  ) : (
+                    <Text style={styles.voxScanText}>TARAMA...</Text>
+                  )}
+                </View>
+
+                <Text style={styles.voxSubText}>
+                  ITC motoru ses frekanslarını analiz ederek kelimeler üretir. Her kelime farklı bir karakter sesiyle iletilir.
+                </Text>
+              </View>
+            ) : (
+              <>
+                <Text style={styles.body}>{slide.body}</Text>
+                <View style={styles.noteRow}>
+                  <View style={styles.noteBar} />
+                  <Text style={styles.noteText}>{slide.note}</Text>
+                </View>
+              </>
+            )}
+          </Animated.View>
+
+          {slide.type === "info" && (
+            <View style={styles.noteRowBottom}>
               <View style={styles.noteBar} />
               <Text style={styles.noteText}>{slide.note}</Text>
             </View>
-          </Animated.View>
+          )}
 
-          {/* Alt çubuğu */}
           <View style={styles.divider} />
 
           <View style={styles.footer}>
@@ -187,7 +279,6 @@ export function OnboardingOverlay() {
               <Text style={styles.skipText}>ATLA</Text>
             </Pressable>
 
-            {/* Nokta indikatörleri */}
             <View style={styles.dots}>
               {SLIDES.map((_, i) => (
                 <View
@@ -218,7 +309,7 @@ export function OnboardingOverlay() {
 const styles = StyleSheet.create({
   overlay: {
     flex: 1,
-    backgroundColor: "rgba(0,0,0,0.92)",
+    backgroundColor: "rgba(0,0,0,0.95)",
     alignItems: "center",
     justifyContent: "center",
     paddingHorizontal: 24,
@@ -235,7 +326,7 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     height: 1,
-    backgroundColor: "#FFFFFF08",
+    backgroundColor: "#FFFFFF06",
     zIndex: 10,
   },
   metaRow: {
@@ -249,7 +340,7 @@ const styles = StyleSheet.create({
     width: 5,
     height: 5,
     borderRadius: 2.5,
-    backgroundColor: "#4A4A6A",
+    backgroundColor: "#3A3A5A",
   },
   metaTag: {
     flex: 1,
@@ -272,16 +363,16 @@ const styles = StyleSheet.create({
   dividerThin: {
     height: 1,
     backgroundColor: "#0D0D18",
-    marginVertical: 16,
+    marginVertical: 14,
   },
   title: {
-    fontSize: 22,
+    fontSize: 20,
     fontWeight: "700",
-    color: "#C0C0D8",
-    letterSpacing: 5,
-    lineHeight: 32,
+    color: "#B0B0CC",
+    letterSpacing: 4,
+    lineHeight: 30,
     paddingHorizontal: 16,
-    paddingTop: 22,
+    paddingTop: 20,
   },
   body: {
     fontSize: 12,
@@ -295,21 +386,28 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     gap: 10,
     paddingHorizontal: 16,
-    paddingTop: 20,
-    paddingBottom: 22,
+    paddingTop: 16,
+    paddingBottom: 20,
+    alignItems: "flex-start",
+  },
+  noteRowBottom: {
+    flexDirection: "row",
+    gap: 10,
+    paddingHorizontal: 16,
+    paddingTop: 16,
+    paddingBottom: 20,
     alignItems: "flex-start",
   },
   noteBar: {
     width: 2,
-    height: "100%",
     minHeight: 30,
-    backgroundColor: "#1E1E30",
+    backgroundColor: "#1A1A2E",
     marginTop: 2,
   },
   noteText: {
     flex: 1,
     fontSize: 10,
-    color: "#2E2E45",
+    color: "#2A2A40",
     lineHeight: 16,
     letterSpacing: 0.5,
     fontStyle: "italic",
@@ -359,5 +457,63 @@ const styles = StyleSheet.create({
     fontWeight: "700",
     color: "#5A5A80",
     letterSpacing: 3,
+  },
+  voxDemoContainer: {
+    paddingHorizontal: 16,
+    paddingBottom: 16,
+  },
+  freqBar: {
+    flexDirection: "row",
+    alignItems: "flex-end",
+    gap: 3,
+    height: 24,
+    marginBottom: 16,
+  },
+  freqSegment: {
+    flex: 1,
+    backgroundColor: "#3A3A6A",
+    borderRadius: 1,
+  },
+  voxWordBox: {
+    borderWidth: 1,
+    borderColor: "#16162A",
+    backgroundColor: "#050508",
+    height: 90,
+    alignItems: "center",
+    justifyContent: "center",
+    marginBottom: 14,
+  },
+  voxCharLabel: {
+    fontSize: 8,
+    color: "#3A3A60",
+    letterSpacing: 3,
+    fontWeight: "600",
+    marginBottom: 6,
+  },
+  voxWord: {
+    fontSize: 26,
+    fontWeight: "700",
+    color: "#8888BB",
+    letterSpacing: 3,
+    textAlign: "center",
+  },
+  voxWordUnderline: {
+    width: 40,
+    height: 1,
+    backgroundColor: "#2A2A50",
+    marginTop: 8,
+  },
+  voxScanText: {
+    fontSize: 10,
+    color: "#222235",
+    letterSpacing: 4,
+    fontWeight: "600",
+  },
+  voxSubText: {
+    fontSize: 10,
+    color: "#333348",
+    lineHeight: 16,
+    letterSpacing: 0.3,
+    textAlign: "left",
   },
 });
