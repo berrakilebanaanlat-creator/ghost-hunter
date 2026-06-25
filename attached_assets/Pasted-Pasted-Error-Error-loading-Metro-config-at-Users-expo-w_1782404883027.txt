@@ -1,0 +1,27 @@
+Pasted-Error-Error-loading-Metro-config-at-Users-expo-workingd_1782404597815.txt
+Error: Error loading Metro config at: /Users/expo/workingdir/build/artifacts/ghost-hunter/metro.config.js
+Cannot find module '../lightningcss.darwin-arm64.node'
+Require stack:
+- /Users/expo/workingdir/build/node_modules/.pnpm/lightningcss@1.27.0/node_modules/lightningcss/node/index.js
+- /Users/expo/workingdir/build/node_modules/.pnpm/react-native-css-interop@0.2.4_react-native-reanimated@4.1.7_react-native-worklets@0.5._e34757605c34e74390f6e4729cf09c3b/node_modules/react-native-css-interop/dist/css-to-rn/index.js
+- /Users/expo/workingdir/build/node_modules/.pnpm/react-native-css-interop@0.2.4_react-native-reanimated@4.1.7_react-native-worklets@0.5._e34757605c34e74390f6e4729cf09c3b/node_modules/react-native-css-interop/dist/metro/index.js
+- /Users/expo/workingdir/build/node_modules/.pnpm/nativewind@4.2.4_react-native-reanimated@4.1.7_react-native-worklets@0.5.1_@babel+core@_7c26844553fce8930e07edc88cdcbd9e/node_modules/nativewind/dist/metro/index.js
+- /Users/expo/workingdir/build/artifacts/ghost-hunter/metro.config.js
+Error: Cannot find module '../lightningcss.darwin-arm64.node'
+Require stack:
+- /Users/expo/workingdir/build/node_modules/.pnpm/lightningcss@1.27.0/node_modules/lightningcss/node/index.js
+- /Users/expo/workingdir/build/node_modules/.pnpm/react-native-css-interop@0.2.4_react-native-reanimated@4.1.7_react-native-worklets@0.5._e34757605c34e74390f6e4729cf09c3b/node_modules/react-native-css-interop/dist/css-to-rn/index.js
+- /Users/expo/workingdir/build/node_modules/.pnpm/react-native-css-interop@0.2.4_react-native-reanimated@4.1.7_react-native-worklets@0.5._e34757605c34e74390f6e4729cf09c3b/node_modules/react-native-css-interop/dist/metro/index.js
+- /Users/expo/workingdir/build/node_modules/.pnpm/nativewind@4.2.4_react-native-reanimated@4.1.7_react-native-worklets@0.5.1_@babel+core@_7c26844553fce8930e07edc88cdcbd9e/node_modules/nativewind/dist/metro/index.js
+- /Users/expo/workingdir/build/artifacts/ghost-hunter/metro.config.js
+    at Function.Module._resolveFilename (node:internal/modules/cjs/loader:1212:15)
+    at Function.Module._load (node:internal/modules/cjs/loader:1043:27)
+    at Module.require (node:internal/modules/cjs/loader:1298:19)
+    at require (node:internal/modules/helpers:182:18)
+    at Object.<anonymous> (/Users/expo/workingdir/build/node_modules/.pnpm/lightningcss@1.27.0/node_modules/lightningcss/node/index.js:21:22)
+    at Module._compile (node:internal/modules/cjs/loader:1529:14)
+    at Object.Module._extensions..js (node:internal/modules/cjs/loader:1613:10)
+    at Module.load (node:internal/modules/cjs/loader:1275:32)
+    at Function.Module._load (node:internal/modules/cjs/loader:1096:12)
+    at Module.require (node:internal/modules/cjs/loader:1298:19)
+pnpm expo export:embed --eager --platform ios --dev false exited with non-zero code: 1
