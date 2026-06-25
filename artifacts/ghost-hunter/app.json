@@ -10,7 +10,10 @@
     "newArchEnabled": true,
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.berrakilebanaanlat.paranormalhunter"
+      "bundleIdentifier": "com.berrakilebanaanlat.paranormalhunter",
+      "infoPlist": {
+        "ITSAppUsesNonExemptEncryption": false
+      }
     },
     "android": {
       "versionCode": 10040,

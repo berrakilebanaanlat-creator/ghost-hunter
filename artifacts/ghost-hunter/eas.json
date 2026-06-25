@@ -17,7 +17,7 @@
         "credentialsSource": "local"
       },
       "ios": {
-        "credentialsSource": "remote",
+        "credentialsSource": "local",
         "distribution": "store"
       }
     }

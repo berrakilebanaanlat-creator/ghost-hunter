@@ -421,8 +421,8 @@ importers:
         specifier: ~19.1.7
         version: 19.1.11(@types/react@19.1.17)
       eas-cli:
-        specifier: ^20.1.0
-        version: 20.1.0(@types/node@25.6.2)(typescript@5.9.3)
+        specifier: ^20.3.0
+        version: 20.3.0(@types/node@25.6.2)(typescript@5.9.3)
       tailwindcss:
         specifier: ^3.4.17
         version: 3.4.19(tsx@4.21.0)(yaml@2.8.4)
@@ -4145,8 +4145,8 @@ packages:
     resolution: {integrity: sha512-KIN/nDJBQRcXw0MLVhZE9iQHmG68qAVIBg9CqmUYjmQIhgij9U5MFvrqkUL5FbtyyzZuOeOt0zdeRe4UY7ct+A==}
     engines: {node: '>= 0.4'}
 
-  eas-cli@20.1.0:
-    resolution: {integrity: sha512-Tl5PQ6SHIlzCsbOFJUTLnGDdn0rJ6XUMAJ0aKXOj0myh/q/ZJdWz7c8RmBT6TjNJ8T2z5gFq2GY0bhtBV0Ql0w==}
+  eas-cli@20.3.0:
+    resolution: {integrity: sha512-aITxilXdza6hqiJhdCHajh2bh8xMgjTDos4uMYDvqFSbO7zSE3c+hgYBU+EQ1rapoMfeAGp9SDc9+A0RNkLbJQ==}
     engines: {node: '>=20.0.0'}
     hasBin: true
 
@@ -11977,7 +11977,7 @@ snapshots:
       es-errors: 1.3.0
       gopd: 1.2.0
 
-  eas-cli@20.1.0(@types/node@25.6.2)(typescript@5.9.3):
+  eas-cli@20.3.0(@types/node@25.6.2)(typescript@5.9.3):
     dependencies:
       '@expo/apple-utils': 2.1.19
       '@expo/code-signing-certificates': 0.0.5
