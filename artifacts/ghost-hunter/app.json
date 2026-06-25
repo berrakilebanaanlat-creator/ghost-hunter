@@ -11,8 +11,11 @@
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.berrakilebanaanlat.paranormalhunter",
+      "buildNumber": "1.0.40",
       "infoPlist": {
-        "ITSAppUsesNonExemptEncryption": false
+        "ITSAppUsesNonExemptEncryption": false,
+        "NSCameraUsageDescription": "Paranormal tarama için kamera gereklidir.",
+        "NSMicrophoneUsageDescription": "Ses iletişimi için mikrofon gereklidir."
       }
     },
     "android": {
