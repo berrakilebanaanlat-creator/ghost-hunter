@@ -1,18 +1,21 @@
 const { getDefaultConfig } = require("expo/metro-config");
 const { withNativeWind } = require("nativewind/metro");
 const path = require("path");
+const fs = require("fs");
 
 const projectRoot = __dirname;
 const workspaceRoot = path.resolve(projectRoot, "../..");
+const workspaceNodeModules = path.resolve(workspaceRoot, "node_modules");
 
 const config = getDefaultConfig(projectRoot);
 
-// Workspace kökündeki node_modules'u module resolution'a ekle
-// ama watchFolders'a EKLEME — tüm workspace'i izlemek Metro'yu çökürtüyor
-config.resolver.nodeModulesPaths = [
-  path.resolve(projectRoot, "node_modules"),
-  path.resolve(workspaceRoot, "node_modules"),
-];
+// Workspace kökündeki node_modules'u yalnızca varsa ekle
+// EAS build'de (monorepo dışında) bu yol mevcut değil, eklenmemeli
+const nodeModulesPaths = [path.resolve(projectRoot, "node_modules")];
+if (fs.existsSync(workspaceNodeModules)) {
+  nodeModulesPaths.push(workspaceNodeModules);
+}
+config.resolver.nodeModulesPaths = nodeModulesPaths;
 
 // Geçici ve sık değişen klasörleri izlemeden hariç tut
 config.resolver.blockList = [
