@@ -119,6 +119,9 @@
         {
           "android": {
             "extraProguardRules": "-keep class com.google.firebase.** { *; }"
+          },
+          "ios": {
+            "useFrameworks": "static"
           }
         }
       ]
