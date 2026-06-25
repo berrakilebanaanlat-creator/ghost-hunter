@@ -124,7 +124,8 @@
             "useFrameworks": "static"
           }
         }
-      ]
+      ],
+      "./plugins/removeApsEnvironment.js"
     ],
     "extra": {
       "eas": {
