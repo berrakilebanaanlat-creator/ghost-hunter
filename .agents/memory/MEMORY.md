@@ -1,8 +1,1 @@
-- [ElevenLabs TTS entegrasyonu](elevenlabs-tts.md) — API key var ama TTS izni eksik; Google TTS yedek aktif
-- [Keystore durumu](keystore.md) — Play Store imza uyuşmazlığı: eski SHA1 FD:8D... yeni SHA1 04:B7...; çözüm adımları dosyada
-- [i18n sistemi](i18n-system.md) — 10 dil, 234 anahtar her biri tam; yeni anahtar eklenince tüm 10 locale dosyası güncellenmelidir
-- [VOX hardcoded etiketler](vox-labels.md) — CHARACTER_LABELS hâlâ Türkçe hardcoded; modal/noise/mic etiketleri i18n'e bağlandı
-- [Expo native startup crash](expo-native-startup-crash.md) — standalone Android ~2s'de kapanma = native modül (AdMob, Firebase) app.json plugin/config eksik; JS try/catch kurtarmaz
-- [iOS Geçiş Planı](ios-gecis.md) — App Store build süreci, Apple API Key adımları, bundle ID ve EAS config
-- [Build ve Komut Geçmişi](build-history.md) — Tüm EAS build ID'leri, komutlar, keystore SHA1'ler
-- [IAP subscription base-plan upgrade](iap-subscription-upgrade.md) — monthly→yearly needs purchaseToken + replacementMode; return structured PurchaseResult, alert on real errors only.
+- [iOS EAS Build Fixes](ios-eas-build-fixes.md) — lightningcss binary, Firebase removal, entitlements & submit config for this project
