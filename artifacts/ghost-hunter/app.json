@@ -2,7 +2,7 @@
   "expo": {
     "name": "Antik Ghost App",
     "slug": "paranormal-hunter",
-    "version": "1.0.40",
+    "version": "1.0.41",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
     "scheme": "manusparnormalhunter",
@@ -11,7 +11,7 @@
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.berrakilebanaanlat.paranormalhunter",
-      "buildNumber": "1.0.40",
+      "buildNumber": "1.0.41",
       "googleServicesFile": "./GoogleService-Info.plist",
       "infoPlist": {
         "ITSAppUsesNonExemptEncryption": false,
@@ -20,7 +20,7 @@
       }
     },
     "android": {
-      "versionCode": 10040,
+      "versionCode": 10041,
       "package": "com.berrakilebanaanlat.paranormalhunter",
       "googleServicesFile": "./google-services.json",
       "adaptiveIcon": {
@@ -115,7 +115,21 @@
       [
         "expo-build-properties",
         {
-          "ios": {}
+          "ios": {},
+          "android": {
+            "packagingOptions": {
+              "pickFirst": [
+                "lib/x86/libc++_shared.so",
+                "lib/x86_64/libc++_shared.so",
+                "lib/armeabi-v7a/libc++_shared.so",
+                "lib/arm64-v8a/libc++_shared.so",
+                "lib/x86/libworklets.so",
+                "lib/x86_64/libworklets.so",
+                "lib/armeabi-v7a/libworklets.so",
+                "lib/arm64-v8a/libworklets.so"
+              ]
+            }
+          }
         }
       ]
     ],

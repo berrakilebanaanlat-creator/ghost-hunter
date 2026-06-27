@@ -82,6 +82,42 @@ interface AdContextType {
 
 const AdContext = createContext<AdContextType | undefined>(undefined);
 
+// ============================================================
+// IAP BAĞLANTI KİLİDİ — ProductManager$getOrQuery IllegalStateException önlemi
+// initConnection() aynı anda birden fazla çağrıldığında Google Play Billing
+// "Zaten devam ettirildi" (IllegalStateException) fırlatır.
+// Bu flag ile eş zamanlı bağlantı kurulması engellenir.
+// ============================================================
+let _iapConnecting = false;
+let _iapConnected = false;
+
+async function safeInitConnection(iap: any): Promise<void> {
+  if (_iapConnected) return;
+  if (_iapConnecting) {
+    // Başka bir bağlantı kurulumu devam ediyor — kısa bekleme ile senkronize et
+    for (let i = 0; i < 20; i++) {
+      await new Promise(resolve => setTimeout(resolve, 50));
+      if (_iapConnected) return;
+    }
+    return;
+  }
+  _iapConnecting = true;
+  try {
+    await iap.initConnection();
+    _iapConnected = true;
+  } catch (err: any) {
+    // "Zaten bağlı" hatasını sessizce geç
+    const msg = String(err?.message ?? err);
+    if (msg.includes('already') || msg.includes('Zaten') || msg.includes('resumed')) {
+      _iapConnected = true;
+    } else {
+      throw err;
+    }
+  } finally {
+    _iapConnecting = false;
+  }
+}
+
 export function AdProvider({ children }: { children: React.ReactNode }) {
   const [isPremium, setIsPremium] = useState(false);
   const [isVoxPurchased, setIsVoxPurchased] = useState(false);
@@ -285,7 +321,7 @@ export function AdProvider({ children }: { children: React.ReactNode }) {
   const acknowledgePendingPurchases = async () => {
     try {
       const iap = require('expo-iap');
-      await iap.initConnection();
+      await safeInitConnection(iap);
 
       // Mevcut satın almaları al (pending olanlar dahil)
       const purchases = await iap.getAvailablePurchases();
@@ -546,7 +582,7 @@ export function useAds() {
 async function verifySubscriptionWithStore(): Promise<void> {
   try {
     const iap = require('expo-iap');
-    await iap.initConnection();
+    await safeInitConnection(iap);
 
     // VOX aboneliklerini doğrula
     const voxActive = await iap.hasActiveSubscriptions(['vox_monthly', 'vox_yearly']);
@@ -620,7 +656,7 @@ async function purchaseVoxWithIAP(iap: any, productId: string): Promise<Purchase
   }
 
   try {
-    await iap.initConnection();
+    await safeInitConnection(iap);
 
     // ============================================================
     // MEVCUT SATIN ALMALAR — iki amaç:
@@ -768,7 +804,7 @@ async function purchaseVoxWithIAP(iap: any, productId: string): Promise<Purchase
 
 async function restorePurchasesWithIAP(iap: any): Promise<void> {
   try {
-    await iap.initConnection();
+    await safeInitConnection(iap);
     
     // Yeni API: restorePurchases + getAvailablePurchases
     await iap.restorePurchases();
@@ -927,7 +963,7 @@ async function loadVoxPricesWithCache(): Promise<VoxPrices | null> {
 async function fetchVoxPricesFromStore(): Promise<VoxPrices | null> {
   try {
     const iap = require('expo-iap');
-    await iap.initConnection();
+    await safeInitConnection(iap);
 
     // Her iki abonelik ürününü de çek
     const products = await iap.fetchProducts({
@@ -1065,7 +1101,7 @@ async function loadScannerPricesWithCache(): Promise<ScannerPrices | null> {
 async function fetchScannerPricesFromStore(): Promise<ScannerPrices | null> {
   try {
     const iap = require('expo-iap');
-    await iap.initConnection();
+    await safeInitConnection(iap);
 
     const products = await iap.fetchProducts({
       skus: ['scanner_monthly', 'scanner_yearly'],

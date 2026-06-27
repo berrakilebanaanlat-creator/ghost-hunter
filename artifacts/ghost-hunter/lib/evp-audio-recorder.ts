@@ -133,6 +133,9 @@ export async function startRecording(): Promise<boolean> {
       return false;
     }
 
+    // Native tarafın hazırlanması için kısa bekleme (IllegalStateException önlemi)
+    await new Promise(resolve => setTimeout(resolve, 80));
+
     // Record
     try {
       if (!globalRecorder.isRecording) {
