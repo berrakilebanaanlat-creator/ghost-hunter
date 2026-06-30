@@ -4,7 +4,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import * as Haptics from "expo-haptics";
 import { t } from "@/lib/i18n";
 
-const DISCLAIMER_KEY = "disclaimer_accepted_v1";
+const DISCLAIMER_KEY = "disclaimer_accepted_v3";
 
 interface DisclaimerScreenProps {
   onAccept: () => void;
@@ -49,11 +49,18 @@ export function DisclaimerScreen({ onAccept }: DisclaimerScreenProps) {
           scrollEventThrottle={16}
           showsVerticalScrollIndicator={true}
         >
+          <Text style={styles.entertainmentBadge}>🎭 FOR ENTERTAINMENT PURPOSES ONLY</Text>
+          <Text style={styles.entertainmentNote}>
+            This app is designed purely for entertainment. All readings, detections, and outputs are simulated or 
+            randomly generated and do not represent real paranormal activity. This app cannot detect ghosts, spirits, 
+            or any supernatural entities.
+          </Text>
+
           <Text style={styles.sectionTitle}>Uygulama Hakkında</Text>
           <Text style={styles.bodyText}>
             Antik Ghost App, paranormal araştırma ve eğlence amaçlı olarak tasarlanmış bir mobil uygulamadır. 
             Uygulama, telefonunuzdaki sensörleri kullanarak ortamdaki fiziksel değişiklikleri ölçer ve bunlara 
-            tepki verir.
+            tepki verir. Tüm ölçümler ve çıktılar yalnızca eğlence amaçlıdır; gerçek paranormal aktiviteyi temsil etmez.
           </Text>
 
           <Text style={styles.sectionTitle}>Paranormal Araştırma Uyarısı</Text>
@@ -258,5 +265,23 @@ const styles = StyleSheet.create({
   },
   acceptBtnTextDisabled: {
     color: "#3A3A50",
+  },
+  entertainmentBadge: {
+    fontSize: 13,
+    fontWeight: "800",
+    color: "#00E5FF",
+    textAlign: "center",
+    letterSpacing: 1,
+    marginBottom: 8,
+    marginTop: 4,
+  },
+  entertainmentNote: {
+    fontSize: 12,
+    color: "#A0D8EF",
+    lineHeight: 18,
+    letterSpacing: 0.3,
+    textAlign: "center",
+    marginBottom: 8,
+    paddingHorizontal: 4,
   },
 });
