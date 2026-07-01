@@ -1,5 +1,10 @@
 uploads = []
-generated = []
+
+[[generated]]
+id = "HwILUpAoGRGPL_ARBBJa2"
+uri = "file://attached_assets/vox_premium_subscription.png"
+type = "image"
+title = "vox premium subscription promo"
 
 [[outputs]]
 id = "YrVwznsxjxoNRd6sY_Pel"
@@ -36,3 +41,9 @@ id = "VuUPwkJNzS2dZnjId7Vi3"
 uri = "file://downloads/KEYSTORE-BACKUP-D9EF-SAKLA.zip"
 type = "unspecified"
 title = "Anahtar yedeği — güvenli yerde saklayın, kaybetmeyin"
+
+[[outputs]]
+id = "68m3oQgHNH4iiQuBLN81e"
+uri = "file://attached_assets/vox_premium_subscription.png"
+type = "image"
+title = "VOX Premium - Abonelik Görseli (1024x1024)"
