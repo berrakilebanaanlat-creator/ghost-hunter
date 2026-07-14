@@ -134,18 +134,31 @@ export default function VoxScreen() {
   const waveRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const pulseRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const wordTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  // Ref'ler: interval callback'i içinde en güncel değerlere erişmek için
+  // Bağımlılık olarak kullanılmaz → interval gereksiz yere yeniden oluşturulmaz
+  const micStateRef = useRef(micState);
+  const currentWordRef = useRef(currentWord);
+  const isMicEnabledRef = useRef(isMicEnabled);
+  useEffect(() => { micStateRef.current = micState; }, [micState]);
+  useEffect(() => { currentWordRef.current = currentWord; }, [currentWord]);
+  useEffect(() => { isMicEnabledRef.current = isMicEnabled; }, [isMicEnabled]);
 
   // Dalga formu animasyonu
+  // 150ms → 80ms'den daha az JS thread yükü, görsel fark yok
+  // Bağımlılıklar: yalnızca isActive — interval her audioLevel değişiminde
+  // yeniden oluşturulmamalı (bellek sızıntısı ve ANR kaynağı)
   useEffect(() => {
     if (isActive) {
       waveRef.current = setInterval(() => {
         setWaveformData((prev) => {
           const newData = [...prev];
-          const micLevel = micState.audioLevel;
+          const micLevel = micStateRef.current.audioLevel;
+          const hasWord = currentWordRef.current !== null;
+          const micOn = isMicEnabledRef.current;
           for (let i = 0; i < newData.length; i++) {
-            if (currentWord) {
+            if (hasWord) {
               newData[i] = 0.3 + Math.random() * 0.7;
-            } else if (isMicEnabled && micLevel > 0.05) {
+            } else if (micOn && micLevel > 0.05) {
               const micWave = micLevel * (0.5 + Math.random() * 0.5);
               newData[i] = Math.min(0.9, micWave);
             } else {
@@ -154,7 +167,7 @@ export default function VoxScreen() {
           }
           return newData;
         });
-      }, 80);
+      }, 150);
     } else {
       if (waveRef.current) clearInterval(waveRef.current);
       setWaveformData(new Array(40).fill(0));
@@ -162,14 +175,15 @@ export default function VoxScreen() {
     return () => {
       if (waveRef.current) clearInterval(waveRef.current);
     };
-  }, [isActive, currentWord, isMicEnabled, micState.audioLevel]);
+  }, [isActive]);
 
   // Pulse animasyonu
+  // 100ms → 50ms'den daha az state güncelleme yükü
   useEffect(() => {
     if (isActive) {
       pulseRef.current = setInterval(() => {
         setPulsePhase((p) => (p + 1) % 100);
-      }, 50);
+      }, 100);
     } else {
       if (pulseRef.current) clearInterval(pulseRef.current);
       setPulsePhase(0);

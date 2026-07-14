@@ -20,7 +20,7 @@
       }
     },
     "android": {
-      "versionCode": 10041,
+      "versionCode": 10042,
       "package": "com.berrakilebanaanlat.paranormalhunter",
       "googleServicesFile": "./google-services.json",
       "adaptiveIcon": {

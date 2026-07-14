@@ -71,11 +71,12 @@ export default function EVPScreen() {
   const lockRef = useRef(false); // Mutex lock
 
   // Waveform animasyonu
+  // 150ms → 80ms yerine daha az JS thread yükü
   useEffect(() => {
     if (isRecording) {
       waveRef.current = setInterval(() => {
         setWaveform(Array.from({ length: 40 }, () => Math.random()));
-      }, 80);
+      }, 150);
     } else {
       if (waveRef.current) clearInterval(waveRef.current);
       setWaveform(new Array(40).fill(0));
@@ -100,11 +101,12 @@ export default function EVPScreen() {
   }, [isRecording]);
 
   // Pulse
+  // 100ms → 50ms yerine daha az state güncelleme yükü
   useEffect(() => {
     if (isRecording) {
       pulseRef.current = setInterval(() => {
         setPulsePhase((p) => (p + 1) % 100);
-      }, 50);
+      }, 100);
     } else {
       if (pulseRef.current) clearInterval(pulseRef.current);
       setPulsePhase(0);

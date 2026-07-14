@@ -41,6 +41,9 @@ export interface RecordingEntry {
 // ============================================================
 
 const STORAGE_KEY = "@recording_history";
+// Android TransactionTooLargeException önlemi: AsyncStorage max ~1MB
+// Sınırsız büyüyen liste binder buffer'ı taşırır → crash
+const MAX_RECORDINGS = 200;
 
 // ============================================================
 // CRUD İŞLEMLERİ
@@ -77,7 +80,8 @@ export async function addRecording(
 
   try {
     const existing = await getAllRecordings();
-    const updated = [newEntry, ...existing];
+    // MAX_RECORDINGS sınırı: TransactionTooLargeException önlemi
+    const updated = [newEntry, ...existing].slice(0, MAX_RECORDINGS);
     await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
   } catch (error) {
     console.error("[RecordingHistory] Kayıt eklenemedi:", error);
