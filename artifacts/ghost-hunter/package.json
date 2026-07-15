@@ -27,6 +27,7 @@
     "cookie": "^1.1.1",
     "drizzle-orm": "^0.44.7",
     "expo": "~54.0.34",
+    "expo-asset": "^57.0.3",
     "expo-audio": "~1.1.1",
     "expo-blur": "~15.0.8",
     "expo-build-properties": "^1.0.10",

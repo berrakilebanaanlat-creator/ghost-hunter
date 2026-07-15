@@ -115,15 +115,6 @@ export default function TabLayout() {
         }}
       />
       <Tabs.Screen
-        name="whisper"
-        options={{
-          title: "FISILTICI",
-          tabBarIcon: ({ color }) => (
-            <IconSymbol size={22} name="waveform" color={color} />
-          ),
-        }}
-      />
-      <Tabs.Screen
         name="premium"
         options={{
           title: "PREMIUM",

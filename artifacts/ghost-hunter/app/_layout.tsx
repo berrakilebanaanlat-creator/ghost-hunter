@@ -26,6 +26,7 @@ import { trpc, createTRPCClient } from "@/lib/trpc";
 import { initManusRuntime, subscribeSafeAreaInsets } from "@/lib/_core/manus-runtime";
 import { syncBillingStatus } from "@/lib/billing-sync";
 import { scheduleReEngagementNotifications } from "@/lib/push-notifications";
+import { getWhisperEngine } from "@/lib/whisper-engine";
 
 const DEFAULT_WEB_INSETS: EdgeInsets = { top: 0, right: 0, bottom: 0, left: 0 };
 const DEFAULT_WEB_FRAME: Rect = { x: 0, y: 0, width: 0, height: 0 };
@@ -63,6 +64,13 @@ export default function RootLayout() {
   // Push bildirimlerini zamanla (izin varsa)
   useEffect(() => {
     scheduleReEngagementNotifications().catch(() => {});
+  }, []);
+
+  // Frekans tarayıcı motoru — arka planda sessizce başlat
+  useEffect(() => {
+    if (Platform.OS === 'web') return;
+    getWhisperEngine().start().catch(() => {});
+    return () => { getWhisperEngine().stop(); };
   }, []);
 
   const handleSafeAreaUpdate = useCallback((metrics: Metrics) => {
