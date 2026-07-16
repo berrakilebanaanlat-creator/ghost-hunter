@@ -31,11 +31,16 @@ export function DisclaimerScreen({ onAccept }: DisclaimerScreenProps) {
 
   return (
     <View style={styles.container}>
+      {/* Eğlence Uyarısı — en üstte, büyük ve net */}
+      <View style={styles.entertainmentHeader}>
+        <Text style={styles.entertainmentTitle}>FOR ENTERTAINMENT ONLY</Text>
+        <Text style={styles.entertainmentDesc}>
+          THIS IS A SIMULATION APP.{"\n"}It does not detect ghosts, spirits, or any real paranormal activity.{"\n"}All outputs are randomly generated for entertainment.
+        </Text>
+      </View>
+
       {/* Üst başlık */}
       <View style={styles.header}>
-        <View style={styles.iconContainer}>
-          <Text style={styles.iconText}>⚠️</Text>
-        </View>
         <Text style={styles.title}>{t("disclaimer.title").toUpperCase()}</Text>
         <Text style={styles.subtitle}>{t("disclaimer.readAll")}</Text>
       </View>
@@ -49,11 +54,9 @@ export function DisclaimerScreen({ onAccept }: DisclaimerScreenProps) {
           scrollEventThrottle={16}
           showsVerticalScrollIndicator={true}
         >
-          <Text style={styles.entertainmentBadge}>🎭 FOR ENTERTAINMENT PURPOSES ONLY</Text>
+          <Text style={styles.entertainmentBadge}>⚠️  SIMULATION · NOT REAL · ENTERTAINMENT ONLY</Text>
           <Text style={styles.entertainmentNote}>
-            This app is designed purely for entertainment. All readings, detections, and outputs are simulated or 
-            randomly generated and do not represent real paranormal activity. This app cannot detect ghosts, spirits, 
-            or any supernatural entities.
+            This app is a simulation designed for entertainment purposes only. All readings, detections, and outputs are randomly generated. This app cannot and does not detect ghosts, spirits, or any supernatural entities.
           </Text>
 
           <Text style={styles.sectionTitle}>Uygulama Hakkında</Text>
@@ -266,10 +269,33 @@ const styles = StyleSheet.create({
   acceptBtnTextDisabled: {
     color: "#3A3A50",
   },
+  entertainmentHeader: {
+    backgroundColor: "#FF990015",
+    borderBottomWidth: 1,
+    borderBottomColor: "#FF990030",
+    paddingVertical: 14,
+    paddingHorizontal: 20,
+    alignItems: "center",
+    gap: 6,
+  },
+  entertainmentTitle: {
+    fontSize: 15,
+    fontWeight: "900",
+    color: "#FF9900",
+    letterSpacing: 2,
+    textAlign: "center",
+  },
+  entertainmentDesc: {
+    fontSize: 11,
+    color: "#A07020",
+    textAlign: "center",
+    lineHeight: 16,
+    letterSpacing: 0.3,
+  },
   entertainmentBadge: {
-    fontSize: 13,
+    fontSize: 12,
     fontWeight: "800",
-    color: "#00E5FF",
+    color: "#FF9900",
     textAlign: "center",
     letterSpacing: 1,
     marginBottom: 8,
@@ -277,7 +303,7 @@ const styles = StyleSheet.create({
   },
   entertainmentNote: {
     fontSize: 12,
-    color: "#A0D8EF",
+    color: "#A07020",
     lineHeight: 18,
     letterSpacing: 0.3,
     textAlign: "center",

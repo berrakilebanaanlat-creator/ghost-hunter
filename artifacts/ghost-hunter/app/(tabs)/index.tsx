@@ -144,11 +144,21 @@ export default function DashboardScreen() {
             ))}
           </View>
 
+          {/* Eğlence Uyarısı — Apple incelemesi için zorunlu */}
+          <View style={styles.entertainmentBanner}>
+            <Text style={styles.entertainmentText}>
+              ⚠️  FOR ENTERTAINMENT ONLY — SIMULATION
+            </Text>
+            <Text style={styles.entertainmentSub}>
+              This app does not detect real paranormal activity.{"\n"}All outputs are simulated for entertainment purposes.
+            </Text>
+          </View>
+
           {/* Alt Bilgi */}
           <View style={styles.footer}>
             <View style={styles.footerDivider} />
-            <Text style={styles.footerText}>{t("home.subtitle").toUpperCase()}</Text>
-            <Text style={styles.footerVersion}>v1.0.26</Text>
+            <Text style={styles.footerText}>ENTERTAINMENT · SIMULATION · NOT REAL</Text>
+            <Text style={styles.footerVersion}>v1.0.43</Text>
           </View>
         </View>
       </ScrollView>
@@ -327,5 +337,29 @@ const styles = StyleSheet.create({
     fontSize: 8,
     color: "#141420",
     letterSpacing: 2,
+  },
+  entertainmentBanner: {
+    borderWidth: 1,
+    borderColor: "#FF990030",
+    borderRadius: 8,
+    backgroundColor: "#FF990008",
+    paddingVertical: 12,
+    paddingHorizontal: 14,
+    alignItems: "center",
+    gap: 4,
+  },
+  entertainmentText: {
+    fontSize: 11,
+    fontWeight: "700",
+    color: "#FF9900",
+    letterSpacing: 1,
+    textAlign: "center",
+  },
+  entertainmentSub: {
+    fontSize: 10,
+    color: "#7A6030",
+    textAlign: "center",
+    lineHeight: 15,
+    letterSpacing: 0.3,
   },
 });
