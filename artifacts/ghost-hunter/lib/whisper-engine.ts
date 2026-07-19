@@ -1,11 +1,14 @@
 /**
  * Frekans Tarayıcı Motoru
- * Arka planda sessizce çalışır — kullanıcıya görünmez.
+ * Arka planda sessizce çalışır.
  * - Sürekli cızırtı (white noise) çalar
  * - 50-100 saniyede bir rastgele fısıltı karıştırır
+ * - Sinyal callback'i destekler (UI için)
  */
 import { createAudioPlayer, setAudioModeAsync } from 'expo-audio';
 import WHISPER_SOUNDS from './whisper-sounds';
+
+type SignalListener = () => void;
 
 class WhisperEngine {
   private running = false;
@@ -13,6 +16,24 @@ class WhisperEngine {
   private whisperPlayer: ReturnType<typeof createAudioPlayer> | null = null;
   private whisperTimer: ReturnType<typeof setTimeout> | null = null;
   private noiseRestartTimer: ReturnType<typeof setTimeout> | null = null;
+  private listeners: SignalListener[] = [];
+
+  onSignal(listener: SignalListener) {
+    this.listeners.push(listener);
+    return () => {
+      this.listeners = this.listeners.filter((l) => l !== listener);
+    };
+  }
+
+  isRunning() {
+    return this.running;
+  }
+
+  private emitSignal() {
+    for (const l of this.listeners) {
+      try { l(); } catch { /* */ }
+    }
+  }
 
   private startNoise() {
     if (!this.running) return;
@@ -20,7 +41,6 @@ class WhisperEngine {
       if (this.noiseRestartTimer) clearTimeout(this.noiseRestartTimer);
       if (this.noisePlayer) { try { this.noisePlayer.remove(); } catch { /* */ } }
 
-      // createAudioPlayer, require() sonucunu (number) direkt kabul eder
       this.noisePlayer = createAudioPlayer(
         // eslint-disable-next-line @typescript-eslint/no-require-imports
         require('../assets/sounds/static_loop.mp3')
@@ -29,7 +49,6 @@ class WhisperEngine {
       this.noisePlayer.volume = 0.4;
       this.noisePlayer.play();
 
-      // loop=true yedeklemesi: 16sn'lik dosya → 14sn'de yenile
       this.noiseRestartTimer = setTimeout(() => {
         if (this.running) this.startNoise();
       }, 14000);
@@ -53,6 +72,7 @@ class WhisperEngine {
       this.whisperPlayer = createAudioPlayer(src);
       this.whisperPlayer.volume = 1.0;
       this.whisperPlayer.play();
+      this.emitSignal();
     } catch { /* */ }
     this.scheduleWhisper();
   }
@@ -63,7 +83,6 @@ class WhisperEngine {
     try {
       await setAudioModeAsync({ playsInSilentMode: true, allowsRecording: false });
     } catch { /* */ }
-    // 5 saniye geciktir — uygulama tam yüklendikten sonra başlasın
     setTimeout(() => {
       if (this.running) {
         this.startNoise();
