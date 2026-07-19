@@ -83,19 +83,18 @@ class WhisperEngine {
     try {
       await setAudioModeAsync({ playsInSilentMode: true, allowsRecording: false });
     } catch { /* */ }
-    setTimeout(() => {
-      if (this.running) {
-        this.startNoise();
-        this.scheduleWhisper();
-      }
-    }, 5000);
+    // Hemen başlat — bekleme yok
+    this.startNoise();
+    this.scheduleWhisper();
   }
 
   stop() {
     this.running = false;
     if (this.whisperTimer) { clearTimeout(this.whisperTimer); this.whisperTimer = null; }
     if (this.noiseRestartTimer) { clearTimeout(this.noiseRestartTimer); this.noiseRestartTimer = null; }
+    try { this.noisePlayer?.pause(); } catch { /* */ }
     try { this.noisePlayer?.remove(); } catch { /* */ }
+    try { this.whisperPlayer?.pause(); } catch { /* */ }
     try { this.whisperPlayer?.remove(); } catch { /* */ }
     this.noisePlayer = null;
     this.whisperPlayer = null;

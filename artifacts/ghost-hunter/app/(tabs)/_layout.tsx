@@ -13,6 +13,7 @@ export default function TabLayout() {
 
   return (
     <Tabs
+      initialRouteName="frequency-scanner"
       screenOptions={{
         tabBarActiveTintColor: "#00FF88",
         tabBarInactiveTintColor: "#2A2A40",

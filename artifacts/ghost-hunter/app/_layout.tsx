@@ -66,10 +66,8 @@ export default function RootLayout() {
     scheduleReEngagementNotifications().catch(() => {});
   }, []);
 
-  // Frekans tarayıcı motoru — arka planda sessizce başlat
+  // Frekans tarayıcı motoru — kullanıcı frekans ekranından kontrol eder
   useEffect(() => {
-    if (Platform.OS === 'web') return;
-    getWhisperEngine().start().catch(() => {});
     return () => { getWhisperEngine().stop(); };
   }, []);
 
