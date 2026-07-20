@@ -39,19 +39,25 @@ class WhisperEngine {
     if (!this.running) return;
     try {
       if (this.noiseRestartTimer) clearTimeout(this.noiseRestartTimer);
-      if (this.noisePlayer) { try { this.noisePlayer.remove(); } catch { /* */ } }
+      if (this.noisePlayer) { try { this.noisePlayer.pause(); } catch { /* */ } try { this.noisePlayer.remove(); } catch { /* */ } }
 
-      this.noisePlayer = createAudioPlayer(
+      // base_1 veya base_2'yi rastgele seç
+      const bases = [
         // eslint-disable-next-line @typescript-eslint/no-require-imports
-        require('../assets/sounds/static_loop.mp3')
-      );
+        require('../assets/sounds/base_1.mp3'),
+        // eslint-disable-next-line @typescript-eslint/no-require-imports
+        require('../assets/sounds/base_2.mp3'),
+      ];
+      const src = bases[Math.floor(Math.random() * bases.length)];
+      this.noisePlayer = createAudioPlayer(src);
       this.noisePlayer.loop = true;
-      this.noisePlayer.volume = 0.4;
+      this.noisePlayer.volume = 0.5;
       this.noisePlayer.play();
 
+      // 9 dakikada bir yenile (dosyalar ~10 dk)
       this.noiseRestartTimer = setTimeout(() => {
         if (this.running) this.startNoise();
-      }, 14000);
+      }, 9 * 60 * 1000);
     } catch { /* */ }
   }
 
