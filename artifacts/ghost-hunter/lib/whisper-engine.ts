@@ -17,6 +17,18 @@ class WhisperEngine {
   private whisperTimer: ReturnType<typeof setTimeout> | null = null;
   private noiseRestartTimer: ReturnType<typeof setTimeout> | null = null;
   private listeners: SignalListener[] = [];
+  private _noiseVolume = 0.5;
+
+  setNoiseVolume(vol: number) {
+    this._noiseVolume = Math.max(0, Math.min(1, vol));
+    if (this.noisePlayer) {
+      try { this.noisePlayer.volume = this._noiseVolume; } catch { /* */ }
+    }
+  }
+
+  getNoiseVolume() {
+    return this._noiseVolume;
+  }
 
   onSignal(listener: SignalListener) {
     this.listeners.push(listener);
@@ -51,7 +63,7 @@ class WhisperEngine {
       const src = bases[Math.floor(Math.random() * bases.length)];
       this.noisePlayer = createAudioPlayer(src);
       this.noisePlayer.loop = true;
-      this.noisePlayer.volume = 0.5;
+      this.noisePlayer.volume = this._noiseVolume;
       this.noisePlayer.play();
 
       // 9 dakikada bir yenile (dosyalar ~10 dk)
