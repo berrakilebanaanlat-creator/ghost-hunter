@@ -3,3 +3,5 @@ downloads/GhostHunter-1.0.28-PlayStore.zip filter=lfs diff=lfs merge=lfs -text
 downloads/GhostHunter-1.0.28-D9EF.aab filter=lfs diff=lfs merge=lfs -text
 downloads/GhostHunter-1.0.29-10029.aab filter=lfs diff=lfs merge=lfs -text
 downloads/GhostHunter-1.0.31-10031.aab filter=lfs diff=lfs merge=lfs -text
+artifacts/ghost-hunter/assets/sounds/base_1.mp3 filter=lfs diff=lfs merge=lfs -text
+attached_assets/base_1_1784546018436.mp3 filter=lfs diff=lfs merge=lfs -text
