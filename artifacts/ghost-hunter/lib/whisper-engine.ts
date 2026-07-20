@@ -89,18 +89,18 @@ class WhisperEngine {
       const src = WHISPER_SOUNDS[Math.floor(Math.random() * WHISPER_SOUNDS.length)];
       this.whisperPlayer = createAudioPlayer(src);
       this.whisperPlayer.volume = 1.0;
-      // Fısıltı çalarken arka plan sesini otomatik kıs
+      // Fısıltı çalarken arka plan sesini tamamen kapat
       if (this.noisePlayer) {
-        try { this.noisePlayer.volume = this._noiseVolume * 0.3; } catch { /* */ }
+        try { this.noisePlayer.volume = 0; } catch { /* */ }
       }
       this.whisperPlayer.play();
       this.emitSignal();
-      // 4 saniye sonra arka plan sesini geri aç
+      // 5 saniye sonra arka plan sesini geri aç
       setTimeout(() => {
         if (this.noisePlayer && this.running) {
           try { this.noisePlayer.volume = this._noiseVolume; } catch { /* */ }
         }
-      }, 4000);
+      }, 5000);
     } catch { /* */ }
     this.scheduleWhisper();
   }
