@@ -1,1 +1,2 @@
 - [iOS EAS Build Fixes](ios-eas-build-fixes.md) — lightningcss binary, Firebase removal, entitlements & submit config for this project
+- [Antik Ghost Hunter](antik-ghost-hunter.md) — iOS App Store beklemede, Android ses motoru (604 fısıltı + %30 ikinci fısıltı), 2000 ses ZIP bekleniyor
