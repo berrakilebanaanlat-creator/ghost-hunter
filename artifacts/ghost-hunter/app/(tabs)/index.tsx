@@ -72,6 +72,13 @@ export default function DashboardScreen() {
       icon: "doc.text.fill" as const,
       color: "#5A6A8A",
     },
+    {
+      name: "FREKANS TARAYICI",
+      subtitle: "Paranormal sinyal tara",
+      route: "/frequency-scanner",
+      icon: "radio.fill" as const,
+      color: "#00FF88",
+    },
   ];
 
   const formatTime = (d: Date) => {

@@ -17,7 +17,7 @@ class WhisperEngine {
   private whisperTimer: ReturnType<typeof setTimeout> | null = null;
   private noiseRestartTimer: ReturnType<typeof setTimeout> | null = null;
   private listeners: SignalListener[] = [];
-  private _noiseVolume = 0.5;
+  private _noiseVolume = 0.2;
 
   setNoiseVolume(vol: number) {
     this._noiseVolume = Math.max(0, Math.min(1, vol));
@@ -89,8 +89,18 @@ class WhisperEngine {
       const src = WHISPER_SOUNDS[Math.floor(Math.random() * WHISPER_SOUNDS.length)];
       this.whisperPlayer = createAudioPlayer(src);
       this.whisperPlayer.volume = 1.0;
+      // Fısıltı çalarken arka plan sesini otomatik kıs
+      if (this.noisePlayer) {
+        try { this.noisePlayer.volume = this._noiseVolume * 0.3; } catch { /* */ }
+      }
       this.whisperPlayer.play();
       this.emitSignal();
+      // 4 saniye sonra arka plan sesini geri aç
+      setTimeout(() => {
+        if (this.noisePlayer && this.running) {
+          try { this.noisePlayer.volume = this._noiseVolume; } catch { /* */ }
+        }
+      }, 4000);
     } catch { /* */ }
     this.scheduleWhisper();
   }

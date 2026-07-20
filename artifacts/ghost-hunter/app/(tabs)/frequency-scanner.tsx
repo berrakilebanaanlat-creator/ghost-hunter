@@ -22,7 +22,7 @@ export default function FrequencyScanner() {
   const [signalCount, setSignalCount] = useState(0);
   const [eqBars, setEqBars] = useState<number[]>(Array(EQ_BARS).fill(0.05));
   const [noiseVolume, setNoiseVolumeState] = useState(
-    getWhisperEngine().getNoiseVolume()
+    Math.max(0.1, getWhisperEngine().getNoiseVolume())
   );
 
   const freqRef = useRef(87.5);
@@ -200,7 +200,7 @@ export default function FrequencyScanner() {
           </Text>
           <Slider
             style={styles.slider}
-            minimumValue={0}
+            minimumValue={0.1}
             maximumValue={1}
             value={noiseVolume}
             onValueChange={handleVolumeChange}
