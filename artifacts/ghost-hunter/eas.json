@@ -18,6 +18,12 @@
         "credentialsSource": "local"
       }
     },
+    "store": {
+      "android": {
+        "buildType": "app-bundle",
+        "credentialsSource": "remote"
+      }
+    },
     "production": {
       "android": {
         "buildType": "app-bundle",
