@@ -388,13 +388,15 @@ export function AdProvider({ children }: { children: React.ReactNode }) {
     const premium = await PremiumManager.isPremium();
     setIsPremium(premium);
     const vox = await PremiumManager.isVoxPurchased();
-    setIsVoxPurchased(vox);
+    const scanner = await ScannerManager.isScannerPurchased();
+    // Birleşik premium: VOX veya Scanner'dan biri alındıysa her ikisi aktif
+    const unified = vox || scanner;
+    setIsVoxPurchased(unified);
+    setIsScannerPurchased(unified);
     const sub = await PremiumManager.getVoxSubscription();
     setVoxSubscription(sub);
-    const scanner = await ScannerManager.isScannerPurchased();
-    setIsScannerPurchased(scanner);
     const scannerSub = await ScannerManager.getScannerSubscription();
-    setScannerSubscription(scannerSub);
+    setScannerSubscription(unified ? (sub ?? scannerSub) : null);
   };
 
   const refreshPremiumStatus = useCallback(async () => {
