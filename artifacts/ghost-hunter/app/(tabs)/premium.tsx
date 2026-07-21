@@ -18,15 +18,10 @@ export default function PremiumScreen() {
   const {
     isVoxPurchased, purchaseVoxSubscription, restorePurchases, refreshPremiumStatus,
     voxSubscription, voxPrices, isPricesLoading,
-    isScannerPurchased, purchaseScannerSubscription, scannerSubscription,
-    scannerPrices, isScannerPricesLoading,
   } = useAds();
   const [selectedPlan, setSelectedPlan] = useState<PlanPeriod>("yearly");
-  const [selectedScannerPlan, setSelectedScannerPlan] = useState<PlanPeriod>("yearly");
   const [loading, setLoading] = useState(false);
-  const [scannerLoading, setScannerLoading] = useState(false);
   const [awaitingConfirmation, setAwaitingConfirmation] = useState(false);
-  const [scannerAwaitingConfirmation, setScannerAwaitingConfirmation] = useState(false);
   // DEV: Fiyat yükleme durumunu test için override et (__DEV__ only)
   const [devPricesLoadingOverride, setDevPricesLoadingOverride] = useState(false);
   const [restoring, setRestoring] = useState(false);
@@ -35,21 +30,12 @@ export default function PremiumScreen() {
   const [clearingCache, setClearingCache] = useState(false);
   const [cacheCleared, setCacheCleared] = useState(false);
   const [expiryText, setExpiryText] = useState("");
-  const [scannerExpiryText, setScannerExpiryText] = useState("");
 
   useEffect(() => {
     if (isVoxPurchased) {
       PremiumManager.getVoxExpiryText().then(setExpiryText);
     }
   }, [isVoxPurchased]);
-
-  useEffect(() => {
-    if (isScannerPurchased) {
-      import("@/lib/premium-manager").then(({ ScannerManager }) => {
-        ScannerManager.getScannerExpiryText().then(setScannerExpiryText);
-      });
-    }
-  }, [isScannerPurchased]);
 
   const handlePurchaseVox = async () => {
     console.log("[PURCHASE] package:", selectedPlan);
@@ -158,43 +144,6 @@ export default function PremiumScreen() {
     }
   };
 
-  const handlePurchaseScanner = async () => {
-    if (!scannerPrices) {
-      Alert.alert(t("common.error"), "İnternet bağlantınızı kontrol edin ve tekrar deneyin.");
-      return;
-    }
-    setScannerLoading(true);
-    if (Platform.OS !== "web") {
-      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-    }
-    try {
-      const result = await purchaseScannerSubscription(selectedScannerPlan);
-      if (result.ok) {
-        setScannerAwaitingConfirmation(true);
-        if (Platform.OS !== "web") {
-          Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-        }
-        setTimeout(() => setScannerAwaitingConfirmation(false), 5000);
-      } else if (!result.cancelled) {
-        if (Platform.OS !== "web") {
-          Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
-        }
-        Alert.alert(t("common.error"), "İşlem tamamlanamadı, lütfen tekrar deneyin.");
-      }
-    } catch {
-      Alert.alert(t("common.error"), "İşlem tamamlanamadı, lütfen tekrar deneyin.");
-    } finally {
-      setScannerLoading(false);
-    }
-  };
-
-  const handleSelectScannerPlan = (plan: PlanPeriod) => {
-    if (Platform.OS !== "web") {
-      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-    }
-    setSelectedScannerPlan(plan);
-  };
-
   const handleSelectPlan = (plan: PlanPeriod) => {
     if (Platform.OS !== "web") {
       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
@@ -263,7 +212,7 @@ export default function PremiumScreen() {
           </View>
 
           {/* ============================================================ */}
-          {/* VOX ABONELİK KARTI */}
+          {/* PREMIUM ABONELİK KARTI (VOX + SCANNER) */}
           {/* ============================================================ */}
           <View style={[styles.planCard, { borderColor: isVoxPurchased ? "#22C55E30" : "#9B4FDE30" }]}>
             {/* Başlık */}
@@ -273,8 +222,8 @@ export default function PremiumScreen() {
                   <IconSymbol size={18} name="waveform" color={isVoxPurchased ? "#22C55E" : "#9B4FDE"} />
                 </View>
                 <View>
-                  <Text style={[styles.planName, { color: isVoxPurchased ? "#22C55E" : "#9B4FDE" }]}>VOX</Text>
-                  <Text style={styles.planSubtitle}>{t("premium.voxSubtitle")}</Text>
+                  <Text style={[styles.planName, { color: isVoxPurchased ? "#22C55E" : "#9B4FDE" }]}>PREMIUM</Text>
+                  <Text style={styles.planSubtitle}>VOX + Frekans Tarayıcı</Text>
                 </View>
               </View>
               <View style={styles.planPriceContainer}>
@@ -306,6 +255,8 @@ export default function PremiumScreen() {
               <FeatureItem text={t("paywall.feature4")} color={isVoxPurchased ? "#22C55E" : "#9B4FDE"} />
               <FeatureItem text={t("vox.whiteNoise")} color={isVoxPurchased ? "#22C55E" : "#9B4FDE"} />
               <FeatureItem text={t("premium.sessionRecord")} color={isVoxPurchased ? "#22C55E" : "#9B4FDE"} />
+              <FeatureItem text="AM/FM bant taraması" color={isVoxPurchased ? "#22C55E" : "#9B4FDE"} />
+              <FeatureItem text="Frekans Tarayıcı" color={isVoxPurchased ? "#22C55E" : "#9B4FDE"} />
             </View>
 
             {/* Abonelik seçenekleri (satın alınmamışsa) */}
@@ -483,163 +434,6 @@ export default function PremiumScreen() {
                   </Text>
                 </Pressable>
               </>
-            )}
-          </View>
-
-          {/* ============================================================ */}
-          {/* SCANNER ABONELİK KARTI */}
-          {/* ============================================================ */}
-          <View style={[styles.planCard, { borderColor: isScannerPurchased ? "#22C55E30" : "#00D4FF30" }]}>
-            <View style={styles.planHeader}>
-              <View style={styles.planHeaderLeft}>
-                <View style={[styles.planIcon, { backgroundColor: isScannerPurchased ? "#22C55E15" : "#00D4FF15" }]}>
-                  <IconSymbol size={18} name="radio" color={isScannerPurchased ? "#22C55E" : "#00D4FF"} />
-                </View>
-                <View>
-                  <Text style={[styles.planName, { color: isScannerPurchased ? "#22C55E" : "#00D4FF" }]}>SCANNER</Text>
-                  <Text style={styles.planSubtitle}>Frekans Tarayıcı</Text>
-                </View>
-              </View>
-              <View style={styles.planPriceContainer}>
-                {isScannerPurchased ? (
-                  <View style={styles.purchasedBadge}>
-                    <Text style={styles.purchasedText}>{t("premium.active").toUpperCase()}</Text>
-                    {scannerExpiryText ? <Text style={styles.expiryText}>{scannerExpiryText}</Text> : null}
-                  </View>
-                ) : (
-                  <View style={{ alignItems: "flex-end" }}>
-                    {scannerPrices?.monthlyPrice ? (
-                      <Text style={[styles.planPrice, { color: "#00D4FF" }]}>{scannerPrices.monthlyPrice}</Text>
-                    ) : (
-                      <PriceShimmerLarge />
-                    )}
-                    <Text style={styles.planPriceNote}>{t("paywall.perMonth")}</Text>
-                  </View>
-                )}
-              </View>
-            </View>
-
-            <View style={styles.featuresList}>
-              <FeatureItem text="AM/FM bant taraması" color={isScannerPurchased ? "#22C55E" : "#00D4FF"} />
-              <FeatureItem text="Gerçek zamanlı spektrum görselleştirme" color={isScannerPurchased ? "#22C55E" : "#00D4FF"} />
-              <FeatureItem text="Dedektör geçmişi ve kayıtlar" color={isScannerPurchased ? "#22C55E" : "#00D4FF"} />
-              <FeatureItem text="Otomatik frekans tespiti (10-50sn)" color={isScannerPurchased ? "#22C55E" : "#00D4FF"} />
-            </View>
-
-            {!isScannerPurchased && (
-              <>
-                {/* Yıllık Plan */}
-                <Pressable
-                  onPress={() => handleSelectScannerPlan("yearly")}
-                  style={({ pressed }) => [
-                    styles.subOption,
-                    selectedScannerPlan === "yearly" && styles.subOptionScannerSelected,
-                    pressed && { opacity: 0.9 },
-                  ]}
-                >
-                  <View style={styles.subOptionLeft}>
-                    <View style={[
-                      styles.subRadio,
-                      selectedScannerPlan === "yearly" && styles.subRadioScannerSelected,
-                    ]}>
-                      {selectedScannerPlan === "yearly" && <View style={[styles.subRadioDot, { backgroundColor: "#00D4FF" }]} />}
-                    </View>
-                    <View>
-                      <View style={styles.subNameRow}>
-                        <Text style={[styles.subName, selectedScannerPlan === "yearly" && { color: "#00D4FF" }]}>
-                          {t("premium.yearly").toUpperCase()}
-                        </Text>
-                        <View style={[styles.saveBadge, { backgroundColor: "#00D4FF15", borderColor: "#00D4FF30" }]}>
-                          <Text style={[styles.saveBadgeText, { color: "#00D4FF" }]}>{t("premium.save58")}</Text>
-                        </View>
-                      </View>
-                      {scannerPrices?.yearlyPerMonth ? (
-                        <Text style={styles.subMonthly}>{`${scannerPrices.yearlyPerMonth}${t("paywall.perMonth")}`}</Text>
-                      ) : (
-                        <PriceShimmerSmall />
-                      )}
-                    </View>
-                  </View>
-                  <View style={styles.subOptionRight}>
-                    {scannerPrices?.yearlyPrice ? (
-                      <Text style={[styles.subPrice, selectedScannerPlan === "yearly" && { color: "#00D4FF" }]}>
-                        {scannerPrices.yearlyPrice}
-                      </Text>
-                    ) : (
-                      <PriceShimmerLarge />
-                    )}
-                    <Text style={styles.subPeriod}>{t("paywall.perYear")}</Text>
-                  </View>
-                </Pressable>
-
-                {/* Aylık Plan */}
-                <Pressable
-                  onPress={() => handleSelectScannerPlan("monthly")}
-                  style={({ pressed }) => [
-                    styles.subOption,
-                    selectedScannerPlan === "monthly" && styles.subOptionScannerSelected,
-                    pressed && { opacity: 0.9 },
-                  ]}
-                >
-                  <View style={styles.subOptionLeft}>
-                    <View style={[
-                      styles.subRadio,
-                      selectedScannerPlan === "monthly" && styles.subRadioScannerSelected,
-                    ]}>
-                      {selectedScannerPlan === "monthly" && <View style={[styles.subRadioDot, { backgroundColor: "#00D4FF" }]} />}
-                    </View>
-                    <Text style={[styles.subName, selectedScannerPlan === "monthly" && { color: "#00D4FF" }]}>
-                      {t("premium.monthly").toUpperCase()}
-                    </Text>
-                  </View>
-                  <View style={styles.subOptionRight}>
-                    {scannerPrices?.monthlyPrice ? (
-                      <Text style={[styles.subPrice, selectedScannerPlan === "monthly" && { color: "#00D4FF" }]}>
-                        {scannerPrices.monthlyPrice}
-                      </Text>
-                    ) : (
-                      <PriceShimmerLarge />
-                    )}
-                    <Text style={styles.subPeriod}>{t("paywall.perMonth")}</Text>
-                  </View>
-                </Pressable>
-
-                {/* Satın al butonu */}
-                <Pressable
-                  onPress={handlePurchaseScanner}
-                  disabled={scannerLoading || isScannerPricesLoading}
-                  style={({ pressed }) => [
-                    styles.purchaseBtn,
-                    {
-                      backgroundColor: "#00D4FF15",
-                      borderColor: "#00D4FF30",
-                      transform: [{ scale: pressed ? 0.97 : 1 }],
-                      opacity: pressed ? 0.9 : (scannerLoading || isScannerPricesLoading) ? 0.5 : 1,
-                    },
-                  ]}
-                >
-                  <Text style={[styles.purchaseBtnText, { color: "#00D4FF" }]}>
-                    {isScannerPricesLoading
-                      ? "Fiyatlar yükleniyor..."
-                      : scannerAwaitingConfirmation
-                        ? "Onay bekleniyor..."
-                        : scannerLoading
-                          ? "İşleniyor..."
-                          : selectedScannerPlan === "yearly"
-                            ? `${t("premium.subscribe")} — ${scannerPrices?.yearlyPrice || "…"}${t("paywall.perYear")}`
-                            : `${t("premium.subscribe")} — ${scannerPrices?.monthlyPrice || "…"}${t("paywall.perMonth")}`}
-                  </Text>
-                </Pressable>
-              </>
-            )}
-
-            {isScannerPurchased && scannerSubscription && (
-              <View style={styles.activeSubInfo}>
-                <Text style={styles.activeSubText}>
-                  {scannerSubscription.period === "yearly" ? t("premium.yearly") : t("premium.monthly")} — {t("premium.active")}
-                </Text>
-                {scannerExpiryText ? <Text style={styles.activeSubExpiry}>{scannerExpiryText}</Text> : null}
-              </View>
             )}
           </View>
 
