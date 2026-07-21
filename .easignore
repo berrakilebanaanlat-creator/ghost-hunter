@@ -1,13 +1,18 @@
 # Dependencies (reinstalled on EAS build servers)
 node_modules/
 **/node_modules/
+node_modules/.pnpm/
+**/.pnpm/
 
 # Large local artifacts / backups
 downloads/
+attached_assets/
 *.aab
 *.apk
 *.zip
 *.ipa
+*.tar.gz
+whisper-sounds-full.ts
 
 # Build output
 **/dist/
@@ -23,7 +28,6 @@ artifacts/api-server/
 artifacts/mockup-sandbox/
 
 # Local-only assets / VCS not needed for the build
-attached_assets/
 .git/
 .agents/
 .local/

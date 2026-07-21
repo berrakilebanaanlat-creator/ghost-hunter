@@ -75,7 +75,8 @@ class WhisperEngine {
 
   private scheduleWhisper() {
     if (!this.running) return;
-    const ms = (Math.floor(Math.random() * 51) + 50) * 1000;
+    const options = [10, 20, 30];
+    const ms = options[Math.floor(Math.random() * options.length)] * 1000;
     if (this.whisperTimer) clearTimeout(this.whisperTimer);
     this.whisperTimer = setTimeout(() => {
       this.playWhisper();
@@ -125,9 +126,11 @@ class WhisperEngine {
     try {
       await setAudioModeAsync({ playsInSilentMode: true, allowsRecording: false });
     } catch { /* */ }
-    // Hemen başlat — bekleme yok
     this.startNoise();
-    this.scheduleWhisper();
+    // İlk açılışta 40 saniye bekle, sonra fısıltılar başlasın
+    this.whisperTimer = setTimeout(() => {
+      this.playWhisper();
+    }, 40 * 1000);
   }
 
   stop() {
