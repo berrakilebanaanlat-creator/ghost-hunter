@@ -30,7 +30,7 @@
         "credentialsSource": "local"
       },
       "ios": {
-        "credentialsSource": "local",
+        "credentialsSource": "remote",
         "distribution": "store"
       }
     }
